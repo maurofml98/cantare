@@ -1,0 +1,384 @@
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { VocalTestStep, type CaptureConfidence } from '@/components/vocal/VocalTestStep';
+import {
+  buildVocalProfile,
+  combineConfidence,
+  saveVocalProfile,
+  type Confidence,
+  type VocalProfile,
+} from '@/lib/vocal/profile';
+import { recalculateAllSongRecommendations } from '@/lib/repertoire/store';
+import { freqToMidi } from '@/lib/audio/pitch';
+
+export const Route = createFileRoute('/teste-vocal/executar')({
+  head: () => ({
+    meta: [
+      { title: 'Teste Vocal em andamento — Cantare' },
+      { name: 'description', content: 'Fluxo guiado para medir alcance vocal e região confortável.' },
+    ],
+  }),
+  component: TesteVocalExecutar,
+});
+
+type Stage = 'intro' | 'confortavel' | 'grave' | 'aguda' | 'resultado' | 'incoerente';
+
+function TesteVocalExecutar() {
+  const navigate = useNavigate();
+  const [stage, setStage] = useState<Stage>('intro');
+  const [comfortHz, setComfortHz] = useState(0);
+  const [lowHz, setLowHz] = useState(0);
+  const [highHz, setHighHz] = useState(0);
+  const [comfortConf, setComfortConf] = useState<CaptureConfidence>('high');
+  const [lowConf, setLowConf] = useState<CaptureConfidence>('high');
+  const [highConf, setHighConf] = useState<CaptureConfidence>('high');
+
+  const profile = useMemo<VocalProfile | null>(() => {
+    if (stage !== 'resultado' || !lowHz || !highHz) return null;
+    if (freqToMidi(highHz) <= freqToMidi(lowHz)) return null;
+    const confidence = combineConfidence(
+      lowConf as Confidence,
+      highConf as Confidence,
+      comfortHz > 0 ? (comfortConf as Confidence) : undefined,
+    );
+    return buildVocalProfile(lowHz, highHz, {
+      comfortHz: comfortHz > 0 ? comfortHz : undefined,
+      confidence,
+    });
+  }, [stage, lowHz, highHz, comfortHz, comfortConf, lowConf, highConf]);
+
+  const finalize = () => {
+    if (profile) {
+      saveVocalProfile(profile);
+      const summary = recalculateAllSongRecommendations(profile);
+      if (summary.songs > 0) {
+        toast.success('Perfil salvo. Suas sugestões de tom foram atualizadas.');
+      } else {
+        toast.success('Perfil salvo.');
+      }
+    }
+    navigate({ to: '/teste-vocal' });
+  };
+
+  const goToAguda = () => {
+    // ao terminar a grave, verifica coerência mínima assim que tivermos a aguda
+    setStage('aguda');
+  };
+
+  const onHighCaptured = (hz: number, _note: string, confidence: CaptureConfidence) => {
+    setHighHz(hz);
+    setHighConf(confidence);
+    // valida coerência aguda > grave
+    if (lowHz > 0 && freqToMidi(hz) <= freqToMidi(lowHz)) {
+      setStage('incoerente');
+      return;
+    }
+    setStage('resultado');
+  };
+
+  const redoGraveAguda = () => {
+    setLowHz(0); setHighHz(0);
+    setLowConf('high'); setHighConf('high');
+    setStage('grave');
+  };
+
+  const redoAll = () => {
+    setComfortHz(0); setLowHz(0); setHighHz(0);
+    setComfortConf('high'); setLowConf('high'); setHighConf('high');
+    setStage('confortavel');
+  };
+
+  return (
+    <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ background: '#07080A' }}>
+      {/* header */}
+      <div className="flex items-center justify-between px-6 pt-6">
+        <Link
+          to="/teste-vocal"
+          className="flex items-center gap-2 text-[#8A8A95] hover:text-white transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+          </svg>
+          <span className="text-[10px] uppercase" style={{ letterSpacing: '0.24em' }}>Sair</span>
+        </Link>
+        <p
+          className="text-[10px] uppercase text-[#B8955A]/80"
+          style={{ letterSpacing: '0.32em' }}
+        >
+          Cantare · Teste Vocal
+        </p>
+        <span className="w-10" />
+      </div>
+
+      {/* film grain */}
+      <div
+        className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-[0.08]"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>\")",
+        }}
+      />
+
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 py-10">
+        {stage === 'intro' && (
+          <IntroPanel onStart={() => setStage('confortavel')} />
+        )}
+
+        {stage === 'confortavel' && (
+          <VocalTestStep
+            instruction="confortavel"
+            onCaptured={(hz, _n, c) => { setComfortHz(hz); setComfortConf(c); setStage('grave'); }}
+            onCancel={() => setStage('intro')}
+          />
+        )}
+
+        {stage === 'grave' && (
+          <VocalTestStep
+            instruction="grave"
+            onCaptured={(hz, _n, c) => { setLowHz(hz); setLowConf(c); goToAguda(); }}
+            onCancel={() => setStage('intro')}
+          />
+        )}
+
+        {stage === 'aguda' && (
+          <VocalTestStep
+            instruction="aguda"
+            onCaptured={onHighCaptured}
+            onCancel={() => setStage('intro')}
+          />
+        )}
+
+        {stage === 'incoerente' && (
+          <IncoherentPanel onRedoTwo={redoGraveAguda} onRedoAll={redoAll} />
+        )}
+
+        {stage === 'resultado' && profile && (
+          <ResultPanel
+            profile={profile}
+            comfortHz={comfortHz}
+            onFinalize={finalize}
+            onRestart={redoAll}
+          />
+        )}
+
+        {stage === 'resultado' && !profile && (
+          <IncoherentPanel onRedoTwo={redoGraveAguda} onRedoAll={redoAll} />
+        )}
+      </div>
+
+      {/* progresso */}
+      {['confortavel', 'grave', 'aguda'].includes(stage) && (
+        <div className="relative z-10 px-6 pb-8">
+          <div className="mx-auto flex max-w-md items-center gap-3">
+            <Dot active={stage === 'confortavel'} done={['grave','aguda'].includes(stage)} />
+            <Line />
+            <Dot active={stage === 'grave'} done={stage === 'aguda'} />
+            <Line />
+            <Dot active={stage === 'aguda'} done={false} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IntroPanel({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="mx-auto max-w-md text-center">
+      <p className="text-[10px] uppercase text-[#B8955A]/80" style={{ letterSpacing: '0.32em' }}>
+        Antes de começar
+      </p>
+      <h1
+        className="mt-3 text-white"
+        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 34, lineHeight: 1.1 }}
+      >
+        Você vai cantar três vezes: confortável, grave e aguda.
+      </h1>
+      <p className="mt-4 text-[14px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.6 }}>
+        Encontre um lugar silencioso. Aproxime o microfone. Cante em "AAAAH" sustentado — cada nota é medida quando você segurar por cerca de 1,5 segundo.
+      </p>
+      <button
+        onClick={onStart}
+        className="mt-10 inline-flex h-14 items-center justify-center rounded-2xl px-8 text-[#07080A] hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.985] transition"
+        style={{
+          background: 'linear-gradient(180deg, #E8C97E 0%, #C9A867 45%, #B8955A 100%)',
+          boxShadow: '0 12px 40px -12px rgba(184,149,90,0.6)',
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: 13,
+          fontWeight: 500,
+          letterSpacing: '0.32em',
+          textTransform: 'uppercase',
+        }}
+      >
+        Começar →
+      </button>
+    </div>
+  );
+}
+
+function IncoherentPanel({ onRedoTwo, onRedoAll }: { onRedoTwo: () => void; onRedoAll: () => void }) {
+  return (
+    <div className="mx-auto max-w-md text-center">
+      <p className="text-[10px] uppercase text-[#B8955A]/80" style={{ letterSpacing: '0.32em' }}>
+        Captura incoerente
+      </p>
+      <h1
+        className="mt-3 text-white"
+        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.1 }}
+      >
+        A nota aguda ficou abaixo da nota grave.
+      </h1>
+      <p className="mt-4 text-[14px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.6 }}>
+        Isso costuma acontecer por captação com muito ruído ou por dobrar de oitava.
+        Vamos refazer essas duas etapas para gerar um perfil confiável.
+      </p>
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <button
+          onClick={onRedoTwo}
+          className="inline-flex h-14 items-center justify-center rounded-2xl px-8 text-[#07080A] hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.985] transition"
+          style={{
+            background: 'linear-gradient(180deg, #E8C97E 0%, #C9A867 45%, #B8955A 100%)',
+            boxShadow: '0 12px 40px -12px rgba(184,149,90,0.6)',
+            fontFamily: 'DM Sans, sans-serif',
+            fontSize: 13,
+            fontWeight: 500,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Refazer grave e aguda →
+        </button>
+        <button
+          onClick={onRedoAll}
+          className="text-[10px] uppercase text-[#8A8A95] hover:text-white transition-colors"
+          style={{ letterSpacing: '0.28em' }}
+        >
+          ↺ Refazer teste inteiro
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ResultPanel({ profile, comfortHz, onFinalize, onRestart }: {
+  profile: VocalProfile; comfortHz: number; onFinalize: () => void; onRestart: () => void;
+}) {
+  const confLabel =
+    profile.confidence === 'high' ? 'Alta' :
+    profile.confidence === 'medium' ? 'Média' :
+    profile.confidence === 'low' ? 'Baixa' : '—';
+
+  return (
+    <div className="mx-auto max-w-2xl">
+      <p className="text-[10px] uppercase text-[#B8955A]/80" style={{ letterSpacing: '0.32em' }}>
+        Resultado
+      </p>
+      <h1
+        className="mt-3 text-white"
+        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 40, lineHeight: 1.05 }}
+      >
+        Sua voz é <span style={{ color: '#E8C97E' }}>{profile.voiceType}</span>
+      </h1>
+      <p className="mt-3 text-[15px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.6 }}>
+        Alcance detectado <b className="text-white/90">{profile.lowestNote} → {profile.highestNote}</b>
+        {' · '}Região confortável <b className="text-white/90">{profile.comfortableLow} → {profile.comfortableHigh}</b>.
+      </p>
+      {profile.confidence && profile.confidence !== 'high' && (
+        <p className="mt-2 text-[12px] text-[#B8955A]" style={{ fontWeight: 300 }}>
+          Confiança da captura: {confLabel}. Você pode refazer para melhorar a precisão.
+        </p>
+      )}
+
+      <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <ResultMetric label="Extensão" value={`${profile.rangeSemitones} semitons`} />
+        <ResultMetric
+          label="Nota confortável"
+          value={profile.comfortNote ?? (comfortHz > 0 ? `${Math.round(comfortHz)} Hz` : '—')}
+        />
+        <ResultMetric label="Classificação" value={profile.voiceType} />
+      </div>
+
+      <div
+        className="mt-8 rounded-2xl p-6"
+        style={{
+          background: 'linear-gradient(180deg, rgba(15,15,18,0.78) 0%, rgba(11,11,14,0.72) 100%)',
+          border: '1px solid rgba(184,149,90,0.2)',
+        }}
+      >
+        <p className="text-[10px] uppercase text-[#B8955A]/80" style={{ letterSpacing: '0.32em' }}>
+          Treinos recomendados
+        </p>
+        <p
+          className="mt-2 text-white"
+          style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 22 }}
+        >
+          {profile.recommendedExercises.length} exercícios ajustados ao seu perfil
+        </p>
+        <p className="mt-2 text-[13px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.55 }}>
+          Foco em respiração, afinação e {profile.rangeSemitones < 18 ? 'flexibilidade vocal' : 'controle de registro'}.
+        </p>
+      </div>
+
+      <div className="mt-10 flex flex-wrap items-center gap-4">
+        <button
+          onClick={onFinalize}
+          className="inline-flex h-14 items-center justify-center rounded-2xl px-8 text-[#07080A] hover:brightness-110 hover:-translate-y-[1px] active:scale-[0.985] transition"
+          style={{
+            background: 'linear-gradient(180deg, #E8C97E 0%, #C9A867 45%, #B8955A 100%)',
+            boxShadow: '0 12px 40px -12px rgba(184,149,90,0.6)',
+            fontFamily: 'DM Sans, sans-serif',
+            fontSize: 13,
+            fontWeight: 500,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Salvar meu perfil →
+        </button>
+        <button
+          onClick={onRestart}
+          className="text-[10px] uppercase text-[#8A8A95] hover:text-white transition-colors"
+          style={{ letterSpacing: '0.28em' }}
+        >
+          ↺ Refazer teste
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ResultMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      className="rounded-xl p-4"
+      style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(184,149,90,0.14)',
+      }}
+    >
+      <p className="text-[9px] uppercase text-[#8A8A95]" style={{ letterSpacing: '0.28em' }}>{label}</p>
+      <p
+        className="mt-1 text-white"
+        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 20 }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Dot({ active, done }: { active: boolean; done: boolean }) {
+  return (
+    <span
+      className="h-2 w-2 rounded-full"
+      style={{
+        background: done ? '#B8955A' : active ? '#E8C97E' : 'rgba(255,255,255,0.15)',
+        boxShadow: active ? '0 0 12px rgba(232,201,126,0.7)' : undefined,
+      }}
+    />
+  );
+}
+function Line() {
+  return <span className="h-px flex-1" style={{ background: 'rgba(184,149,90,0.2)' }} />;
+}
