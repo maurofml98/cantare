@@ -10,12 +10,16 @@ npm install
 npm run dev
 ```
 
-Requer `.env.local` na raiz:
+Requer `.env` na raiz (copie de `.env.example`):
 
 ```
-VITE_SPOTIFY_CLIENT_ID=
-VITE_SPOTIFY_CLIENT_SECRET=
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
 ```
+
+Os secrets são lidos só no servidor (`process.env` dentro de `createServerFn`, em
+`src/lib/api/spotify.ts`). **Não use o prefixo `VITE_`** — variáveis `VITE_*` são
+embutidas no bundle e vão para o navegador.
 
 ## Documentação
 
