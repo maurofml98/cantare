@@ -20,7 +20,7 @@ function DayCompletePage() {
         <h1
           className="text-white mb-3"
           style={{
-            fontFamily: 'Cormorant Garamond, serif',
+            fontFamily: 'Newsreader, serif',
             fontWeight: 300,
             fontSize: 36,
             lineHeight: 1.1,
@@ -48,7 +48,7 @@ function DayCompletePage() {
           <p
             className="mt-2"
             style={{
-              fontFamily: 'Cormorant Garamond, serif',
+              fontFamily: 'Newsreader, serif',
               fontWeight: 600,
               fontSize: 48,
               color: '#B8955A',

@@ -152,7 +152,7 @@ function PortalOverlay({
       >
         <span
           style={{
-            fontFamily: 'Cormorant Garamond, serif',
+            fontFamily: 'Newsreader, serif',
             fontWeight: 300,
             fontStyle: 'italic',
             fontSize: 'clamp(72px, 11vw, 140px)',

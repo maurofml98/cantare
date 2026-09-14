@@ -108,7 +108,7 @@ export function BreathScene() {
           <span
             className="text-[24px] leading-none"
             style={{
-              fontFamily: 'Cormorant Garamond, serif',
+              fontFamily: 'Newsreader, serif',
               fontWeight: 300,
               color: '#E8E4DC',
               letterSpacing: '0.02em',

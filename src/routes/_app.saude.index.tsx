@@ -27,7 +27,7 @@ function SaudePage() {
       <header className="relative z-10 max-w-2xl mb-16">
         <h1
           className="text-white leading-none"
-          style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(36px, 6vw, 52px)' }}
+          style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 'clamp(36px, 6vw, 52px)' }}
         >
           Cuide da sua voz
         </h1>
@@ -63,7 +63,7 @@ function SaudePage() {
           >
             <span
               style={{
-                fontFamily: 'Cormorant Garamond, serif',
+                fontFamily: 'Newsreader, serif',
                 fontWeight: 300,
                 fontSize: 18,
                 color: 'rgba(201,168,76,0.4)',
@@ -76,7 +76,7 @@ function SaudePage() {
               <h2
                 className="truncate transition-colors"
                 style={{
-                  fontFamily: 'Cormorant Garamond, serif',
+                  fontFamily: 'Newsreader, serif',
                   fontWeight: 600,
                   fontSize: 22,
                   color: '#FFFFFF',

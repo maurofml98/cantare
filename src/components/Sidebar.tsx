@@ -49,7 +49,7 @@ export function Sidebar() {
           <circle cx="6" cy="13" r="3" stroke="#B8955A" strokeWidth="1" fill="none" />
           <path d="M9 13 L9 2 L15 3" stroke="#B8955A" strokeWidth="1" strokeLinecap="round" fill="none" />
         </svg>
-        <span style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 600, fontSize: 20, color: '#B8955A' }}>
+        <span style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 20, color: '#B8955A' }}>
           Cantare
         </span>
       </div>
@@ -77,7 +77,7 @@ export function Sidebar() {
             className="absolute inset-1 rounded-full flex items-center justify-center"
             style={{ background: 'rgba(184,149,90,0.08)' }}
           >
-            <span style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 600, fontSize: 16, color: '#B8955A' }}>
+            <span style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 16, color: '#B8955A' }}>
               {initial}
             </span>
           </div>
@@ -126,7 +126,7 @@ export function Sidebar() {
               )}
               <span
                 style={{
-                  fontFamily: 'Cormorant Garamond, serif',
+                  fontFamily: 'Newsreader, serif',
                   fontWeight: 300,
                   fontSize: 11,
                   width: 20,

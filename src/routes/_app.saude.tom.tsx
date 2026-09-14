@@ -108,7 +108,7 @@ function TomPage() {
       <div className="flex items-center justify-between mb-10">
         <div>
           <p style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(184,149,90,0.7)' }}>II · O CORPO</p>
-          <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 44, marginTop: 6 }}>
+          <h1 style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 44, marginTop: 6 }}>
             As Três Cordas
           </h1>
           <p style={{ color: 'rgba(232,228,220,0.5)', fontSize: 13, marginTop: 6 }}>
@@ -197,7 +197,7 @@ function TomPage() {
               onClick={startMic}
               className="pointer-events-auto"
               style={{
-                fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
+                fontFamily: 'Newsreader, serif', fontWeight: 300,
                 fontSize: 20, color: '#E8E4DC',
                 border: '1px solid rgba(184,149,90,0.5)',
                 padding: '14px 32px', borderRadius: 999,
@@ -214,7 +214,7 @@ function TomPage() {
               onClick={() => { setHits([]); setStep(0); setRunning(true); }}
               className="pointer-events-auto"
               style={{
-                fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
+                fontFamily: 'Newsreader, serif', fontWeight: 300,
                 fontSize: 20, color: '#07080A',
                 background: '#B8955A',
                 padding: '14px 40px', borderRadius: 999,
@@ -231,7 +231,7 @@ function TomPage() {
               </p>
               <p
                 style={{
-                  fontFamily: 'Cormorant Garamond, serif', fontWeight: 300,
+                  fontFamily: 'Newsreader, serif', fontWeight: 300,
                   fontSize: 56, marginTop: 4, lineHeight: 1,
                   color: feedback === 'hit' ? '#B8955A' : feedback === 'miss' ? '#E85D3A' : '#E8E4DC',
                   textShadow: feedback === 'hit' ? '0 0 20px #B8955A' : 'none',
@@ -270,7 +270,7 @@ function TomPage() {
       {done && (
         <div className="mt-10 glass-card p-8 text-center animate-slide-in">
           <p style={{ fontSize: 10, letterSpacing: '0.3em', color: 'rgba(184,149,90,0.7)' }}>RESULTADO</p>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 56, fontWeight: 300, marginTop: 8 }}>
+          <p style={{ fontFamily: 'Newsreader, serif', fontSize: 56, fontWeight: 300, marginTop: 8 }}>
             {totalHits} <span style={{ color: 'rgba(232,228,220,0.3)', fontSize: 32 }}>/ {CYCLE.length}</span>
           </p>
           <p style={{ color: 'rgba(232,228,220,0.5)', fontSize: 13, marginTop: 6 }}>

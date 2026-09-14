@@ -149,7 +149,7 @@ function EvolucaoPage() {
             </p>
             <h1
               className="text-white leading-none"
-              style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(38px, 5vw, 64px)' }}
+              style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 'clamp(38px, 5vw, 64px)' }}
             >
               Minha Evolução
             </h1>
@@ -189,7 +189,7 @@ function EvolucaoPage() {
               </p>
               <p
                 className="mt-2 text-white"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 600, fontSize: 'clamp(24px, 2.4vw, 34px)' }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 'clamp(24px, 2.4vw, 34px)' }}
               >
                 {level} — {level === 1 ? 'Iniciante' : level === 2 ? 'Aprendiz' : 'Cantor'}
               </p>
@@ -231,7 +231,7 @@ function EvolucaoPage() {
                   </div>
                   <p
                     className="mt-2 text-white"
-                    style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 600, fontSize: 'clamp(22px, 2vw, 30px)' }}
+                    style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 'clamp(22px, 2vw, 30px)' }}
                   >
                     {m.value}
                   </p>
@@ -343,7 +343,7 @@ function EvolucaoPage() {
             <div>
               <h2
                 className="text-white mb-4"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 'clamp(22px, 2vw, 30px)' }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 'clamp(22px, 2vw, 30px)' }}
               >
                 Conquistas
               </h2>

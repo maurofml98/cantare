@@ -171,7 +171,7 @@ export function EnvironmentCheckSheet({ open, onDismiss, onComplete }: Props) {
               </div>
               <h2
                 className="text-white"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 24 }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 24 }}
               >
                 Precisamos do microfone
               </h2>
@@ -207,7 +207,7 @@ export function EnvironmentCheckSheet({ open, onDismiss, onComplete }: Props) {
             <div className="text-center animate-in fade-in slide-in-from-right-4 duration-300">
               <h2
                 className="text-white"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 24 }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 24 }}
               >
                 {noiseResult === 'ok'
                   ? 'Ambiente silencioso'
@@ -278,7 +278,7 @@ export function EnvironmentCheckSheet({ open, onDismiss, onComplete }: Props) {
               </div>
               <h2
                 className="text-white"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 24 }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 24 }}
               >
                 Fone de ouvido
               </h2>

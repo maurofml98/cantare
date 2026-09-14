@@ -481,7 +481,7 @@ function ExercisePage() {
             <p
               className="mt-1 text-white"
               style={{
-                fontFamily: 'Cormorant Garamond, serif',
+                fontFamily: 'Newsreader, serif',
                 fontWeight: 300,
                 fontSize: 17,
                 letterSpacing: '0.04em',
@@ -565,7 +565,7 @@ function ExercisePage() {
             <h1
               className="text-white mb-4"
               style={{
-                fontFamily: 'Cormorant Garamond, serif',
+                fontFamily: 'Newsreader, serif',
                 fontWeight: 300,
                 fontSize: 32,
                 lineHeight: 1.1,
@@ -634,7 +634,7 @@ function ExercisePage() {
                 <span
                   className="text-white leading-none"
                   style={{
-                    fontFamily: 'Cormorant Garamond, serif',
+                    fontFamily: 'Newsreader, serif',
                     fontWeight: 300,
                     fontSize: 72,
                   }}
@@ -674,7 +674,7 @@ function ExercisePage() {
                 <p
                   className="mt-2 text-white capitalize"
                   style={{
-                    fontFamily: 'Cormorant Garamond, serif',
+                    fontFamily: 'Newsreader, serif',
                     fontWeight: 300,
                     fontSize: 28,
                     lineHeight: 1.1,
@@ -683,7 +683,7 @@ function ExercisePage() {
                   {breath.phase === 'inspire' ? 'Inspire' : breath.phase === 'hold' ? 'Segure' : breath.phase === 'expire' ? 'Expire' : 'Pausa'}
                 </p>
                 <div className="mt-3 flex items-baseline gap-1.5 text-[#8A8A95] text-[11px]" style={{ letterSpacing: '0.05em' }}>
-                  <span className="text-[#E8C97E]" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 18 }}>
+                  <span className="text-[#E8C97E]" style={{ fontFamily: 'Newsreader, serif', fontSize: 18 }}>
                     {mm}:{ss}
                   </span>
                   <span>restantes</span>
@@ -742,7 +742,7 @@ function ExercisePage() {
                 <h1
                   className="text-white"
                   style={{
-                    fontFamily: 'Cormorant Garamond, serif',
+                    fontFamily: 'Newsreader, serif',
                     fontWeight: 300,
                     fontSize: 28,
                     lineHeight: 1.2,
@@ -808,7 +808,7 @@ function ExercisePage() {
                     <p
                       className="mt-1"
                       style={{
-                        fontFamily: 'Cormorant Garamond, serif',
+                        fontFamily: 'Newsreader, serif',
                         fontWeight: 600,
                         fontSize: m.small ? 18 : 24,
                         color: m.gold ? '#B8955A' : '#fff',

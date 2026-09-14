@@ -25,7 +25,7 @@ const overline: CSSProperties = {
 };
 
 const displayFont = {
-  fontFamily: 'Cormorant Garamond, serif',
+  fontFamily: 'Newsreader, serif',
   fontWeight: 300,
 };
 

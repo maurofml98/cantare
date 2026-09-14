@@ -286,6 +286,31 @@ src/
 
 ---
 
+## Spotify — limitações reais da API
+
+Client Credentials Flow, chamado só no servidor (`src/lib/api/spotify.ts`, via
+`createServerFn`). Testado com as credenciais do app em 14/09/2026:
+
+| Chamada | Resultado |
+|---|---|
+| `GET /v1/playlists/{id}` (editorial `37i9dQZF1…` / `37i9dQZEVXb…`) | 404, mesmo com ID válido |
+| `GET /v1/playlists/{id}/tracks` (qualquer playlist, inclusive de usuário) | 403 |
+| `GET /v1/search?type=playlist` | 200, mas com itens `null` e sem acesso às faixas |
+| `GET /v1/search?type=track&market=BR&limit=10` | 200, dados completos |
+| `GET /v1/search?type=track&limit=20` | 400 "Invalid limit" |
+
+Consequências para o produto:
+
+- Desde novembro de 2024 apps novos não acessam playlists editoriais nem algorítmicas.
+  Não existe "em alta" ou "viral" disponível — não prometer isso na interface.
+- Não guardar IDs de playlist no código. Categorias são **buscas de faixa
+  pré-definidas** (categoria → subcategoria → query).
+- Máximo de 10 resultados por busca.
+- A API não informa o tom da música: a faixa entra no repertório sem tom, e o cantor
+  preenche.
+
+---
+
 ## Privacidade
 
 O áudio é processado no aparelho e não sai dele. Isso não é só boa prática — dado de

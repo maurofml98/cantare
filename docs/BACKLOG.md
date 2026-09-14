@@ -21,7 +21,7 @@ considerada comprometida.
 4. Restringir a chave: apenas YouTube Data API v3 + restrição de site
 ```
 
-### 0.2 · Remover código da integração YouTube
+### 0.2 · Remover código da integração YouTube — concluído
 
 A integração foi abandonada. O YouTube não tem endpoint de "viral" ou "em alta", e em
 fevereiro de 2026 o Google removeu endpoints relevantes.
@@ -30,7 +30,13 @@ fevereiro de 2026 o Google removeu endpoints relevantes.
 - Remover `YOUTUBE_API_KEY` dos secrets se não houver mais uso
 - Confirmar que a tela de Tendências usa só Spotify
 
-### 0.3 · Auditar IDs de playlist do Spotify
+### 0.3 · Auditar IDs de playlist do Spotify — concluído
+
+**Resultado (14/09/2026):** os 20 IDs deram 404. Desde novembro de 2024 o Spotify
+nega a apps novos playlists editoriais, e `/playlists/{id}/tracks` dá 403 até em
+playlist de usuário. IDs removidos e trocados por `/v1/search?type=track`. O plano
+abaixo e a lista de "confirmados oficiais" ficaram obsoletos — ver
+`ARQUITETURA.md`, seção Spotify.
 
 **Risco real de quebra silenciosa.** O Lovable implementou "curadoria de IDs fixos"
 de playlists supostamente editoriais. Só os IDs com prefixo `37i9dQZEVXb` são
@@ -49,22 +55,46 @@ Confirmados oficiais:
 - `37i9dQZEVXbMXbN3EUUhlg` — Top 50 Brasil
 - `37i9dQZEVXbKzoK95AbRy9` — Top Songs Brasil
 
-### 0.4 · Tratar falha de playlist
+### 0.4 · Tratar falha de playlist — concluído
 
 Quando uma playlist retorna 404 ou vem vazia, hoje a tela provavelmente mostra estado
 vazio sem explicação. Deve cair no fallback de busca dinâmica automaticamente.
 
-### 0.5 · Segredos fora do repositório
+Resolvido eliminando playlists: a tela usa só busca de faixas, com erro visível e
+"tentar novamente".
+
+### 0.5 · Segredos fora do repositório — concluído
 
 - `.env`, `.env.local`, `.env.*` no `.gitignore`
 - Nenhuma chave literal no código-fonte
 - `git log -p | grep -i "api.key\|secret\|AIza"` para conferir histórico
 
+### 0.6 · Desacoplar o `@lovable.dev/vite-tanstack-config`
+
+O build depende de um preset de config do Lovable (devDependency). Isso prende o
+projeto à plataforma de origem e esconde a configuração real do Vite/TanStack Start/
+Nitro.
+
+- Ver o que o preset configura hoje (plugins, SSR, Nitro, aliases)
+- Replicar explicitamente no `vite.config.ts`
+- Remover a dependência e confirmar `dev` e `build` funcionando
+
+### 0.7 · Autenticação real e persistência fora do `localStorage`
+
+Hoje o login aceita qualquer email/senha e grava o usuário em `localStorage`. Projetos,
+perfil vocal e histórico também vivem só no navegador — trocar de aparelho ou limpar
+dados apaga tudo.
+
+- Escolher provedor de auth e banco
+- Migrar os dados existentes de `localStorage` no primeiro login
+- Perfil vocal é dado biométrico (LGPD): consentimento, criptografia, opção de
+  deletar — ver seção 10 do `CLAUDE.md`
+
 ---
 
 ## Fase 1 — Onboarding vocal
 
-### 1.1 · Portar o teste de extensão
+### 1.1 · Portar o teste de extensão — concluído
 
 Existe uma implementação funcional em `teste-vocal-cantare.jsx` — autocorrelação,
 medição de ruído, estabilização, classificação. Portar para a estrutura do projeto:
@@ -274,7 +304,7 @@ semitons". Precisa de histórico acumulado para funcionar.
 | O quê | Onde | Gravidade |
 |---|---|---|
 | Chave YouTube exposta em chat | secrets | alta |
-| IDs de playlist de usuários comuns | integração Spotify | alta |
+| Login sem autenticação real, dados só em `localStorage` | todo o app | alta |
 | Diário de Treino sem lógica real | UI pronta, dados fixos | média |
 | Evolução com dados zerados | UI pronta, sem persistência | média |
 | Design nunca validado | todo o app | média |

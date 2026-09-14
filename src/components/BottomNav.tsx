@@ -15,10 +15,12 @@ export function BottomNav() {
     return false;
   };
 
+  // Ativo = ícone dourado + traço fino acima, como a linha vertical da sidebar. Sem fundo.
   const itemCls = (active: boolean) =>
     cn(
-      'flex flex-col items-center justify-center w-12 h-12 transition-all duration-300 rounded-2xl',
-      active ? 'bg-primary text-white' : 'text-muted-foreground hover:bg-white/5'
+      'relative flex flex-col items-center justify-center w-12 h-12 transition-colors duration-300',
+      "before:absolute before:top-0 before:left-1/2 before:h-[2px] before:w-5 before:-translate-x-1/2 before:bg-[#B8955A] before:transition-opacity before:content-['']",
+      active ? 'text-[#B8955A] before:opacity-100' : 'text-[rgba(232,228,220,0.35)] before:opacity-0'
     );
 
   return (

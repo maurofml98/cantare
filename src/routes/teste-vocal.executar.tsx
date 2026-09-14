@@ -191,7 +191,7 @@ function IntroPanel({ onStart }: { onStart: () => void }) {
       </p>
       <h1
         className="mt-3 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 34, lineHeight: 1.1 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 34, lineHeight: 1.1 }}
       >
         Você vai cantar três vezes: confortável, grave e aguda.
       </h1>
@@ -225,7 +225,7 @@ function IncoherentPanel({ onRedoTwo, onRedoAll }: { onRedoTwo: () => void; onRe
       </p>
       <h1
         className="mt-3 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.1 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.1 }}
       >
         A nota aguda ficou abaixo da nota grave.
       </h1>
@@ -276,7 +276,7 @@ function ResultPanel({ profile, comfortHz, onFinalize, onRestart }: {
       </p>
       <h1
         className="mt-3 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 40, lineHeight: 1.05 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 40, lineHeight: 1.05 }}
       >
         Sua voz é <span style={{ color: '#E8C97E' }}>{profile.voiceType}</span>
       </h1>
@@ -311,7 +311,7 @@ function ResultPanel({ profile, comfortHz, onFinalize, onRestart }: {
         </p>
         <p
           className="mt-2 text-white"
-          style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 22 }}
+          style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 22 }}
         >
           {profile.recommendedExercises.length} exercícios ajustados ao seu perfil
         </p>
@@ -360,7 +360,7 @@ function ResultMetric({ label, value }: { label: string; value: string }) {
       <p className="text-[9px] uppercase text-[#8A8A95]" style={{ letterSpacing: '0.28em' }}>{label}</p>
       <p
         className="mt-1 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 20 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 20 }}
       >
         {value}
       </p>

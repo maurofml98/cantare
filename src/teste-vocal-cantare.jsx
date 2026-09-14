@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { NoteLadder } from "@/components/vocal/NoteLadder";
 
 /* ============================================================
    CANTARE — Teste de extensão vocal
@@ -88,115 +89,6 @@ function detectPitch(buf, sampleRate) {
 
   if (freq < 65 || freq > 1100) return null;
   return { freq, clarity, rms };
-}
-
-/* ---------- escada de notas ---------- */
-function Ladder({ live, range, target }) {
-  const span = LADDER_HIGH - LADDER_LOW;
-  const pos = (m) => `${(1 - (m - LADDER_LOW) / span) * 100}%`;
-
-  const ticks = [];
-  for (let m = LADDER_LOW; m <= LADDER_HIGH; m++) {
-    const isC = m % 12 === 0;
-    const isNat = ![1, 3, 6, 8, 10].includes(((m % 12) + 12) % 12);
-    ticks.push({ m, isC, isNat });
-  }
-
-  const inRange = (m) => range && m >= range.min && m <= range.max;
-
-  return (
-    <div style={{ position: "relative", height: "100%", width: "100%" }}>
-      {/* faixa conquistada */}
-      {range && (
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            width: 34,
-            top: pos(range.max),
-            height: `${((range.max - range.min) / span) * 100}%`,
-            background: `linear-gradient(180deg, ${GOLD_DIM}, rgba(184,149,90,0.10))`,
-            borderRight: `2px solid ${GOLD}`,
-            transition: "top .3s ease, height .3s ease",
-          }}
-        />
-      )}
-
-      {ticks.map(({ m, isC, isNat }) => (
-        <div
-          key={m}
-          style={{
-            position: "absolute",
-            right: 0,
-            top: pos(m),
-            transform: "translateY(-50%)",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            justifyContent: "flex-end",
-            width: "100%",
-            pointerEvents: "none",
-          }}
-        >
-          {isC && (
-            <span
-              style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 10,
-                letterSpacing: ".08em",
-                color: inRange(m) ? GOLD : "rgba(232,228,220,0.22)",
-                transition: "color .3s",
-              }}
-            >
-              {midiToLatin(m)}
-            </span>
-          )}
-          <div
-            style={{
-              width: isC ? 34 : isNat ? 20 : 11,
-              height: 1,
-              background: inRange(m) ? GOLD : "rgba(232,228,220,0.14)",
-              transition: "background .3s",
-            }}
-          />
-        </div>
-      ))}
-
-      {/* marcador ao vivo */}
-      {live != null && (
-        <div
-          style={{
-            position: "absolute",
-            right: -4,
-            top: pos(live),
-            transform: "translateY(-50%)",
-            width: 42,
-            height: 2,
-            background: PAPER,
-            boxShadow: `0 0 14px 3px rgba(232,228,220,0.45)`,
-            transition: "top .06s linear",
-          }}
-        />
-      )}
-
-      {/* alvo (direção sugerida) */}
-      {target && (
-        <div
-          style={{
-            position: "absolute",
-            right: 46,
-            top: target === "low" ? "86%" : "10%",
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 11,
-            color: "rgba(232,228,220,0.3)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {target === "low" ? "desça até aqui" : "suba até aqui"}
-        </div>
-      )}
-    </div>
-  );
 }
 
 /* ============================================================ */
@@ -362,7 +254,7 @@ export default function TesteVocalCantare() {
 
   /* ---------- estilos base ---------- */
   const font = {
-    display: "'Cormorant Garamond', Georgia, serif",
+    display: "'Newsreader', Georgia, serif",
     ui: "'DM Sans', system-ui, sans-serif",
   };
 
@@ -379,7 +271,7 @@ export default function TesteVocalCantare() {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,600;1,6..72,300&family=DM+Sans:wght@300;400;500&display=swap');
         .cantare-btn { transition: background .25s, color .25s, border-color .25s; }
         .cantare-btn:hover { background: ${GOLD} !important; color: ${INK} !important; }
         .cantare-ghost:hover { color: ${PAPER} !important; }
@@ -600,10 +492,12 @@ export default function TesteVocalCantare() {
 
           {/* escada */}
           <div style={{ width: 132, padding: "56px 22px 56px 0", position: "relative" }}>
-            <Ladder
+            <NoteLadder
+              min={LADDER_LOW}
+              max={LADDER_HIGH}
               live={live}
-              range={low != null && high != null ? { min: low, max: high } : captured != null ? { min: captured, max: captured + 0.4 } : null}
-              target={isLow ? "low" : "high"}
+              range={low != null && high != null ? { low, high } : captured != null ? { low: captured, high: captured + 0.4 } : null}
+              targetHint={isLow ? "low" : "high"}
             />
           </div>
         </div>
@@ -725,7 +619,7 @@ export default function TesteVocalCantare() {
         </div>
 
         <div style={{ width: 132, padding: "56px 22px 56px 0" }}>
-          <Ladder live={null} range={low != null && high != null ? { min: low, max: high } : null} target={null} />
+          <NoteLadder min={LADDER_LOW} max={LADDER_HIGH} range={low != null && high != null ? { low, high } : null} />
         </div>
       </div>
     </Shell>

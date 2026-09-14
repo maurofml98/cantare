@@ -180,14 +180,19 @@ O espaço vago: cantor + saúde vocal + Brasil.
 **Onde está:** projeto no Lovable — `blank-canvas-spark-4329.lovable.app`
 **Para onde vai:** GitHub → VSCode → Claude Code no terminal
 
-**Stack:** React + Vite + Tailwind. Backend/secrets via Lovable Cloud (Supabase).
+**Stack:** TanStack Start (React, SSR, servidor Nitro) + Vite + Tailwind.
+Não existe banco de dados: projetos, perfil vocal e usuário ficam todos em
+`localStorage`. Secrets (ex.: Spotify) são lidos só no servidor, via `createServerFn`
+e `process.env`, sem prefixo `VITE_`, e nunca chegam ao navegador.
 
 ### O que existe e funciona
 
-- Autenticação básica (login/cadastro)
+- Login/cadastro **de fachada** — grava o usuário em `localStorage` e aceita qualquer
+  email/senha. Não existe autenticação real.
 - **Repertório** — projetos, tipos de evento, lista de músicas, abas Repertório/Blocos
-- **Tendências** — integração Spotify funcionando, categoria → subcategoria →
-  playlist → seleção de músicas → adicionar ao repertório
+- **Buscar músicas** (antiga Tendências) — dentro do projeto: categoria →
+  subcategoria (busca pré-definida) ou busca livre → seleção de faixas → adicionar
+  ao repertório. Não é curadoria nem "em alta": é busca de faixas do Spotify
 - **Saúde Vocal** — 6 cards de aquecimento por situação, tela de exercícios
 - **Diário de Treino** — Dia 1, círculo de progresso, lista de 7 exercícios (conteúdo
   é placeholder)
@@ -204,7 +209,7 @@ fato.
 
 ## 7. Integrações
 
-### Spotify — funciona
+### Spotify — funciona só a busca de faixas
 
 Client Credentials Flow, sem login do usuário.
 
@@ -219,11 +224,22 @@ Redirect URI: `https://blank-canvas-spark-4329.lovable.app`
 (localhost não é aceito pelo Spotify desde abril 2025 — só HTTPS ou IP de loopback
 explícito.)
 
-Playlists oficiais confirmadas e estáveis:
-- Top 50 Brasil — `37i9dQZEVXbMXbN3EUUhlg`
-- Top Songs Brasil — `37i9dQZEVXbKzoK95AbRy9`
+**Correção:** a lista anterior de playlists "oficiais confirmadas e estáveis" (Top 50
+Brasil, Top Songs Brasil) estava errada — nunca foi verificada com as credenciais
+deste app. Testado em 14/09/2026:
 
-Endpoints usados: `/v1/search?type=playlist` e `/v1/playlists/{id}/tracks`
+- Desde novembro de 2024 o Spotify nega a apps novos o acesso a playlists editoriais
+  e algorítmicas (`37i9dQZF1…`, `37i9dQZEVXb…`) e responde **404**, mesmo com ID
+  válido. Os 20 IDs hardcoded deram 404.
+- `/v1/playlists/{id}/tracks` dá **403** até em playlist de usuário comum.
+- `/v1/search?type=playlist` responde 200, mas com itens `null` no meio e sem as
+  faixas utilizáveis.
+- **Só `/v1/search?type=track` funciona.** Limite máximo abaixo de 20:
+  `limit=10` funciona, `limit=20` dá 400 "Invalid limit".
+
+Endpoint usado: `/v1/search?type=track&market=BR&limit=10`. Não existe "em alta" ou
+"viral" acessível — não prometer isso na interface. O Spotify também não informa o
+tom da música: ele é preenchido pelo cantor.
 
 ### YouTube — abandonado
 
@@ -266,13 +282,13 @@ Uma chave do YouTube foi colada no chat. Foi avisado, mas **não há confirmaç�
 ela foi rotacionada**. Antes de qualquer push público: revogar e gerar nova.
 Conferir que `.env` está no `.gitignore`.
 
-### IDs de playlist frágeis
+### IDs de playlist — removidos
 
 O Lovable implementou "curadoria de IDs fixos" de playlists supostamente editoriais
-(Esquenta Sertanejo, Louvor & Adoração etc.). **Só os IDs com prefixo `37i9dQZEVXb`
-são oficiais do Spotify.** Os demais são de usuários comuns e podem ser deletados ou
-renomeados a qualquer momento, quebrando o app em silêncio. Não confiar nesse trecho
-sem verificar ID por ID.
+(Esquenta Sertanejo, Louvor & Adoração etc.). Auditados em 14/09/2026: **os 20 davam
+404** — parte era ID inventado, e o resto é inacessível pela restrição do Spotify
+(ver seção 7). Foram substituídos por buscas de faixa. Não reintroduzir IDs de
+playlist.
 
 ### O bloqueio real: conteúdo
 
@@ -361,7 +377,8 @@ Texto            #E8E4DC   (marfim, não branco puro)
 Texto secundário rgba(232,228,220,0.4)
 ```
 
-Tipografia: **Cormorant Garamond** (títulos, números grandes, 300/600) +
+Tipografia: **Newsreader** (títulos, números grandes, 300/600; substituiu a Cormorant
+Garamond, que renderiza o circunflexo torto — ver `docs/DESIGN.md`) +
 **DM Sans** (interface, 300/400/500).
 
 Proibições acumuladas ao longo do projeto:
@@ -404,7 +421,8 @@ juridicamente.
 4. Migrar o código do Lovable para GitHub e rodar local
 5. Integrar o teste de extensão vocal (já implementado isoladamente) no onboarding
 6. Construir o motor único de treino com as notas-alvo vindas do currículo
-7. Auditar os IDs de playlist do Spotify um por um
+7. ~~Auditar os IDs de playlist do Spotify um por um~~ — feito, IDs removidos
+   (seção 7)
 
 **Produto:**
 8. Analisar os 5 vídeos restantes do Vocal Coach

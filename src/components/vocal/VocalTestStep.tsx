@@ -192,7 +192,7 @@ export function VocalTestStep({ instruction, onCaptured, onCancel }: Props) {
       </p>
       <h2
         className="mt-2 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.15 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.15 }}
       >
         {copy.title}
       </h2>
@@ -219,7 +219,7 @@ export function VocalTestStep({ instruction, onCaptured, onCancel }: Props) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 56, color: '#fff', lineHeight: 1 }}
+            style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 56, color: '#fff', lineHeight: 1 }}
           >
             {note}
           </span>

@@ -163,7 +163,7 @@ export function PitchPanel({
         <span
           className="mt-1 leading-none"
           style={{
-            fontFamily: 'Cormorant Garamond, serif',
+            fontFamily: 'Newsreader, serif',
             fontWeight: 600,
             fontSize: 28,
             color: onTarget ? '#B8955A' : currentMidi !== null ? '#fff' : '#444455',

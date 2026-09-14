@@ -171,7 +171,7 @@ function DiarioPage() {
               </p>
               <h1
                 className="text-[38px] lg:text-[64px] leading-none text-white flex items-baseline gap-3"
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 500, fontStyle: 'italic' }}
+                style={{ fontFamily: 'Newsreader, serif', fontWeight: 500, fontStyle: 'italic' }}
               >
                 Dia <span className="text-[#B8955A]">{ROMAN[day - 1] || day}</span>
                 <span className="text-[18px] lg:text-[22px] text-[#666677]" style={{ fontStyle: 'normal', fontWeight: 300 }}>
@@ -258,7 +258,7 @@ function DiarioPage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span
                   className="text-white leading-none flex items-baseline"
-                  style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 64, fontStyle: 'italic' }}
+                  style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 64, fontStyle: 'italic' }}
                 >
                   {doneCount}
                   <span className="text-[#666677] text-[32px]" style={{ fontStyle: 'normal' }}>/{total}</span>
@@ -384,7 +384,7 @@ function DiarioPage() {
                 <span
                   className="w-8 transition-colors"
                   style={{
-                    fontFamily: 'Cormorant Garamond, serif',
+                    fontFamily: 'Newsreader, serif',
                     fontStyle: 'italic',
                     fontWeight: 400,
                     fontSize: 18,

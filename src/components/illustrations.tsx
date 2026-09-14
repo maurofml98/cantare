@@ -149,7 +149,7 @@ export function InitialAvatar({ initial, size = 36 }: { initial: string; size?: 
       </svg>
       <span
         className="text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 600, fontSize: size * 0.5 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: size * 0.5 }}
       >
         {initial}
       </span>

@@ -61,12 +61,18 @@ Buscas de Pinterest sugeridas: `dark music app UI design`,
 ## Tipografia
 
 ```
-Títulos, números grandes  →  Cormorant Garamond  (300, 600)
-Interface, labels, texto  →  DM Sans             (300, 400, 500)
+Títulos, números grandes  →  Newsreader  (300, 600, com itálico)
+Interface, labels, texto  →  DM Sans     (300, 400, 500)
 ```
 
-Duas famílias, bem distintas. Cormorant no peso 300 para títulos grandes — a
+Duas famílias, bem distintas. Serifada no peso 300 para títulos grandes — a
 elegância vem do peso leve, não do bold.
+
+**Por que não Cormorant Garamond (troca feita em 14/09/2026):** a versão servida pelo
+Google Fonts desenha o circunflexo deslocado ("quê", "Sequência", "Você") em toda a
+família Cormorant. Inaceitável num app em português. Newsreader tem o mesmo peso leve
+editorial e diacríticos corretos. Antes de trocar a serifada de novo, testar
+`ê â ô ã õ ç` renderizados.
 
 ---
 

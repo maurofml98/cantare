@@ -24,7 +24,7 @@ export function VocalProfileCard({ profile, compact }: Props) {
         </p>
         <h3
           className="mt-2 text-white"
-          style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 22 }}
+          style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 22 }}
         >
           Descubra sua voz
         </h3>
@@ -67,7 +67,7 @@ export function VocalProfileCard({ profile, compact }: Props) {
           </p>
           <h3
             className="mt-2 text-white"
-            style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 26, lineHeight: 1.1 }}
+            style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 26, lineHeight: 1.1 }}
           >
             {profile.voiceType}
           </h3>
@@ -105,7 +105,7 @@ function Metric({ label, value }: { label: string; value: string }) {
       </p>
       <p
         className="mt-1 text-white"
-        style={{ fontFamily: 'Cormorant Garamond, serif', fontWeight: 300, fontSize: 17, lineHeight: 1.2 }}
+        style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 17, lineHeight: 1.2 }}
       >
         {value}
       </p>
