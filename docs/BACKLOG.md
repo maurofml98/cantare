@@ -181,7 +181,7 @@ Acerto = dentro de ±50 cents do alvo. Precisão = acertos / total.
 Antes do primeiro exercício do dia. Reusar `ambiente.ts` da Fase 1.
 Não repetir a cada exercício — irrita.
 
-### 2.7 · Aquecimento travado
+### 2.7 · Aquecimento travado — concluído
 
 O primeiro exercício da sessão tem `obrigatorio: true` e não pode ser pulado.
 Requisito da Laury: risco de lesão.
@@ -227,11 +227,11 @@ Checar contra a seção 10 do `CLAUDE.md`.
 
 ## Fase 4 — Repertório para o palco
 
-### 4.1 · Campo de tom por música
+### 4.1 · Campo de tom por música — concluído
 
 A dor mais clara e mais simples. Campo de texto livre ou seletor de tom.
 
-### 4.2 · Modo Performance
+### 4.2 · Modo Performance — concluído
 
 Tela de palco. Fundo preto, letra grande, tom visível no canto.
 `screen.orientation`, wake lock para a tela não apagar, brilho máximo.
@@ -239,11 +239,11 @@ Navegação por toque grande ou swipe — o cantor está com microfone na mão.
 
 Nenhum app brasileiro faz isso bem. Pode ser o que justifica a assinatura.
 
-### 4.3 · Duração estimada do show
+### 4.3 · Duração estimada do show — concluído
 
 3,5 a 4 min por música. Mostrar total e faltante por bloco.
 
-### 4.4 · Músicas de reserva
+### 4.4 · Músicas de reserva — concluído
 
 Bloco separado de coringas, para pedido do público. A Laury explicou que cantores
 sempre levam extra.
@@ -252,11 +252,11 @@ sempre levam extra.
 
 Flag por música dentro do projeto.
 
-### 4.6 · Exportar PDF
+### 4.6 · Exportar PDF — concluído
 
 Repertório com tom, BPM e ordem, para mandar para a banda.
 
-### 4.7 · Duplicar projeto
+### 4.7 · Duplicar projeto — concluído
 
 "Quero um show parecido com o da semana passada."
 

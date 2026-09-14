@@ -381,6 +381,13 @@ Tipografia: **Newsreader** (títulos, números grandes, 300/600; substituiu a Co
 Garamond, que renderiza o circunflexo torto — ver `docs/DESIGN.md`) +
 **DM Sans** (interface, 300/400/500).
 
+**Tokens reais do CSS (corrigido em 14/09/2026):** o `src/index.css` — o único CSS
+carregado pelo `__root.tsx` — definia `--primary: #8B5CF6` (**roxo**), `--accent: #F43F5E`
+(rosa) e `--radius: 1.5rem`. Isso vazava para todo componente shadcn (`bg-primary`,
+anéis de foco, item ativo da navegação mobile), por isso o roxo "proibido" aparecia no
+app. Hoje primary é o dourado e os tokens de cor e movimento vivem só no `index.css`.
+O `src/styles.css` não é carregado; não editar tokens lá.
+
 Proibições acumuladas ao longo do projeto:
 - Roxo, lilás, neon — descartados definitivamente
 - Ícone dentro de círculo colorido — principal marcador de "app genérico"
