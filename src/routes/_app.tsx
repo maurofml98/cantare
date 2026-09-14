@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, Outlet } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, useRouterState, Outlet } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { store } from '../lib/store';
 import { BottomNav } from '../components/BottomNav';
@@ -13,6 +13,7 @@ function AppLayout() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [hasUser, setHasUser] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     const user = store.getUser();
@@ -40,7 +41,10 @@ function AppLayout() {
            * Cada tela organiza o próprio grid dentro dela.
            */}
           <main className="mx-auto w-full max-w-[1760px] flex-1 px-4 py-6 pb-[120px] md:px-8 md:pb-6">
-            <Outlet />
+            {/* A chave reinicia a entrada discreta (header → conteúdo) a cada troca de aba. */}
+            <div key={pathname.split('/').slice(0, 2).join('/')} className="page-enter">
+              <Outlet />
+            </div>
           </main>
 
           <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 md:hidden">

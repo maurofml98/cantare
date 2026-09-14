@@ -2,13 +2,14 @@ import { Link } from '@tanstack/react-router';
 import type { RepertoireProject } from '@/lib/types';
 import type { WeekSummary } from '@/lib/home/today';
 import { C, Panel, SANS, SecondaryButton, SERIF, TextLink, focusRing } from './primitives';
+import { CinematicImage } from '@/components/media/CinematicImage';
 
 /* ============ Repertório ============ */
 
 export function WeekRepertoire({ project }: { project: RepertoireProject | null }) {
   if (!project) {
     return (
-      <Panel title="Repertório" subtitle="Seus shows organizados por projeto." labelledBy="repertorio" className="h-full">
+      <Panel title="Repertório" subtitle="Seus shows organizados por projeto." labelledBy="repertorio" className="h-full" media={<CinematicImage name="cantare-home-repertorio" overlay="left" intensity={0.7} vignette={false} fade="bottom" position="72% 55%" className="bottom-auto h-[62%]" sizes="(max-width: 1536px) 50vw, 30vw" />}>
         <div className="flex flex-1 flex-col justify-center">
           <StaffLines />
           <p className="mt-5" style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 24, color: C.paper, lineHeight: 1.2 }}>
@@ -29,7 +30,7 @@ export function WeekRepertoire({ project }: { project: RepertoireProject | null 
   const count = project.songs.length;
 
   return (
-    <Panel title="Repertório" subtitle="O projeto em que você mexeu por último." labelledBy="repertorio" className="h-full">
+    <Panel title="Repertório" subtitle="O projeto em que você mexeu por último." labelledBy="repertorio" className="h-full" media={<CinematicImage name="cantare-home-repertorio" overlay="left" intensity={0.7} vignette={false} fade="bottom" position="72% 55%" className="bottom-auto h-[62%]" sizes="(max-width: 1536px) 50vw, 30vw" />}>
       <Link
         to="/repertorio/$projectId"
         params={{ projectId: project.id }}
@@ -102,8 +103,10 @@ function StaffLines() {
 export const LAURY_TIP = 'Inspire pelo nariz, expire com controle. Sinta o ar sustentando o som.';
 const TIP = LAURY_TIP;
 
-// TODO(asset): foto da Laury em src/assets/laury.jpg (retrato, fundo escuro, mín. 320×320).
-// Enquanto não existir, o retrato mostra a inicial.
+// TODO(asset): foto REAL da Laury (retrato, fundo escuro, mín. 320×320).
+// TEMPORARY_ASSET: public/outros/cantare-laury-retrato.webp é uma pessoa gerada, NÃO é a Laury.
+// Não é exibida de propósito: ao lado do nome "Laury" pareceria ser ela. Enquanto não houver
+// foto real, o retrato mostra a inicial.
 const LAURY_PHOTO: string | null = null;
 
 export function LauryTip() {

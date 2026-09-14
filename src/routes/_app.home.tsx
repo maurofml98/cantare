@@ -16,8 +16,10 @@ import {
 import { TodayTrainingCard, TrainingSequence, VoicePanel } from '@/components/home/TodayTraining';
 import { EvolutionPanel, HealthShortcuts, LauryTip, WeekRepertoire } from '@/components/home/HomeSections';
 import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
+import { preloadAsset } from '@/components/media/CinematicImage';
 
 export const Route = createFileRoute('/_app/home')({
+  head: () => ({ links: [preloadAsset('cantare-home-treino-hoje', '(max-width: 768px) 100vw, 60vw')] }),
   component: HomePage,
 });
 
@@ -67,13 +69,13 @@ function HomePage() {
         : 'Sua voz está pronta para o treino de hoje.';
 
   /*
-   * Em telas grandes (≥1536px) a Home ocupa exatamente a altura da janela, em três faixas
+   * Em telas grandes (≥1536px de largura e ≥1000px de altura útil) a Home ocupa exatamente a altura da janela, em três faixas
    * proporcionais — cabe inteira em 1920×1080 sem scroll. Abaixo disso, flui em coluna.
    */
   return (
     <div
       style={LINING}
-      className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] 2xl:grid-rows-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.66fr)]"
+      className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:[@media(min-height:1000px)]:h-[calc(100dvh-3rem)] 2xl:[@media(min-height:1000px)]:grid-rows-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.66fr)]"
     >
       {/* Faixa 1 — saudação + treino do dia */}
       <div className="flex min-h-0 flex-col gap-5 lg:col-span-8">

@@ -6,7 +6,7 @@ import { EnvironmentCheckSheet } from '@/components/diario/EnvironmentCheckSheet
 import { ExerciseGlyph } from '@/components/diario/ExerciseGlyph';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { NoteLadder } from '@/components/vocal/NoteLadder';
-import { VoiceBodyMap, type BodyRegion } from '@/components/vocal/VoiceBodyMap';
+import { CinematicImage, CrossfadeImage, preloadAsset, type AssetName } from '@/components/media/CinematicImage';
 import { DayRing } from '@/components/home/TodayTraining';
 import { LAURY_TIP } from '@/components/home/HomeSections';
 import { C, LINING, Panel, SANS, SERIF, TextLink, focusRing } from '@/components/home/primitives';
@@ -16,15 +16,24 @@ import { loadWeekSummary, type WeekSummary } from '@/lib/home/today';
 import { loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
 import { noteLabelToMidi } from '@/lib/audio/pitch';
 
+const SESSION_SIZES = '(max-width: 1024px) 100vw, 55vw';
+
 export const Route = createFileRoute('/_app/diario/')({
+  head: () => ({ links: [preloadAsset('cantare-diario-treino-bg', SESSION_SIZES)] }),
   component: DiarioPage,
 });
 
 const SEEN_KEY = 'cantare:diario:seen';
-const REGION_MAP: Record<ExerciseData['region'], BodyRegion[]> = {
-  peito: ['peito'],
-  cabeca: ['cabeca', 'rosto'],
-  misto: ['peito', 'garganta', 'cabeca'],
+
+/** Cena de cada exercício: foto + recorte (object-position) no painel de foco. */
+const EXERCISE_SCENE: Record<string, { name: AssetName; position: string }> = {
+  '1': { name: 'cantare-aquecimento-vocal', position: '35% 30%' },
+  '2': { name: 'cantare-respiracao-torax', position: '38% 40%' },
+  '3': { name: 'cantare-diccao-articulacao', position: '65% 45%' },
+  '4': { name: 'cantare-ressonancia-cabeca', position: '55% 40%' },
+  '5': { name: 'cantare-afinacao', position: '20% 45%' },
+  '6': { name: 'cantare-voz-mista', position: '55% 40%' },
+  '7': { name: 'cantare-pos-show', position: '72% 40%' },
 };
 
 type RowState = 'done' | 'next' | 'available' | 'locked';
@@ -183,8 +192,25 @@ function DiarioPage() {
 
       {/* ===== Coluna principal ===== */}
       <div className="flex min-h-0 flex-col gap-5 lg:col-span-7">
-        <Panel glow bodyClassName="!p-0">
-          <div className="grid grid-cols-1 items-center gap-6 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-6 2xl:gap-8 2xl:p-7">
+        <Panel
+          glow
+          bodyClassName="!p-0"
+          media={
+            <CinematicImage
+              name="cantare-diario-treino-bg"
+              priority
+              kenBurns
+              overlay="left"
+              intensity={0.55}
+              vignette={false}
+              fade="left"
+              position="78% 50%"
+              className="!left-auto hidden w-[62%] sm:block"
+              sizes={SESSION_SIZES}
+            />
+          }
+        >
+          <div className="grid grid-cols-1 items-center gap-6 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-6 xl:pr-[26%] 2xl:gap-8 2xl:p-7 2xl:pr-[30%]">
             <div className="hidden sm:block">
               <DayRing day={Math.max(1, streak || 1)} done={done} total={total} completed={EXERCISE_LIST.map((e) => completed.includes(e.id))} size={150} caption="exercícios" />
             </div>
@@ -372,16 +398,18 @@ function DiarioPage() {
 
 function FocusPanel({ exercise, state, onStart, starting }: { exercise: ExerciseData; state: RowState; onStart: () => void; starting: boolean }) {
   const targets = PITCH_TARGETS[exercise.id];
-  const isBreath = exercise.id === '2';
-  const subtitle = targets ? 'Afinação acontece na escada de notas.' : 'Onde este exercício mais trabalha.';
+  const scene = EXERCISE_SCENE[exercise.id] ?? EXERCISE_SCENE['1'];
+  const subtitle = targets ? 'Afinação acontece na escada de notas.' : 'O que seu corpo faz neste exercício.';
 
   return (
     <Panel title={exercise.name} subtitle={subtitle} labelledBy="foco" className="min-h-[400px] flex-1">
-      <div key={exercise.id} className="grid min-h-0 flex-1 grid-cols-1 gap-5 animate-in fade-in duration-300 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-        <div className="relative flex min-h-[220px] items-center justify-center">
-          {targets ? (
-            <div className="flex h-full w-full items-stretch justify-center gap-4 py-2">
-              <div className="h-full min-h-[220px] w-[90px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        {/* a foto troca com crossfade; fica fora do `key` para a camada antiga poder sair */}
+        <div className="relative flex min-h-[220px] items-center justify-center overflow-hidden rounded-[6px]" style={{ border: `1px solid ${C.rule}` }}>
+          <CrossfadeImage name={scene.name} position={scene.position} overlay={targets ? 'right' : 'bottom'} intensity={targets ? 0.9 : 0.5} sizes="(max-width: 640px) 100vw, 20vw" />
+          {targets && (
+            <div key={exercise.id} className="relative flex h-full w-full items-stretch justify-end gap-3 px-3 py-2 animate-in fade-in duration-300">
+              <div className="h-full min-h-[220px] w-[70px]">
                 <NoteLadder
                   min={55}
                   max={79}
@@ -393,12 +421,10 @@ function FocusPanel({ exercise, state, onStart, starting }: { exercise: Exercise
                 {targets.map((t, i) => <li key={i}>{t.note}</li>)}
               </ol>
             </div>
-          ) : (
-            <VoiceBodyMap active={REGION_MAP[exercise.region]} breathing={isBreath} showLabels={false} className="h-full max-h-[320px] w-full" />
           )}
         </div>
 
-        <div className="flex min-w-0 flex-col" style={{ fontFamily: SANS }}>
+        <div key={exercise.id} className="flex min-w-0 flex-col animate-in fade-in duration-300" style={{ fontFamily: SANS }}>
           <dl className="space-y-3">
             <Guide label="Objetivo" text={exercise.objective} />
             <Guide label="Como fazer" text={exercise.technique} />

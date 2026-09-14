@@ -4,11 +4,14 @@ import { clearVocalProfile, loadVocalProfile, type VocalProfile } from '@/lib/vo
 import { freqToMidi } from '@/lib/audio/pitch';
 import { profileRanges } from '@/lib/home/today';
 import { LadderSteps, type JourneyNotes } from '@/components/vocal/VoiceJourney';
-import { VoiceBodyMap } from '@/components/vocal/VoiceBodyMap';
+import { CinematicImage, preloadAsset } from '@/components/media/CinematicImage';
 import { C, LINING, Panel, PrimaryButton, SANS, SERIF, focusRing } from '@/components/home/primitives';
+
+const HERO_SIZES = '(max-width: 1024px) 100vw, 30vw';
 
 export const Route = createFileRoute('/_app/teste-vocal/')({
   head: () => ({
+    links: [preloadAsset('cantare-teste-vocal', HERO_SIZES)],
     meta: [
       { title: 'Teste Vocal — Cantare' },
       { name: 'description', content: 'Descubra seu alcance vocal, região confortável e classificação aproximada em 3 minutos.' },
@@ -82,7 +85,7 @@ function TesteVocalIndex() {
   return (
     <div
       style={LINING}
-      className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] 2xl:grid-rows-[minmax(0,2.55fr)_minmax(0,1fr)]"
+      className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:[@media(min-height:1000px)]:h-[calc(100dvh-3rem)] 2xl:[@media(min-height:1000px)]:grid-rows-[minmax(0,2.55fr)_minmax(0,1fr)]"
     >
       {/* ===== Introdução + card principal ===== */}
       <div className="flex min-h-0 flex-col gap-5 lg:col-span-12 xl:col-span-5">
@@ -166,15 +169,28 @@ function TesteVocalIndex() {
         </Panel>
       </div>
 
-      {/* ===== Corpo ===== */}
+      {/* ===== Cena: a voz percorrendo as notas ===== */}
       <Panel
-        title="Sua voz vive no corpo"
-        subtitle="Onde o som costuma ressoar enquanto você canta."
-        labelledBy="corpo"
-        className="max-lg:order-3 lg:col-span-7 xl:col-span-4"
-        bodyClassName="items-center justify-center"
+        className="min-h-[420px] 2xl:min-h-0 max-lg:order-3 lg:col-span-7 xl:col-span-4"
+        bodyClassName="justify-end"
+        media={
+          <CinematicImage
+            name="cantare-teste-vocal"
+            priority
+            kenBurns
+            overlay="bottom"
+            intensity={1}
+            position="34% 40%"
+            sizes={HERO_SIZES}
+          />
+        }
       >
-        <VoiceBodyMap className="h-[320px] w-full sm:h-[380px] 2xl:h-full 2xl:max-h-[600px]" />
+        <h2 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 30, color: C.paper, lineHeight: 1.05 }}>
+          Sua voz vive no <em style={{ color: C.gold }}>corpo</em>
+        </h2>
+        <p className="mt-2 max-w-[420px]" style={{ fontFamily: SANS, fontSize: 14, color: C.paper2, lineHeight: 1.5 }}>
+          O teste percorre três regiões: a confortável, a mais grave e a mais aguda que sua voz alcança sem esforço.
+        </p>
       </Panel>
 
       {/* ===== Escada ===== */}

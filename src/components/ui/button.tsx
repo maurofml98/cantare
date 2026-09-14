@@ -27,7 +27,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-[linear-gradient(180deg,#C4A266_0%,#B8955A_100%)] text-[#07080A] shadow-[0_10px_30px_-14px_rgba(184,149,90,0.55)] hover:brightness-110 hover:shadow-[0_14px_34px_-12px_rgba(184,149,90,0.7)]",
+          "btn-shine bg-[linear-gradient(180deg,#C4A266_0%,#B8955A_100%)] text-[#07080A] shadow-[0_10px_30px_-14px_rgba(184,149,90,0.55)] hover:brightness-110 hover:shadow-[0_14px_34px_-12px_rgba(184,149,90,0.7)]",
         secondary:
           "border border-[rgba(184,149,90,0.45)] bg-[rgba(184,149,90,0.04)] text-[#D9BD8A] hover:border-[rgba(184,149,90,0.8)] hover:bg-[rgba(184,149,90,0.1)] hover:text-[#E8E4DC]",
         ghost:

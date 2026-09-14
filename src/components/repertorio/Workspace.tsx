@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { C, LINING, Panel, SANS, SERIF, Segmented, focusRing } from '@/components/home/primitives';
+import { CinematicImage } from '@/components/media/CinematicImage';
 import { KeyGrid } from '@/components/repertorio/KeyPicker';
 import { ProjectFormDialog } from '@/components/repertorio/ProjectFormDialog';
 import { SongForm, type SongFormValues } from '@/components/repertorio/SongForm';
@@ -346,12 +347,13 @@ export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
       </header>
 
       {projects.length === 0 ? (
-        <section className="flex flex-col items-start gap-5 rounded-[8px] p-8 md:p-12 xl:col-span-12" style={{ border: `1px solid ${C.rule}`, background: 'radial-gradient(90% 120% at 0% 0%, rgba(184,149,90,0.09), transparent 60%), #0D0F12' }}>
-          <p style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(30px, 3vw, 44px)', color: C.paper, lineHeight: 1.1 }}>Monte seu primeiro show.</p>
-          <p className="max-w-xl" style={{ fontFamily: SANS, fontSize: 16, color: C.paper2, lineHeight: 1.55 }}>
+        <section className="relative flex min-h-[420px] flex-col items-start justify-center gap-5 overflow-hidden rounded-[8px] p-8 md:p-12 xl:col-span-12 2xl:min-h-[560px]" style={{ border: `1px solid ${C.rule}`, background: '#0D0F12' }}>
+          <CinematicImage name="cantare-repertorio-preparacao" priority kenBurns overlay="left" intensity={1} position="70% 50%" sizes="100vw" />
+          <p className="relative" style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(30px, 3vw, 44px)', color: C.paper, lineHeight: 1.1 }}>Monte seu primeiro show.</p>
+          <p className="relative max-w-xl" style={{ fontFamily: SANS, fontSize: 16, color: C.paper2, lineHeight: 1.55 }}>
             Crie um projeto para organizar músicas, tons e blocos. Na hora do show, o Modo Palco mostra só o que importa: a próxima música e o tom.
           </p>
-          <Button size="lg" onClick={() => setProjectDialog({ open: true, editing: null })}><Plus /> Criar primeiro projeto</Button>
+          <Button size="lg" className="relative" onClick={() => setProjectDialog({ open: true, editing: null })}><Plus /> Criar primeiro projeto</Button>
         </section>
       ) : (
         <>
@@ -407,8 +409,9 @@ export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
             {/* projeto selecionado */}
             {project && (
               <Panel className="min-w-0" bodyClassName="!p-0">
-                <div className="flex flex-wrap items-start justify-between gap-5 p-5 2xl:p-6" style={{ borderBottom: `1px solid ${C.rule}` }}>
-                  <div className="min-w-0">
+                <div className="relative flex flex-wrap items-start justify-between gap-5 overflow-hidden p-5 2xl:p-6" style={{ borderBottom: `1px solid ${C.rule}` }}>
+                  <CinematicImage name="cantare-home-palco" overlay="full" intensity={0.95} vignette={false} fade="left" position="35% 45%" className="!left-auto hidden w-[60%] md:block" sizes="40vw" />
+                  <div className="relative min-w-0">
                     <div className="flex flex-wrap items-center gap-3">
                       <h2 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(30px, 2.4vw, 40px)', color: C.paper, lineHeight: 1.05 }}>{project.name}</h2>
                       <Button variant="secondary" size="sm" onClick={() => setProjectDialog({ open: true, editing: project })}><Pencil /> Editar</Button>
@@ -423,9 +426,11 @@ export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
                     </p>
                   </div>
 
-                  <DurationMeter seconds={dur.seconds} estimated={dur.estimatedCount} songs={dur.songCount} targetMinutes={project.targetMinutes} onSetTarget={() => setProjectDialog({ open: true, editing: project })} />
+                  <div className="relative">
+                    <DurationMeter seconds={dur.seconds} estimated={dur.estimatedCount} songs={dur.songCount} targetMinutes={project.targetMinutes} onSetTarget={() => setProjectDialog({ open: true, editing: project })} />
+                  </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="relative flex items-center gap-2">
                     <Button
                       variant="secondary"
                       size="lg"
@@ -947,8 +952,13 @@ function StagePreview({ project, busy, onOpen }: { project: RepertoireProject; b
   const seq = showSequence(project);
   const first = seq[0];
   return (
-    <Panel title="Modo Palco" subtitle="Tela cheia, letra grande, só o essencial durante o show." labelledBy="palco">
-      <div className="mx-auto w-full max-w-[300px] rounded-[26px] p-2" style={{ background: '#050506', border: '1px solid rgba(232,228,220,0.12)' }}>
+    <Panel
+      title="Modo Palco"
+      subtitle="Tela cheia, letra grande, só o essencial durante o show."
+      labelledBy="palco"
+      media={<CinematicImage name="cantare-modo-palco" overlay="full" intensity={0.85} position="50% 40%" sizes="(max-width: 1280px) 100vw, 25vw" />}
+    >
+      <div className="relative mx-auto w-full max-w-[300px] rounded-[26px] p-2" style={{ background: '#050506', border: '1px solid rgba(232,228,220,0.12)' }}>
         <div className="flex min-h-[330px] flex-col rounded-[20px] px-5 py-5" style={{ background: '#000' }}>
           {first ? (
             <>

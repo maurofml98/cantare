@@ -112,6 +112,66 @@
   }
 }
 
+/* ================= Imagem cinematográfica ================= */
+.cine-img {
+  object-position: var(--pos, center);
+  transition: opacity 500ms var(--ease-out), transform 320ms var(--ease-out);
+  will-change: opacity;
+}
+@media (min-width: 768px) {
+  .cine-img { object-position: var(--pos-md, var(--pos, center)); }
+}
+/* Ken Burns: só em heroes grandes, uma única ida lenta (sem loop). */
+.cine-kenburns { animation: cine-kenburns 18s ease-out forwards; }
+@keyframes cine-kenburns { from { transform: scale(1) } to { transform: scale(1.025) } }
+/* Card clicável com foto: zoom leve e overlay um pouco mais claro. */
+.group:hover .cine-interactive { transform: scale(1.025); }
+.cine-overlay { transition: opacity 320ms var(--ease-out); }
+.group:hover .cine-overlay { opacity: 0.86; }
+/* Crossfade entre imagens (troca de exercício / categoria). */
+.cine-out { animation: cine-out 480ms var(--ease-out) forwards; }
+.cine-in { animation: cine-in 520ms var(--ease-out) both; }
+@keyframes cine-out { to { opacity: 0; transform: scale(1.015); } }
+@keyframes cine-in { from { opacity: 0; transform: scale(1.02); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Luz seguindo o mouse (useSpotlight) — só onde a classe for aplicada. */
+.cine-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, -999px) var(--my, -999px), rgba(184,149,90,0.08), transparent 40%);
+  transition: opacity 300ms;
+}
+
+/* Entrada de página: header → conteúdo, discreta, uma vez por navegação. */
+.page-enter > * > * { animation: page-enter 360ms var(--ease-out) both; }
+.page-enter > * > *:nth-child(2) { animation-delay: 50ms; }
+.page-enter > * > *:nth-child(n+3) { animation-delay: 100ms; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Indicador do item ativo da navegação: cresce na troca de rota. */
+.nav-indicator { transform-origin: center; animation: nav-indicator 260ms var(--ease-out) both; }
+@keyframes nav-indicator { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* Brilho horizontal único no hover do botão principal (nunca em loop). */
+.btn-shine { overflow: hidden; isolation: isolate; }
+.btn-shine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,244,220,0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.btn-shine:hover::before { transition: transform 700ms var(--ease-out); transform: translateX(120%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cine-kenburns, .cine-in, .cine-out, .page-enter > * > *, .nav-indicator { animation: none !important; }
+  .group:hover .cine-interactive { transform: none; }
+  .cine-spotlight::after, .btn-shine::before { display: none; }
+}
+
 .premium-card {
   background-color: #0D0F12;
   border: none;

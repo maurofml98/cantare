@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { NoteLadder } from '@/components/vocal/NoteLadder';
-import { VocalBody } from '@/components/illustrations';
+import { CinematicImage, useSpotlight } from '@/components/media/CinematicImage';
 import type { VocalProfile } from '@/lib/vocal/profile';
 import { formatDuration, profileRanges, totalMinutes, type DiaryExercise } from '@/lib/home/today';
 import { C, Panel, PrimaryButton, SANS, SecondaryButton, SERIF, TextLink, focusRing } from './primitives';
@@ -28,16 +28,23 @@ export function TodayTrainingCard({ exercises, completedIds, day }: TodayTrainin
       ? 'Aqueça, ative sua voz e chegue mais longe no que importa: a sua música.'
       : 'Você já começou. Termine a sequência enquanto a voz está aquecida.';
 
+  const spot = useSpotlight<HTMLDivElement>();
+
   return (
     <Panel glow className="flex-1" bodyClassName="!p-0">
-      {/* silhueta vocal, bem apagada: presença humana sem virar ilustração médica */}
-      <VocalBody
-        size={260}
-        className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 md:block"
-        style={{ opacity: 0.07 }}
+      {/* Estúdio pronto: microfone à direita, texto protegido pela zona escura da esquerda. */}
+      <CinematicImage
+        name="cantare-home-treino-hoje"
+        priority
+        kenBurns
+        overlay="left"
+        intensity={1}
+        position="78% 40%"
+        positionMd="72% 42%"
+        sizes="(max-width: 768px) 100vw, 60vw"
       />
 
-      <div className="relative grid h-full grid-cols-1 gap-6 p-5 sm:p-6 md:grid-cols-[minmax(0,1fr)_auto] md:gap-10 2xl:p-8">
+      <div ref={spot} className="cine-spotlight relative grid h-full grid-cols-1 gap-6 p-5 sm:p-6 md:grid-cols-[minmax(0,1fr)_auto] md:gap-10 md:pr-[26%] 2xl:p-8 2xl:pr-[30%]">
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-3">
             <TuningFork />
@@ -89,7 +96,7 @@ export function DayRing({ day, done, total, completed, size = 172, caption = 'ex
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center ${size === 172 ? 'md:pr-6 2xl:pr-28' : ''}`}>
+    <div className="flex flex-col items-center justify-center">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} aria-hidden>
           {completed.map((isDone, i) => (
@@ -140,7 +147,17 @@ export function VoicePanel({ profile }: { profile: VocalProfile | null }) {
       labelledBy="sua-voz"
       className="h-full"
     >
-      <div className="grid min-h-[260px] flex-1 grid-cols-[88px_minmax(0,1fr)] gap-5">
+      {/* A voz no corpo: presença humana ao lado dos dados reais (os dados ficam em HTML). */}
+      <CinematicImage
+        name="cantare-corpo-voz"
+        overlay="none"
+        vignette={false}
+        fade="left"
+        position="50% 18%"
+        className="!left-auto hidden w-[44%] sm:block"
+        sizes="(max-width: 1536px) 30vw, 20vw"
+      />
+      <div className="relative grid min-h-[260px] flex-1 grid-cols-[88px_minmax(0,1fr)] gap-5 sm:grid-cols-[88px_minmax(0,1fr)_32%]">
         <div className="min-h-0 py-1">
           <NoteLadder
             range={ranges?.range}

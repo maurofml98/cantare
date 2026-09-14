@@ -36,7 +36,10 @@ export function Panel({
   bodyClassName = '',
   children,
   labelledBy,
+  media,
 }: {
+  /** Camada visual atrás de todo o painel (inclusive o título) — ex.: <CinematicImage/>. */
+  media?: React.ReactNode;
   title?: string;
   subtitle?: string;
   action?: { to: string; label: string };
@@ -58,8 +61,9 @@ export function Panel({
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
       }}
     >
+      {media}
       {title && (
-        <header className="flex items-start justify-between gap-4 px-5 pt-4 2xl:px-6 2xl:pt-5">
+        <header className="relative flex items-start justify-between gap-4 px-5 pt-4 2xl:px-6 2xl:pt-5">
           <div className="min-w-0">
             <h2 id={labelledBy} style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 24, color: C.paper, lineHeight: 1.1 }}>
               {title}

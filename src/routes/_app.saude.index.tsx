@@ -9,15 +9,38 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { VoiceBodyMap, type BodyRegion } from '@/components/vocal/VoiceBodyMap';
 import { LAURY_TIP } from '@/components/home/HomeSections';
+import { CinematicImage, CrossfadeImage, preloadAsset, type AssetName } from '@/components/media/CinematicImage';
 import { C, LINING, Panel, SANS, SERIF, TextLink, focusRing } from '@/components/home/primitives';
 import {
   loadCareDay, loadLogs, loadWaterGoal, saveCareDay, saveLog, saveWaterGoal, today,
   type CareDay, type CareItemId, type Mood, type VoiceLog,
 } from '@/lib/saude/care';
 
+const ROUTINE_SIZES = '(max-width: 1024px) 100vw, 60vw';
+
 export const Route = createFileRoute('/_app/saude/')({
+  head: () => ({ links: [preloadAsset('cantare-hidratacao', ROUTINE_SIZES)] }),
   component: SaudePage,
 });
+
+/** Foto de cada categoria da rotina (crossfade ao trocar). */
+const CATEGORY_SCENE: Record<CategoryId, { name: AssetName; position: string }> = {
+  hidratacao: { name: 'cantare-hidratacao', position: '62% 50%' },
+  descanso: { name: 'cantare-pos-show', position: '70% 35%' },
+  ambiente: { name: 'cantare-respiracao-torax', position: '30% 30%' },
+  alimentacao: { name: 'cantare-saude-vocal-bg', position: '70% 35%' },
+  aquecimento: { name: 'cantare-aquecimento-vocal', position: '35% 30%' },
+};
+
+/** Miniatura editorial de cada aquecimento guiado. */
+const CONTENT_SCENE: Record<string, { name: AssetName; position: string }> = {
+  geral: { name: 'cantare-aquecimento-vocal', position: '35% 35%' },
+  desaquecimento: { name: 'cantare-pos-show', position: '70% 35%' },
+  diccao: { name: 'cantare-diccao-articulacao', position: '60% 45%' },
+  agudos: { name: 'cantare-ressonancia-cabeca', position: '45% 35%' },
+  graves: { name: 'cantare-voz-mista', position: '50% 40%' },
+  gravacao: { name: 'cantare-afinacao', position: '30% 45%' },
+};
 
 /*
  * TODO(Laury): todas as orientações abaixo são provisórias e genéricas (sem metas nem
@@ -196,7 +219,22 @@ function SaudePage() {
       </div>
 
       {/* ================= Rotina do dia ================= */}
-      <Panel glow className="max-lg:order-1 lg:col-span-8" bodyClassName="!p-0">
+      <Panel
+        glow
+        className="max-lg:order-1 lg:col-span-8"
+        bodyClassName="!p-0"
+        media={
+          <CrossfadeImage
+            name={CATEGORY_SCENE[cat].name}
+            position={CATEGORY_SCENE[cat].position}
+            priority={cat === 'hidratacao'}
+            overlay="left"
+            intensity={1}
+            className="hidden md:block"
+            sizes={ROUTINE_SIZES}
+          />
+        }
+      >
         <div className="grid h-full grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
           <div key={cat} className="flex flex-col p-6 animate-in fade-in duration-300 2xl:p-7">
             <span style={{ fontFamily: SANS, fontSize: 13, color: category.accent }}>{category.title}</span>
@@ -276,14 +314,20 @@ function SaudePage() {
             const w = VOCAL_DATA[id];
             if (!w) return null;
             const series = w.exercises.reduce((s, e) => s + e.sets, 0);
+            const scene = CONTENT_SCENE[id];
             return (
               <li key={id}>
                 <Link
                   to="/saude/$warmupId"
                   params={{ warmupId: id }}
-                  className={`motion-lift group flex h-full flex-col rounded-[8px] p-4 transition-[transform,border-color,background-color] duration-[var(--dur-hover)] hover:-translate-y-0.5 hover:border-[rgba(184,149,90,0.45)] active:scale-[0.99] ${focusRing}`}
+                  className={`motion-lift group relative flex h-full flex-col overflow-hidden rounded-[8px] p-4 transition-[transform,border-color,background-color] duration-[var(--dur-hover)] hover:-translate-y-0.5 hover:border-[rgba(184,149,90,0.45)] active:scale-[0.99] ${focusRing}`}
                   style={{ border: `1px solid ${C.rule}`, background: 'rgba(255,255,255,0.015)' }}
                 >
+                  {scene && (
+                    <span className="relative -mx-4 -mt-4 mb-3 block h-[92px] overflow-hidden">
+                      <CinematicImage name={scene.name} position={scene.position} overlay="bottom" intensity={0.9} vignette={false} interactive sizes="(max-width: 640px) 100vw, 22vw" />
+                    </span>
+                  )}
                   <span className="flex items-center justify-between">
                     <span style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>{w.exercises.length} exercícios · {series} séries</span>
                     <span className="flex h-8 w-8 items-center justify-center rounded-full transition-[background-color,transform] duration-[var(--dur-hover)] group-hover:translate-x-0.5 group-hover:bg-[rgba(184,149,90,0.18)]" style={{ border: '1px solid rgba(184,149,90,0.45)', color: C.gold }} aria-hidden>
@@ -386,7 +430,7 @@ function WaterCard({ ml, goal, canUndo, onAdd, onUndo, onGoal }: {
   const [draft, setDraft] = useState('');
   const pct = goal ? Math.min(100, (ml / goal) * 100) : 0;
   return (
-    <div className="flex flex-col justify-center gap-4 p-6 md:border-l 2xl:p-7" style={{ borderColor: C.rule }}>
+    <div className="flex flex-col justify-center gap-4 p-6 md:border-l 2xl:p-7" style={{ borderColor: C.rule, background: 'linear-gradient(90deg, rgba(9,10,12,0.55) 0%, rgba(9,10,12,0.9) 45%)' }}>
       <p style={{ fontFamily: SANS, fontSize: 14, color: C.gold }}>Já bebeu água hoje?</p>
       <p aria-live="polite">
         <span style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 56, color: C.paper, lineHeight: 1 }}>{ml}</span>

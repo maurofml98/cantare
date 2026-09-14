@@ -92,16 +92,19 @@ export function Sidebar() {
                 background: active ? 'linear-gradient(90deg, rgba(184,149,90,0.12) 0%, rgba(184,149,90,0.02) 100%)' : undefined,
               }}
             >
-              <span
-                aria-hidden
-                className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full transition-opacity"
-                style={{ background: '#B8955A', opacity: active ? 1 : 0 }}
-              />
+              {active && (
+                <span
+                  key={pathname}
+                  aria-hidden
+                  className="nav-indicator absolute bottom-2 left-0 top-2 w-[2px] rounded-full"
+                  style={{ background: '#B8955A' }}
+                />
+              )}
               <Icon
                 size={19}
                 strokeWidth={1.4}
-                style={{ color: active ? '#B8955A' : 'rgba(232,228,220,0.5)' }}
-                className="transition-colors group-hover:!text-[rgba(232,228,220,0.85)]"
+                style={{ color: active ? '#B8955A' : undefined }}
+                className={`transition-colors duration-[var(--dur-hover)] ${active ? '' : 'text-[rgba(232,228,220,0.5)] group-hover:text-[rgba(212,178,120,0.9)]'}`}
               />
               <span
                 className="transition-colors group-hover:text-[#E8E4DC]"

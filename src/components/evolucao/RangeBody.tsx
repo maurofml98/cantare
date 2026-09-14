@@ -3,17 +3,17 @@ import { Link } from '@tanstack/react-router';
 import { midiToNote } from '@/lib/audio/pitch';
 import type { VocalProfile } from '@/lib/vocal/profile';
 import { profileRanges } from '@/lib/home/today';
-import { VoiceBodyMap, type BodyRegion } from '@/components/vocal/VoiceBodyMap';
+import { CinematicImage, useCoverPoints } from '@/components/media/CinematicImage';
 import { buttonVariants } from '@/components/ui/button';
 import { C, SANS, SERIF, focusRing } from '@/components/home/primitives';
 
 type Zone = 'agudo' | 'confortavel' | 'grave';
 
 /** Cores com significado, só aqui: azul discreto = grave/peito, verde-azulado = região confortável, dourado = agudo/cabeça. */
-const ZONE: Record<Zone, { color: string; label: string; body: BodyRegion[]; hint: string }> = {
-  agudo: { color: '#C9A15E', label: 'Acima da região confortável', body: ['cabeca'], hint: 'Costuma ressoar mais na cabeça' },
-  confortavel: { color: '#5FA39A', label: 'Região confortável', body: ['rosto', 'garganta'], hint: 'Onde a voz trabalha sem esforço' },
-  grave: { color: '#5B86B8', label: 'Abaixo da região confortável', body: ['peito'], hint: 'Costuma ressoar mais no peito' },
+const ZONE: Record<Zone, { color: string; label: string; hint: string }> = {
+  agudo: { color: '#C9A15E', label: 'Acima da região confortável', hint: 'Costuma ressoar mais na cabeça' },
+  confortavel: { color: '#5FA39A', label: 'Região confortável', hint: 'Onde a voz trabalha sem esforço' },
+  grave: { color: '#5B86B8', label: 'Abaixo da região confortável', hint: 'Costuma ressoar mais no peito' },
 };
 
 const MIN = 40; // E2
@@ -42,7 +42,7 @@ export function RangeBody({ profile }: { profile: VocalProfile | null }) {
             <Link to="/teste-vocal" className={buttonVariants({ variant: 'primary' })}>Fazer teste vocal</Link>
           </div>
         </div>
-        <VoiceBodyMap showLabels={false} className="h-full max-h-[380px] w-full opacity-60" />
+        <BodyPhoto zone={null} className="h-full min-h-[320px]" />
       </div>
     );
   }
@@ -123,7 +123,7 @@ export function RangeBody({ profile }: { profile: VocalProfile | null }) {
 
       {/* corpo */}
       <div className="relative flex h-full flex-col">
-        <VoiceBodyMap active={zone ? ZONE[zone].body : undefined} showLabels={false} className="h-full min-h-0 w-full flex-1" />
+        <BodyPhoto zone={zone} className="min-h-0 flex-1" />
         <p className="min-h-[36px] text-right" style={{ fontFamily: SANS, fontSize: 12, color: zone ? ZONE[zone].color : C.paper3, lineHeight: 1.4 }} aria-live="polite">
           {zone ? ZONE[zone].hint : 'Toque numa faixa para ver no corpo'}
         </p>
@@ -135,6 +135,49 @@ export function RangeBody({ profile }: { profile: VocalProfile | null }) {
       <Marker z="confortavel" note={`${profile.comfortableLow}–${profile.comfortableHigh}`} title="Confortável" />
       <Marker z="grave" note={profile.lowestNote} title="Grave" />
     </div>
+    </div>
+  );
+}
+
+/* Pontos no retrato original (px): onde cada faixa costuma ressoar. */
+const BODY_POINTS: Record<Zone, [number, number]> = {
+  agudo: [1278, 180],
+  confortavel: [1133, 482],
+  grave: [1015, 790],
+};
+const BODY_POS: [number, number] = [72, 50];
+
+/** Retrato de perfil com halos sutis ancorados na cabeça, garganta e peito. */
+function BodyPhoto({ zone, className = '' }: { zone: Zone | null; className?: string }) {
+  const { ref, pos } = useCoverPoints('cantare-evolucao-corpo-extensao', BODY_POINTS, BODY_POS);
+  return (
+    <div ref={ref} className={`relative overflow-hidden rounded-[6px] ${className}`} style={{ border: `1px solid ${C.rule}` }}>
+      <CinematicImage
+        name="cantare-evolucao-corpo-extensao"
+        position={`${BODY_POS[0]}% ${BODY_POS[1]}%`}
+        overlay="bottom"
+        intensity={0.45}
+        sizes="(max-width: 640px) 60vw, 18vw"
+      />
+      {(Object.keys(BODY_POINTS) as Zone[]).map((z) => {
+        const p = pos[z];
+        if (!p?.visible) return null;
+        return (
+          <span
+            key={z}
+            aria-hidden
+            className="pointer-events-none absolute h-[130px] w-[130px] rounded-full transition-[opacity,transform] duration-[var(--dur-state)] ease-[var(--ease-out)]"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              background: `radial-gradient(circle, ${ZONE[z].color}cc 0%, ${ZONE[z].color}44 40%, transparent 70%)`,
+              mixBlendMode: 'screen',
+              opacity: zone === z ? 1 : 0,
+              transform: `translate(-50%, -50%) scale(${zone === z ? 1 : 0.7})`,
+            }}
+          />
+        );
+      })}
     </div>
   );
 }

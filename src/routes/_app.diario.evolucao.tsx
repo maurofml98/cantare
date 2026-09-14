@@ -87,7 +87,7 @@ function EvolucaoPage() {
           : null;
 
   return (
-    <div style={LINING} className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] 2xl:grid-rows-[auto_auto_minmax(0,1fr)_minmax(0,0.95fr)]">
+    <div style={LINING} className={`grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] ${isNew ? '2xl:grid-rows-[auto_minmax(0,1fr)_minmax(0,0.6fr)_minmax(0,1fr)]' : '2xl:grid-rows-[auto_auto_minmax(0,1fr)_minmax(0,0.95fr)]'}`}>
       {/* ===== Cabeçalho ===== */}
       <header className="flex flex-wrap items-end justify-between gap-4 px-1 lg:col-span-8">
         <div>
@@ -163,7 +163,7 @@ function EvolucaoPage() {
         subtitle={profile ? `Último teste em ${new Date(profile.createdAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }).replace('.', '')} · estimativa` : 'Ainda sem teste'}
         action={profile ? { to: '/teste-vocal', label: 'Refazer teste' } : undefined}
         labelledBy="extensao"
-        className="lg:col-span-4 2xl:row-span-2 2xl:row-start-2 2xl:col-start-9"
+        className={`lg:col-span-4 2xl:row-start-2 2xl:col-start-9 ${isNew ? '2xl:row-span-3' : '2xl:row-span-2'}`}
       >
         <div className="min-h-0 flex-1">
           <RangeBody profile={profile} />
