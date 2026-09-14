@@ -46,12 +46,6 @@ async function getAccessToken(): Promise<string> {
   return cachedToken.access_token;
 }
 
-export interface SpotifyPlaylist {
-  id: string;
-  name: string;
-  images: { url: string }[];
-}
-
 export interface SpotifyTrack {
   id: string;
   name: string;
@@ -70,106 +64,13 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Pr
   }
 }
 
-export const searchSpotifyPlaylists = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ query: z.string() }))
-  .handler(async ({ data: { query } }): Promise<SpotifyPlaylist[]> => {
-    return withRetry(async () => {
-      try {
-        const token = await getAccessToken();
-        const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&market=BR&limit=6`;
-
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar playlists no Spotify');
-        }
-
-        const data = await response.json();
-        return data.playlists.items.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          images: item.images,
-        }));
-      } catch (error) {
-        console.error('Spotify Search Exception:', error);
-        throw error;
-      }
-    });
-  });
-
-export const getPlaylistTracks = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ playlistId: z.string() }))
-  .handler(async ({ data: { playlistId } }): Promise<SpotifyTrack[]> => {
-    return withRetry(async () => {
-      const token = await getAccessToken();
-      const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?market=BR&limit=30&fields=items(track(id,name,artists(name),album(name,images),duration_ms))`;
-
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const body = await response.text().catch(() => '');
-        console.error('Spotify Tracks Error:', response.status, body);
-        // Editorial/algorithmic playlists (e.g. Top 50) are no longer accessible
-        // via Client Credentials since Nov 2024 — return empty list instead of throwing.
-        if (response.status === 404 || response.status === 401 || response.status === 403) {
-          return [];
-        }
-        throw new Error(`Spotify ${response.status}: ${body.slice(0, 200)}`);
-      }
-
-      const data = await response.json();
-      return (data.items || [])
-        .filter((item: any) => item && item.track)
-        .map((item: any) => ({
-          id: item.track.id || crypto.randomUUID(),
-          name: item.track.name,
-          artist: item.track.artists?.[0]?.name || 'Artista Desconhecido',
-          albumImageUrl: item.track.album?.images?.[1]?.url || item.track.album?.images?.[0]?.url || '',
-          duration_ms: item.track.duration_ms,
-        }));
-    });
-  });
-
-
-export const getSpotifyPlaylist = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ playlistId: z.string() }))
-  .handler(async ({ data: { playlistId } }): Promise<SpotifyPlaylist> => {
-    return withRetry(async () => {
-      try {
-        const token = await getAccessToken();
-        const url = `https://api.spotify.com/v1/playlists/${playlistId}?market=BR&fields=id,name,images`;
-
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Erro ao buscar detalhes da playlist');
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.error('Spotify Playlist Details Exception:', error);
-        throw error;
-      }
-    });
-  });
-
 export const searchSpotifyTracks = createServerFn({ method: "GET" })
   .inputValidator(z.object({ query: z.string() }))
   .handler(async ({ data: { query } }): Promise<SpotifyTrack[]> => {
     return withRetry(async () => {
       try {
         const token = await getAccessToken();
-        const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=BR&limit=20`;
+        const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=BR&limit=10`; // Spotify rejeita limit > 10 ("Invalid limit")
 
         const response = await fetch(url, {
           headers: {
@@ -178,7 +79,8 @@ export const searchSpotifyTracks = createServerFn({ method: "GET" })
         });
 
         if (!response.ok) {
-          throw new Error('Erro ao buscar músicas no Spotify');
+          const body = await response.text().catch(() => '');
+          throw new Error(`Spotify ${response.status}: ${body.slice(0, 200)}`);
         }
 
         const data = await response.json();

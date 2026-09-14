@@ -48,7 +48,7 @@ export function SongCard({ song, onClick }: Props) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-[11px]">
-        <KeyChip label="Tom atual" value={song.currentKey} />
+        <KeyChip label="Tom atual" value={song.currentKey || '—'} muted={!song.currentKey} />
         {showRec ? (
           <KeyChip label="Recomendado" value={song.recommendedKey!} accent />
         ) : (

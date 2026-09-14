@@ -16,6 +16,7 @@ import { loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
 import { RecommendationBanner } from '@/components/repertorio/RecommendationBanner';
 import { SongForm, type SongFormValues } from '@/components/repertorio/SongForm';
 import { SongCard } from '@/components/repertorio/SongCard';
+import { TrendingSongsDialog } from '@/components/repertorio/TrendingSongsDialog';
 
 const PROJECT_TYPES: RepertoireProjectType[] = [
   'Show Barzinho', 'Culto', 'Casamento', 'Gravação', 'Aula de Canto', 'Ensaio', 'Outro',
@@ -186,9 +187,12 @@ function ProjectDetailPage() {
           <h2 className="text-[10px] font-medium uppercase tracking-widest text-muted">
             Músicas ({songCount})
           </h2>
-          <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10 gap-2 h-8" onClick={openNewSong}>
-            <Plus size={16} /> Adicionar música
-          </Button>
+          <div className="flex items-center gap-1">
+            <TrendingSongsDialog project={project} onSongsAdded={refresh} />
+            <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10 gap-2 h-8" onClick={openNewSong}>
+              <Plus size={16} /> Adicionar música
+            </Button>
+          </div>
         </div>
 
         {songCount === 0 ? (

@@ -16,7 +16,8 @@ export function computeRecommendation(
   song: Pick<RepertoireSong, 'currentKey' | 'difficulty'>,
   profile: VocalProfile | null = loadVocalProfile(),
 ): Recommendation {
-  if (!profile) return {};
+  // Músicas importadas do Spotify chegam sem tom.
+  if (!profile || !song.currentKey) return {};
   const rec = recommendKey(song.currentKey, profile);
   let recommendedKey = rec.recommendedKey;
   let recommendedDelta = rec.semitonesDelta;
