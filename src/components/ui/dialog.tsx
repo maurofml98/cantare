@@ -31,8 +31,8 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { hideClose?: boolean }
+>(({ className, children, hideClose = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -44,10 +44,12 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
+      {!hideClose && (
+        <DialogPrimitive.Close className="absolute right-3 top-3 flex h-10 w-10 cursor-pointer items-center justify-center rounded-[8px] text-[rgba(232,228,220,0.55)] outline-none transition-[background-color,color,transform] duration-[var(--dur-hover)] hover:bg-[rgba(232,228,220,0.06)] hover:text-[#E8E4DC] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#B8955A]/70 disabled:pointer-events-none">
+          <X className="h-[18px] w-[18px]" />
+          <span className="sr-only">Fechar</span>
+        </DialogPrimitive.Close>
+      )}
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

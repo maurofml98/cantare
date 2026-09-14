@@ -13,12 +13,14 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TesteVocalExecutarRouteImport } from './routes/teste-vocal.executar'
+import { Route as PalcoProjectIdRouteImport } from './routes/palco.$projectId'
 import { Route as DiarioConcluidoRouteImport } from './routes/diario.concluido'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 import { Route as AppTesteVocalIndexRouteImport } from './routes/_app.teste-vocal.index'
 import { Route as AppSaudeIndexRouteImport } from './routes/_app.saude.index'
 import { Route as AppRepertorioIndexRouteImport } from './routes/_app.repertorio.index'
 import { Route as AppDiarioIndexRouteImport } from './routes/_app.diario.index'
+import { Route as RepertorioImprimirProjectIdRouteImport } from './routes/repertorio.imprimir.$projectId'
 import { Route as DiarioExercicioExerciseIdRouteImport } from './routes/diario.exercicio.$exerciseId'
 import { Route as AppSaudeTomRouteImport } from './routes/_app.saude.tom'
 import { Route as AppSaudeWarmupIdRouteImport } from './routes/_app.saude.$warmupId'
@@ -42,6 +44,11 @@ const IndexRoute = IndexRouteImport.update({
 const TesteVocalExecutarRoute = TesteVocalExecutarRouteImport.update({
   id: '/teste-vocal/executar',
   path: '/teste-vocal/executar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PalcoProjectIdRoute = PalcoProjectIdRouteImport.update({
+  id: '/palco/$projectId',
+  path: '/palco/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiarioConcluidoRoute = DiarioConcluidoRouteImport.update({
@@ -74,6 +81,12 @@ const AppDiarioIndexRoute = AppDiarioIndexRouteImport.update({
   path: '/diario/',
   getParentRoute: () => AppRoute,
 } as any)
+const RepertorioImprimirProjectIdRoute =
+  RepertorioImprimirProjectIdRouteImport.update({
+    id: '/repertorio/imprimir/$projectId',
+    path: '/repertorio/imprimir/$projectId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DiarioExercicioExerciseIdRoute =
   DiarioExercicioExerciseIdRouteImport.update({
     id: '/diario/exercicio/$exerciseId',
@@ -106,12 +119,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/diario/evolucao': typeof AppDiarioEvolucaoRoute
   '/repertorio/$projectId': typeof AppRepertorioProjectIdRoute
   '/saude/$warmupId': typeof AppSaudeWarmupIdRoute
   '/saude/tom': typeof AppSaudeTomRoute
   '/diario/exercicio/$exerciseId': typeof DiarioExercicioExerciseIdRoute
+  '/repertorio/imprimir/$projectId': typeof RepertorioImprimirProjectIdRoute
   '/diario/': typeof AppDiarioIndexRoute
   '/repertorio/': typeof AppRepertorioIndexRoute
   '/saude/': typeof AppSaudeIndexRoute
@@ -122,12 +137,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/diario/evolucao': typeof AppDiarioEvolucaoRoute
   '/repertorio/$projectId': typeof AppRepertorioProjectIdRoute
   '/saude/$warmupId': typeof AppSaudeWarmupIdRoute
   '/saude/tom': typeof AppSaudeTomRoute
   '/diario/exercicio/$exerciseId': typeof DiarioExercicioExerciseIdRoute
+  '/repertorio/imprimir/$projectId': typeof RepertorioImprimirProjectIdRoute
   '/diario': typeof AppDiarioIndexRoute
   '/repertorio': typeof AppRepertorioIndexRoute
   '/saude': typeof AppSaudeIndexRoute
@@ -140,12 +157,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_app/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/_app/diario/evolucao': typeof AppDiarioEvolucaoRoute
   '/_app/repertorio/$projectId': typeof AppRepertorioProjectIdRoute
   '/_app/saude/$warmupId': typeof AppSaudeWarmupIdRoute
   '/_app/saude/tom': typeof AppSaudeTomRoute
   '/diario/exercicio/$exerciseId': typeof DiarioExercicioExerciseIdRoute
+  '/repertorio/imprimir/$projectId': typeof RepertorioImprimirProjectIdRoute
   '/_app/diario/': typeof AppDiarioIndexRoute
   '/_app/repertorio/': typeof AppRepertorioIndexRoute
   '/_app/saude/': typeof AppSaudeIndexRoute
@@ -158,12 +177,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/diario/concluido'
+    | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/diario/evolucao'
     | '/repertorio/$projectId'
     | '/saude/$warmupId'
     | '/saude/tom'
     | '/diario/exercicio/$exerciseId'
+    | '/repertorio/imprimir/$projectId'
     | '/diario/'
     | '/repertorio/'
     | '/saude/'
@@ -174,12 +195,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/diario/concluido'
+    | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/diario/evolucao'
     | '/repertorio/$projectId'
     | '/saude/$warmupId'
     | '/saude/tom'
     | '/diario/exercicio/$exerciseId'
+    | '/repertorio/imprimir/$projectId'
     | '/diario'
     | '/repertorio'
     | '/saude'
@@ -191,12 +214,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_app/home'
     | '/diario/concluido'
+    | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/_app/diario/evolucao'
     | '/_app/repertorio/$projectId'
     | '/_app/saude/$warmupId'
     | '/_app/saude/tom'
     | '/diario/exercicio/$exerciseId'
+    | '/repertorio/imprimir/$projectId'
     | '/_app/diario/'
     | '/_app/repertorio/'
     | '/_app/saude/'
@@ -208,8 +233,10 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   DiarioConcluidoRoute: typeof DiarioConcluidoRoute
+  PalcoProjectIdRoute: typeof PalcoProjectIdRoute
   TesteVocalExecutarRoute: typeof TesteVocalExecutarRoute
   DiarioExercicioExerciseIdRoute: typeof DiarioExercicioExerciseIdRoute
+  RepertorioImprimirProjectIdRoute: typeof RepertorioImprimirProjectIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -240,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/teste-vocal/executar'
       fullPath: '/teste-vocal/executar'
       preLoaderRoute: typeof TesteVocalExecutarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/palco/$projectId': {
+      id: '/palco/$projectId'
+      path: '/palco/$projectId'
+      fullPath: '/palco/$projectId'
+      preLoaderRoute: typeof PalcoProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diario/concluido': {
@@ -283,6 +317,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/diario/'
       preLoaderRoute: typeof AppDiarioIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/repertorio/imprimir/$projectId': {
+      id: '/repertorio/imprimir/$projectId'
+      path: '/repertorio/imprimir/$projectId'
+      fullPath: '/repertorio/imprimir/$projectId'
+      preLoaderRoute: typeof RepertorioImprimirProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/diario/exercicio/$exerciseId': {
       id: '/diario/exercicio/$exerciseId'
@@ -353,8 +394,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   DiarioConcluidoRoute: DiarioConcluidoRoute,
+  PalcoProjectIdRoute: PalcoProjectIdRoute,
   TesteVocalExecutarRoute: TesteVocalExecutarRoute,
   DiarioExercicioExerciseIdRoute: DiarioExercicioExerciseIdRoute,
+  RepertorioImprimirProjectIdRoute: RepertorioImprimirProjectIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

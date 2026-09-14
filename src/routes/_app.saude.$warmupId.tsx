@@ -1,122 +1,147 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Badge } from '@/components/ui/badge';
-
-import { useState } from 'react';
-import { VOCAL_DATA } from '../data/vocal-exercises';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { ChevronLeft, ChevronRight, CheckCircle2, X } from 'lucide-react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight, Check, ArrowLeft } from 'lucide-react';
+import { VOCAL_DATA } from '../data/vocal-exercises';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { VoiceBodyMap, regionsFor } from '@/components/vocal/VoiceBodyMap';
+import { C, LINING, Panel, SANS, SERIF, focusRing } from '@/components/home/primitives';
 
 export const Route = createFileRoute('/_app/saude/$warmupId')({
-  component: ExerciseStepPage,
+  component: WarmupPage,
 });
 
-function ExerciseStepPage() {
+// TODO(Laury): os exercícios de src/data/vocal-exercises.ts vieram do protótipo e ainda não foram
+// validados por ela (instruções, séries e repetições). Não usar com usuário real antes disso.
+
+function WarmupPage() {
   const { warmupId } = Route.useParams();
   const navigate = useNavigate();
   const warmup = VOCAL_DATA[warmupId];
-  
-  const [currentStep, setCurrentStep] = useState(0);
+  const [step, setStep] = useState(0);
+  const [finishing, setFinishing] = useState(false);
 
-  if (!warmup) return null;
+  const regions = useMemo(
+    () => (warmup ? regionsFor(`${warmup.exercises[step].name} ${warmup.exercises[step].instruction}`) : []),
+    [warmup, step],
+  );
 
-  const exercise = warmup.exercises[currentStep];
-  const progress = ((currentStep + 1) / warmup.exercises.length) * 100;
+  if (!warmup) {
+    return (
+      <Panel title="Aquecimento não encontrado" subtitle="O link pode estar desatualizado." className="max-w-2xl">
+        <p style={{ fontFamily: SANS, fontSize: 15, color: C.paper2 }}>Escolha um dos aquecimentos disponíveis na Saúde Vocal.</p>
+        <div className="mt-5">
+          <Link to="/saude" className={buttonVariants({ variant: 'primary' })}>Ver aquecimentos</Link>
+        </div>
+      </Panel>
+    );
+  }
 
-  const handleNext = () => {
-    if (currentStep < warmup.exercises.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      toast.success('Aquecimento concluído!', {
-        description: 'Sua voz está pronta para brilhar.',
-        icon: <CheckCircle2 className="text-primary" />,
-      });
-      navigate({ to: '/saude' });
-    }
-  };
+  const total = warmup.exercises.length;
+  const ex = warmup.exercises[step];
+  const isLast = step === total - 1;
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+  const next = () => {
+    if (!isLast) return setStep((s) => s + 1);
+    setFinishing(true);
+    // Não há registro de aquecimento concluído no sistema ainda — só confirmamos e voltamos.
+    toast.success('Aquecimento concluído', { description: 'Sua voz está pronta. Bom ensaio!' });
+    setTimeout(() => navigate({ to: '/saude' }), 450);
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col bg-background animate-in overflow-hidden">
-      {/* Decorative Background */}
-      <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[140%] h-[50%] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
-
-      <header className="flex items-center justify-between p-6 pb-2 relative z-10">
-        <div className="space-y-1">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#B8955A]">
+    <div style={LINING} className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] 2xl:grid-rows-[auto_minmax(0,1fr)]">
+      {/* Cabeçalho */}
+      <header className="flex flex-wrap items-end justify-between gap-4 px-1 lg:col-span-12">
+        <div>
+          <Link to="/saude" className={`${buttonVariants({ variant: 'ghost', size: 'sm' })} -ml-3 mb-2`}>
+            <ArrowLeft /> Saúde vocal
+          </Link>
+          <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(38px, 3.6vw, 60px)', color: C.paper, lineHeight: 1 }}>
             {warmup.name}
-          </h2>
-          <p className="text-[9px] text-white/30 uppercase tracking-widest font-medium">Exercício {currentStep + 1} de {warmup.exercises.length}</p>
+          </h1>
+          <p className="mt-2" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 16, color: C.paper2 }}>{warmup.description}</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/saude' })} className="w-10 h-10 rounded-full bg-white/5 text-white/40 hover:text-white transition-all">
-          <X size={20} />
-        </Button>
+        <div className="w-full max-w-sm">
+          <div className="flex justify-between" style={{ fontFamily: SANS, fontSize: 13, color: C.paper2 }}>
+            <span>Exercício {step + 1} de {total}</span>
+            <span style={{ color: C.gold }}>{Math.round(((step + 1) / total) * 100)}%</span>
+          </div>
+          <div className="mt-2 flex gap-1.5" aria-hidden>
+            {warmup.exercises.map((e, i) => (
+              <span key={e.id} className="h-[3px] flex-1 rounded-full" style={{ background: i <= step ? C.gold : 'rgba(232,228,220,0.12)', transition: 'background var(--dur-progress) var(--ease-out)' }} />
+            ))}
+          </div>
+        </div>
       </header>
 
-      <div className="px-6 relative z-10">
-        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden my-6 shadow-inner">
-          <div 
-            className="h-full bg-[#B8955A] transition-all duration-700 ease-out shadow-[0_0_15px_rgba(201,168,76,0.5)]" 
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
+      {/* Sequência */}
+      <Panel title="Sequência" subtitle="Toque para ir direto a um passo." labelledBy="seq" className="lg:col-span-3">
+        <ol className="flex flex-col gap-2">
+          {warmup.exercises.map((e, i) => {
+            const state = i < step ? 'done' : i === step ? 'current' : 'next';
+            return (
+              <li key={e.id}>
+                <button
+                  onClick={() => setStep(i)}
+                  aria-current={state === 'current' ? 'step' : undefined}
+                  className={`group flex w-full items-center gap-3 rounded-[6px] px-3 py-3 text-left transition-[background-color,border-color,transform] duration-[var(--dur-hover)] hover:bg-white/[0.03] active:scale-[0.99] ${focusRing}`}
+                  style={{ border: `1px solid ${state === 'current' ? 'rgba(184,149,90,0.5)' : 'transparent'}`, background: state === 'current' ? 'rgba(184,149,90,0.06)' : undefined }}
+                >
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    style={{ border: `1px solid ${state === 'next' ? 'rgba(232,228,220,0.2)' : C.gold}`, background: state === 'done' ? C.gold : 'transparent', color: state === 'done' ? C.ink : state === 'current' ? C.gold : C.paper3, fontFamily: SANS, fontSize: 12 }}
+                  >
+                    {state === 'done' ? <Check size={14} strokeWidth={2} /> : i + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate" style={{ fontFamily: SANS, fontSize: 14, color: state === 'next' ? C.paper2 : C.paper, fontWeight: state === 'current' ? 500 : 400 }}>{e.name}</span>
+                    <span style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>{e.sets} × {e.reps}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </Panel>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-[180px] relative z-10">
-        <div className="flex flex-col items-center justify-center space-y-10 max-w-sm mx-auto w-full py-10">
-          <div className="text-[140px] leading-none drop-shadow-[0_20px_50px_rgba(255,255,255,0.05)] transition-transform duration-700 hover:scale-110">
-            {exercise.icon}
-          </div>
-          
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-serif text-white tracking-tight leading-tight drop-shadow-sm">{exercise.name}</h1>
-            <div className="premium-card bg-[#0D0F12]/50 border-white/[0.03] p-6 backdrop-blur-sm">
-              <p className="text-[15px] text-white/60 leading-relaxed font-medium">
-                {exercise.instruction}
-              </p>
-            </div>
-          </div>
+      {/* Exercício atual */}
+      <Panel glow className="lg:col-span-5" bodyClassName="!p-0">
+        <div key={ex.id} className="flex h-full flex-col p-6 animate-in fade-in slide-in-from-bottom-1 duration-300 2xl:p-8">
+          <span style={{ fontFamily: SANS, fontSize: 13, color: C.gold }}>Agora</span>
+          <h2 className="mt-1" style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(32px, 2.6vw, 46px)', color: C.paper, lineHeight: 1.05 }}>{ex.name}</h2>
+          <p className="mt-4 max-w-xl" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 18, color: C.paper2, lineHeight: 1.55 }}>{ex.instruction}</p>
 
-          <div className="flex gap-4">
-            <div className="px-5 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col items-center">
-              <span className="text-[9px] font-bold text-primary uppercase tracking-[0.2em] mb-0.5">Séries</span>
-              <span className="text-xl font-bold text-white leading-none">{exercise.sets}</span>
+          <dl className="mt-6 grid max-w-sm grid-cols-2" style={{ borderTop: `1px solid ${C.rule}` }}>
+            <div className="pt-4">
+              <dt style={{ fontFamily: SANS, fontSize: 13, color: C.paper3 }}>Séries</dt>
+              <dd style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 56, color: C.paper, lineHeight: 1 }}>{ex.sets}</dd>
             </div>
-            <div className="px-5 py-2.5 rounded-2xl bg-secondary/10 border border-secondary/20 flex flex-col items-center">
-              <span className="text-[9px] font-bold text-secondary uppercase tracking-[0.2em] mb-0.5">Reps</span>
-              <span className="text-xl font-bold text-white leading-none">{exercise.reps}</span>
+            <div className="pl-5 pt-4" style={{ borderLeft: `1px solid ${C.rule}` }}>
+              <dt style={{ fontFamily: SANS, fontSize: 13, color: C.paper3 }}>Repetições</dt>
+              <dd style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 56, color: C.gold, lineHeight: 1 }}>{ex.reps}</dd>
             </div>
+          </dl>
+
+          <p className="mt-6 pl-3" style={{ borderLeft: `2px solid ${C.warn}`, fontFamily: SANS, fontSize: 13, color: C.paper2, lineHeight: 1.45 }}>
+            Sem dor e sem forçar. Sentiu desconforto ou rouquidão? Pare e procure um profissional.
+          </p>
+
+          <div className="mt-auto flex items-center justify-between gap-3 pt-8">
+            <Button variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={step === 0} title={step === 0 ? 'Este é o primeiro exercício' : undefined}>
+              <ChevronLeft /> Anterior
+            </Button>
+            <Button size="lg" onClick={next} loading={finishing} loadingLabel="Concluindo aquecimento" className="min-w-[180px]">
+              {isLast ? <><Check /> Concluir</> : <>Próximo <ChevronRight /></>}
+            </Button>
           </div>
         </div>
-      </div>
+      </Panel>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-50 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-background via-background/95 to-transparent pt-12">
-        <div className="grid grid-cols-[1fr_2fr] gap-4 max-w-[390px] mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={handlePrev} 
-            disabled={currentStep === 0}
-            className="h-16 rounded-[20px] text-white/30 hover:text-white hover:bg-white/5 border border-white/5"
-          >
-            Anterior
-          </Button>
-          <Button 
-            onClick={handleNext}
-            className="h-16 rounded-[20px] bg-primary text-background font-bold text-lg hover:bg-primary/90 shadow-[0_8px_25px_-8px_rgba(201,168,76,0.5)] active:scale-[0.98] transition-all"
-          >
-            {currentStep === warmup.exercises.length - 1 ? 'Concluir' : 'Próximo'}
-          </Button>
-        </div>
-      </footer>
+      {/* Corpo */}
+      <Panel title="Onde você sente" subtitle="Região que este exercício mais envolve." labelledBy="corpo" className="lg:col-span-4" bodyClassName="items-center justify-center">
+        <VoiceBodyMap active={regions} breathing={regions.includes('peito')} className="h-[320px] w-full sm:h-[380px] 2xl:h-full 2xl:max-h-[620px]" />
+      </Panel>
     </div>
-
-
   );
 }

@@ -6,99 +6,15 @@ import { SceneContext, type ScenePhase } from '@/components/scene/SceneContext';
 import { getScene } from '@/components/scene/registry';
 import { WarmupInstrumentHUD } from '@/components/diario/WarmupInstrumentHUD';
 import { GoldButton, GhostButton } from '@/components/diario/ExerciseButtons';
+import { EXERCISES, PITCH_TARGETS, isLocked, type ExerciseData } from '@/lib/diario/exercises';
+import { loadDiaryProgress } from '@/lib/diario/progress';
+import { toast } from 'sonner';
 
 export const Route = createFileRoute('/diario/exercicio/$exerciseId')({
   component: ExercisePage,
 });
 
-type ExerciseData = {
-  id: string;
-  name: string;
-  objective: string;
-  technique: string;
-  duration: number; // seconds
-  focus: string;
-  region: 'cabeca' | 'misto' | 'peito';
-};
-
-const EXERCISES: Record<string, ExerciseData> = {
-  '1': {
-    id: '1',
-    name: 'Aquecimento Geral',
-    objective: 'Soltar tensão e preparar as cordas vocais',
-    technique: 'Expire produzindo SSS... de forma contínua e controlada',
-    duration: 180,
-    focus: 'Suporte respiratório',
-    region: 'misto',
-  },
-  '2': {
-    id: '2',
-    name: 'Respiração Profunda',
-    objective: 'Ativar o diafragma e expandir capacidade pulmonar',
-    technique: 'Inspire em 4 tempos, segure 4, expire em 8',
-    duration: 30,
-    focus: 'Diafragma',
-    region: 'peito',
-  },
-  '3': {
-    id: '3',
-    name: 'Coordenação Vocal',
-    objective: 'Alinhar ar e voz com controle',
-    technique: 'Vibração de lábios em escala ascendente',
-    duration: 120,
-    focus: 'Coordenação fono-respiratória',
-    region: 'misto',
-  },
-  '4': {
-    id: '4',
-    name: 'Flexibilidade Vocal',
-    objective: 'Ampliar mobilidade entre registros',
-    technique: 'Sirene com "U" do grave ao agudo',
-    duration: 120,
-    focus: 'Passaggio',
-    region: 'cabeca',
-  },
-  '5': {
-    id: '5',
-    name: 'Afinação Básica',
-    objective: 'Trabalhar precisão tonal',
-    technique: 'Sustentar notas longas em "Ah"',
-    duration: 180,
-    focus: 'Precisão tonal',
-    region: 'misto',
-  },
-  '6': {
-    id: '6',
-    name: 'Voz Mista',
-    objective: 'Equilibrar peito e cabeça',
-    technique: 'Escalas em "Ng" mantendo ressonância',
-    duration: 120,
-    focus: 'Mix',
-    region: 'misto',
-  },
-  '7': {
-    id: '7',
-    name: 'Desaquecimento',
-    objective: 'Relaxar as pregas vocais após o treino',
-    technique: 'Humming suave descendente',
-    duration: 120,
-    focus: 'Relaxamento',
-    region: 'peito',
-  },
-};
-
-// Target note sequences for vocal exercises. Breathing exercises omit this.
-const PITCH_TARGETS: Record<string, PitchTarget[]> = {
-  '5': [
-    { note: 'C4', duration: 2 },
-    { note: 'E4', duration: 2 },
-    { note: 'G4', duration: 2 },
-    { note: 'C5', duration: 2 },
-    { note: 'G4', duration: 2 },
-    { note: 'E4', duration: 2 },
-    { note: 'C4', duration: 2 },
-  ],
-};
+// Dados dos exercícios: fonte única em src/lib/diario/exercises.ts
 
 const STORAGE_KEY = 'cantare:diario';
 
@@ -112,6 +28,15 @@ function ExercisePage() {
 
   const targets = PITCH_TARGETS[ex.id];
   const isVocal = !!targets;
+
+  // Aquecimento é obrigatório: também vale para quem chega pela URL.
+  useEffect(() => {
+    if (isLocked(ex.id, loadDiaryProgress().completed)) {
+      toast('Faça o aquecimento primeiro', { description: 'Ele prepara sua voz para o restante do treino.' });
+      navigate({ to: '/diario', replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ex.id]);
 
   const [status, setStatus] = useState<Status>('idle');
   const [elapsed, setElapsed] = useState(0);

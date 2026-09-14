@@ -1,6 +1,6 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
+import { BookOpen, ChartNoAxesColumn, Heart, House, LogOut, Music2, AudioLines } from 'lucide-react';
 import { store } from '../lib/store';
-import { SoundWaveBars } from './AmbientBackground';
 
 export function Sidebar() {
   const routerState = useRouterState();
@@ -11,19 +11,21 @@ export function Sidebar() {
   const isActive = (path: string) => {
     if (path === '/diario/evolucao') return pathname === '/diario/evolucao';
     if (path === '/home') return pathname === '/home';
+    if (path === '/teste-vocal') return pathname.startsWith('/teste-vocal');
     if (path === '/diario') return pathname.startsWith('/diario') && pathname !== '/diario/evolucao';
     if (path === '/repertorio') return pathname.startsWith('/repertorio');
     if (path === '/saude') return pathname.startsWith('/saude');
     return false;
   };
 
+  // Ícones só na navegação (ação), nunca em cards de conteúdo — ver docs/DESIGN.md.
   const items = [
-    { label: 'Home', path: '/home', roman: 'I' },
-    { label: 'Teste Vocal', path: '/teste-vocal', roman: 'II' },
-    { label: 'Diário de Treino', path: '/diario', roman: 'III' },
-    { label: 'Evolução', path: '/diario/evolucao', roman: 'IV' },
-    { label: 'Repertório', path: '/repertorio', roman: 'V' },
-    { label: 'Saúde Vocal', path: '/saude', roman: 'VI' },
+    { label: 'Home', path: '/home', Icon: House },
+    { label: 'Teste Vocal', path: '/teste-vocal', Icon: AudioLines },
+    { label: 'Diário de Treino', path: '/diario', Icon: BookOpen },
+    { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
+    { label: 'Repertório', path: '/repertorio', Icon: Music2 },
+    { label: 'Saúde Vocal', path: '/saude', Icon: Heart },
   ];
 
   const handleLogout = () => {
@@ -35,135 +37,93 @@ export function Sidebar() {
 
   return (
     <aside
-      className="h-screen flex flex-col sticky top-0"
+      className="sticky top-0 flex h-screen flex-col"
       style={{
-        width: 220,
-        background: 'rgba(7,8,10,0.95)',
-        backdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255,255,255,0.05)',
+        width: 240,
+        background: 'linear-gradient(180deg, #0A0B0E 0%, #07080A 100%)',
+        borderRight: '1px solid rgba(232,228,220,0.06)',
       }}
     >
-      {/* Brand */}
-      <div className="px-6 pt-8 pb-6 flex items-center gap-3">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-          <circle cx="6" cy="13" r="3" stroke="#B8955A" strokeWidth="1" fill="none" />
-          <path d="M9 13 L9 2 L15 3" stroke="#B8955A" strokeWidth="1" strokeLinecap="round" fill="none" />
+      {/* Marca */}
+      <div className="flex items-center gap-3 px-7 pb-8 pt-8">
+        <svg width="20" height="26" viewBox="0 0 20 26" fill="none" aria-hidden>
+          <ellipse cx="6.5" cy="20" rx="4.5" ry="3.4" transform="rotate(-18 6.5 20)" fill="#B8955A" />
+          <path d="M10.6 19V2.5c2.8 1.4 6 3.2 6 7.2" stroke="#B8955A" strokeWidth="1.4" strokeLinecap="round" />
         </svg>
-        <span style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 20, color: '#B8955A' }}>
-          Cantare
-        </span>
+        <div>
+          <span className="block" style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 26, color: '#E8E4DC', lineHeight: 1 }}>
+            Cantare
+          </span>
+          <span className="mt-1 block" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: 'rgba(184,149,90,0.85)' }}>
+            sua voz em evolução
+          </span>
+        </div>
       </div>
 
-      {/* User with animated ring */}
-      <div className="px-6 pb-10 flex items-center gap-3">
-        <div className="relative" style={{ width: 36, height: 36 }}>
-          <svg
-            className="absolute inset-0 animate-spin-slow"
-            width="36"
-            height="36"
-            viewBox="0 0 36 36"
-            aria-hidden
-          >
-            <circle
-              cx="18" cy="18" r="17"
-              fill="none"
-              stroke="#B8955A"
-              strokeWidth="1"
-              strokeDasharray="4 6"
-              opacity="0.6"
-            />
-          </svg>
-          <div
-            className="absolute inset-1 rounded-full flex items-center justify-center"
-            style={{ background: 'rgba(184,149,90,0.08)' }}
-          >
-            <span style={{ fontFamily: 'Newsreader, serif', fontWeight: 600, fontSize: 16, color: '#B8955A' }}>
-              {initial}
-            </span>
-          </div>
+      {/* Usuário */}
+      <div className="mx-4 mb-8 flex items-center gap-3 rounded-[8px] px-3 py-3" style={{ background: 'rgba(232,228,220,0.025)', border: '1px solid rgba(232,228,220,0.05)' }}>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          style={{ border: '1px solid rgba(184,149,90,0.55)', background: 'radial-gradient(circle at 35% 30%, #1A1B1F, #0B0C0F)' }}
+        >
+          <span style={{ fontFamily: 'Newsreader, serif', fontSize: 18, color: '#B8955A' }}>{initial}</span>
         </div>
         <div className="min-w-0">
-          <p
-            className="truncate"
-            style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300, fontSize: 12, color: 'rgba(232,228,220,0.7)' }}
-          >
+          <p className="truncate" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, fontSize: 14, color: '#E8E4DC' }}>
             {user?.name || 'Cantor(a)'}
           </p>
-          <p style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300, fontSize: 10, color: 'rgba(232,228,220,0.35)' }}>
-            Bem-vindo(a)
-          </p>
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: 'rgba(232,228,220,0.5)' }}>Bem-vindo(a)</p>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 space-y-1">
-        {items.map((item) => {
-          const active = isActive(item.path);
+      {/* Navegação */}
+      <nav className="flex-1 space-y-1 px-4" aria-label="Principal">
+        {items.map(({ label, path, Icon }) => {
+          const active = isActive(path);
           return (
             <Link
-              key={item.path}
-              to={item.path}
-              className="flex items-center gap-4 pl-4 pr-4 py-2.5 relative rounded-md group"
+              key={path}
+              to={path}
+              aria-current={active ? 'page' : undefined}
+              className="group relative flex items-center gap-3.5 rounded-[6px] px-4 py-3 outline-none transition-[background-color,transform] duration-[var(--dur-hover)] ease-[var(--ease-out)] hover:bg-[rgba(232,228,220,0.045)] active:scale-[0.98] active:duration-[var(--dur-press)] focus-visible:ring-2 focus-visible:ring-[#B8955A]/60"
               style={{
                 fontFamily: 'DM Sans, sans-serif',
-                fontWeight: 400,
-                fontSize: 13,
-                background: active ? 'rgba(184,149,90,0.05)' : 'transparent',
-                transition: 'background 0.25s ease, transform 0.25s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (!active) (e.currentTarget as HTMLElement).style.transform = 'translateX(2px)';
-              }}
-              onMouseLeave={(e) => {
-                if (!active) (e.currentTarget as HTMLElement).style.transform = 'translateX(0)';
+                fontSize: 15,
+                background: active ? 'linear-gradient(90deg, rgba(184,149,90,0.12) 0%, rgba(184,149,90,0.02) 100%)' : undefined,
               }}
             >
-              {active && (
-                <span
-                  className="absolute left-0 top-1/2 -translate-y-1/2"
-                  style={{ width: 2, height: 20, backgroundColor: '#B8955A' }}
-                />
-              )}
               <span
-                style={{
-                  fontFamily: 'Newsreader, serif',
-                  fontWeight: 300,
-                  fontSize: 11,
-                  width: 20,
-                  color: active ? '#B8955A' : 'rgba(232,228,220,0.3)',
-                }}
-              >
-                {item.roman}
-              </span>
+                aria-hidden
+                className="absolute left-0 top-2 bottom-2 w-[2px] rounded-full transition-opacity"
+                style={{ background: '#B8955A', opacity: active ? 1 : 0 }}
+              />
+              <Icon
+                size={19}
+                strokeWidth={1.4}
+                style={{ color: active ? '#B8955A' : 'rgba(232,228,220,0.5)' }}
+                className="transition-colors group-hover:!text-[rgba(232,228,220,0.85)]"
+              />
               <span
-                className="transition-colors group-hover:text-[rgba(232,228,220,0.7)]"
-                style={{ color: active ? '#B8955A' : 'rgba(232,228,220,0.3)' }}
+                className="transition-colors group-hover:text-[#E8E4DC]"
+                style={{ color: active ? '#E8E4DC' : 'rgba(232,228,220,0.62)', fontWeight: active ? 500 : 400 }}
               >
-                {item.label}
+                {label}
               </span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Sound wave decoration */}
-      <div className="px-6 pb-2 flex justify-center opacity-70">
-        <SoundWaveBars bars={20} width={100} height={22} />
-      </div>
-
-      {/* Footer */}
-      <div className="p-6 pt-2">
+      {/* Rodapé */}
+      <div className="px-7 pb-7">
+        <div className="mb-5 h-px w-10" style={{ background: 'rgba(184,149,90,0.5)' }} />
         <button
           onClick={handleLogout}
-          style={{
-            fontFamily: 'DM Sans, sans-serif',
-            fontWeight: 300,
-            fontSize: 11,
-            color: 'rgba(232,228,220,0.25)',
-          }}
-          className="hover:text-[rgba(232,228,220,0.6)] transition-colors"
+          className="flex items-center gap-2 rounded-sm outline-none transition-colors hover:text-[rgba(232,228,220,0.85)] focus-visible:ring-2 focus-visible:ring-[#B8955A]/60"
+          style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: 'rgba(232,228,220,0.45)' }}
         >
-          Sign Out
+          <LogOut size={15} strokeWidth={1.4} />
+          Sair
         </button>
       </div>
     </aside>

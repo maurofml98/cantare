@@ -1,52 +1,45 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Home, Music, Heart, Mic } from 'lucide-react';
+import { AudioLines, BookOpen, ChartNoAxesColumn, Heart, House, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const ITEMS = [
+  { to: '/home', label: 'Home', Icon: House, match: (p: string) => p === '/home' },
+  { to: '/teste-vocal', label: 'Teste Vocal', Icon: AudioLines, match: (p: string) => p.startsWith('/teste-vocal') },
+  { to: '/diario', label: 'Diário de Treino', Icon: BookOpen, match: (p: string) => p.startsWith('/diario') && p !== '/diario/evolucao' },
+  { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
+  { to: '/repertorio', label: 'Repertório', Icon: Music2, match: (p: string) => p.startsWith('/repertorio') },
+  { to: '/saude', label: 'Saúde Vocal', Icon: Heart, match: (p: string) => p.startsWith('/saude') },
+];
+
 export function BottomNav() {
-  const routerState = useRouterState();
-  const pathname = routerState.location.pathname;
-
-  const isActive = (path: string) => {
-    if (path === '/home' && pathname === '/home') return true;
-    if (path === '/teste-vocal' && pathname.startsWith('/teste-vocal')) return true;
-    if (path === '/diario' && pathname.startsWith('/diario')) return true;
-    if (path === '/repertorio' && pathname.startsWith('/repertorio')) return true;
-    if (path === '/saude' && pathname.startsWith('/saude')) return true;
-    return false;
-  };
-
-  // Ativo = ícone dourado + traço fino acima, como a linha vertical da sidebar. Sem fundo.
-  const itemCls = (active: boolean) =>
-    cn(
-      'relative flex flex-col items-center justify-center w-12 h-12 transition-colors duration-300',
-      "before:absolute before:top-0 before:left-1/2 before:h-[2px] before:w-5 before:-translate-x-1/2 before:bg-[#B8955A] before:transition-opacity before:content-['']",
-      active ? 'text-[#B8955A] before:opacity-100' : 'text-[rgba(232,228,220,0.35)] before:opacity-0'
-    );
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <nav className="flex h-16 w-full items-center justify-around border border-white/5 bg-[#111118]/80 backdrop-blur-xl px-4 rounded-3xl shadow-2xl">
-      <Link to="/home" className={itemCls(isActive('/home'))}>
-        <Home size={22} />
-      </Link>
-
-      <Link to="/teste-vocal" className={itemCls(isActive('/teste-vocal'))} aria-label="Teste Vocal">
-        <Mic size={22} />
-      </Link>
-
-      <Link to="/diario" className={itemCls(isActive('/diario'))} aria-label="Diário">
-        <span className="text-[22px] leading-none" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-          ♩
-        </span>
-      </Link>
-
-      <Link to="/repertorio" className={itemCls(isActive('/repertorio'))}>
-        <Music size={22} />
-      </Link>
-
-      <Link to="/saude" className={itemCls(isActive('/saude'))}>
-        <Heart size={22} />
-      </Link>
+    <nav
+      aria-label="Principal"
+      className="flex h-16 w-full items-center justify-around rounded-3xl border border-white/5 bg-[#0E1013]/90 px-2 shadow-2xl backdrop-blur-md"
+    >
+      {ITEMS.map(({ to, label, Icon, match }) => {
+        const active = match(pathname);
+        return (
+          <Link
+            key={to}
+            to={to}
+            aria-label={label}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              // Ativo = ícone dourado + traço fino acima, como a linha lateral da sidebar. Sem fundo.
+              'relative flex h-12 w-12 items-center justify-center rounded-[10px] outline-none',
+              'transition-[color,transform,background-color] duration-[var(--dur-hover)] active:scale-[0.94] active:duration-[var(--dur-press)]',
+              'focus-visible:ring-2 focus-visible:ring-[#B8955A]/60',
+              "before:absolute before:left-1/2 before:top-0 before:h-[2px] before:w-5 before:-translate-x-1/2 before:bg-[#B8955A] before:transition-opacity before:content-['']",
+              active ? 'text-[#B8955A] before:opacity-100' : 'text-[rgba(232,228,220,0.45)] before:opacity-0 hover:text-[rgba(232,228,220,0.8)]',
+            )}
+          >
+            <Icon size={21} strokeWidth={1.5} />
+          </Link>
+        );
+      })}
     </nav>
   );
 }
-

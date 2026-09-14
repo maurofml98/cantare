@@ -132,18 +132,19 @@ function AuthPage() {
             )}
           </div>
 
-          <Button type="submit" className="w-full h-14 text-lg bg-primary text-background font-bold hover:bg-primary/90 transition-all shadow-[0_8px_20px_-8px_rgba(201,168,76,0.4)] active:scale-[0.98]">
+          <Button type="submit" size="xl" className="w-full">
             {isLogin ? 'Entrar' : 'Criar minha conta'}
           </Button>
         </form>
 
         <div className="text-center">
-          <button
+          <Button
+            type="button"
+            variant="link"
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm font-medium text-primary hover:text-primary/80 transition-colors p-2"
           >
             {isLogin ? 'Não tem uma conta? Criar conta' : 'Já tem uma conta? Entrar'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

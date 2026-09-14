@@ -3,12 +3,12 @@ import { freqToMidi } from '@/lib/audio/pitch';
 import type { VocalProfile } from '@/lib/vocal/profile';
 import type { MidiRange } from '@/components/vocal/NoteLadder';
 
+import { EXERCISE_LIST } from '@/lib/diario/exercises';
+
 /**
  * Leitura (somente) do progresso do Diário de Treino para a Home.
- *
- * TODO: a lista de exercícios e as regras de streak são espelho de
- * src/routes/_app.diario.index.tsx e diario.exercicio.$exerciseId.tsx, que
- * não exportam nada. Unificar num módulo único quando o Diário for refeito.
+ * Exercícios vêm da fonte única src/lib/diario/exercises.ts.
+ * TODO(Laury): o currículo real substitui essa lista quando ela entregar.
  */
 
 export interface DiaryExercise {
@@ -17,15 +17,7 @@ export interface DiaryExercise {
   durationSec: number;
 }
 
-export const DIARY_EXERCISES: DiaryExercise[] = [
-  { id: '1', name: 'Aquecimento Geral', durationSec: 180 },
-  { id: '2', name: 'Respiração Profunda', durationSec: 30 },
-  { id: '3', name: 'Coordenação Vocal', durationSec: 120 },
-  { id: '4', name: 'Flexibilidade Vocal', durationSec: 120 },
-  { id: '5', name: 'Afinação Básica', durationSec: 180 },
-  { id: '6', name: 'Voz Mista', durationSec: 120 },
-  { id: '7', name: 'Desaquecimento', durationSec: 120 },
-];
+export const DIARY_EXERCISES: DiaryExercise[] = EXERCISE_LIST.map((e) => ({ id: e.id, name: e.name, durationSec: e.duration }));
 
 const DIARY_KEY = 'cantare:diario';
 const STATS_KEY = 'cantare:diario:stats';
@@ -75,6 +67,61 @@ export function loadWeeklyAccuracy(): number | null {
   } catch {
     return null;
   }
+}
+
+export interface WeekDay {
+  label: string;
+  /** Precisão média do dia (0–100), ou null se não houve exercício cantado. */
+  accuracy: number | null;
+  exercises: number;
+  isToday: boolean;
+  isFuture: boolean;
+}
+
+export interface WeekSummary {
+  days: WeekDay[];
+  exercises: number;
+  activeDays: number;
+  accuracy: number | null;
+}
+
+const WEEK_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
+/** Semana corrente (segunda a domingo) a partir de cantare:diario:stats. */
+export function loadWeekSummary(): WeekSummary {
+  let all: Record<string, { entries?: Record<string, { accuracy: number | null }> }> = {};
+  try {
+    const raw = localStorage.getItem(STATS_KEY);
+    if (raw) all = JSON.parse(raw);
+  } catch {
+    all = {};
+  }
+  const todayIdx = (new Date().getDay() + 6) % 7;
+  const values: number[] = [];
+  let exercises = 0;
+  let activeDays = 0;
+
+  const days = WEEK_LABELS.map((label, i) => {
+    const entries = Object.values(all[isoDay(i - todayIdx)]?.entries ?? {});
+    const acc = entries.map((e) => e?.accuracy).filter((a): a is number => typeof a === 'number');
+    values.push(...acc);
+    exercises += entries.length;
+    if (entries.length > 0) activeDays++;
+    return {
+      label,
+      accuracy: acc.length ? Math.round(acc.reduce((s, v) => s + v, 0) / acc.length) : null,
+      exercises: entries.length,
+      isToday: i === todayIdx,
+      isFuture: i > todayIdx,
+    };
+  });
+
+  return {
+    days,
+    exercises,
+    activeDays,
+    accuracy: values.length ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : null,
+  };
 }
 
 export function totalMinutes(exercises: DiaryExercise[]): number {

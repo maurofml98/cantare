@@ -16,6 +16,7 @@ export interface RepertoireSong {
   id: string;
   title: string;
   artist?: string;
+  /** Tom como o cantor canta: "G", "Gm", "C#"... Vazio = ainda não definido. */
   originalKey: string;
   currentKey: string;
   recommendedKey?: string;
@@ -24,8 +25,20 @@ export interface RepertoireSong {
   difficulty: SongDifficulty;
   vocalNote?: string;
   status: SongStatus;
+  /** Duração real em segundos (Spotify ou informada). Sem ela, a duração é estimada. */
+  durationSec?: number;
+  bpm?: number;
+  albumImageUrl?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Momento do show (Abertura, Modão, Encerramento...). A ordem do array é a ordem no palco. */
+export interface RepertoireBlock {
+  id: string;
+  name: string;
+  description?: string;
+  songIds: string[];
 }
 
 export interface RepertoireProject {
@@ -34,8 +47,17 @@ export interface RepertoireProject {
   type: RepertoireProjectType;
   createdAt: string;
   updatedAt: string;
+  /** Todas as músicas do projeto. A posição no show vem de `blocks` e `reserveIds`. */
   songs: RepertoireSong[];
-  version: 2;
+  /** v3 */
+  date?: string;
+  venue?: string;
+  targetMinutes?: number;
+  notes?: string;
+  blocks: RepertoireBlock[];
+  /** Coringas: fora da ordem e fora da duração total. */
+  reserveIds: string[];
+  version: 3;
 }
 
 export interface User {

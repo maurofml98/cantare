@@ -1,190 +1,133 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import type { RepertoireSong, SongDifficulty, SongStatus } from '@/lib/types';
+import { KeyGrid } from '@/components/repertorio/KeyPicker';
+import type { RepertoireSong } from '@/lib/types';
 
 export interface SongFormValues {
   title: string;
   artist?: string;
-  originalKey: string;
   currentKey: string;
-  difficulty: SongDifficulty;
-  status: SongStatus;
+  durationSec?: number;
+  bpm?: number;
   vocalNote?: string;
 }
 
-interface Props {
+/** Editar música: nome, artista, tom (grade), duração, BPM e observação. */
+export function SongForm({
+  open,
+  onOpenChange,
+  initial,
+  onSubmit,
+  onDelete,
+}: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   initial?: RepertoireSong | null;
   onSubmit: (values: SongFormValues) => void;
   onDelete?: () => void;
-}
-
-const DIFFICULTY: { value: SongDifficulty; label: string }[] = [
-  { value: 'unknown', label: 'Não avaliada' },
-  { value: 'easy', label: 'Fácil' },
-  { value: 'medium', label: 'Média' },
-  { value: 'hard', label: 'Difícil' },
-];
-
-const STATUS: { value: SongStatus; label: string }[] = [
-  { value: 'to_study', label: 'A estudar' },
-  { value: 'training', label: 'Em treino' },
-  { value: 'ready', label: 'Pronta' },
-  { value: 'difficult', label: 'Difícil' },
-];
-
-const EMPTY: SongFormValues = {
-  title: '',
-  artist: '',
-  originalKey: 'C',
-  currentKey: 'C',
-  difficulty: 'unknown',
-  status: 'to_study',
-  vocalNote: '',
-};
-
-export function SongForm({ open, onOpenChange, initial, onSubmit, onDelete }: Props) {
-  const [values, setValues] = useState<SongFormValues>(EMPTY);
+}) {
+  const [title, setTitle] = useState('');
+  const [artist, setArtist] = useState('');
+  const [key, setKey] = useState('');
+  const [duration, setDuration] = useState('');
+  const [bpm, setBpm] = useState('');
+  const [note, setNote] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setValues(
-        initial
-          ? {
-              title: initial.title,
-              artist: initial.artist ?? '',
-              originalKey: initial.originalKey,
-              currentKey: initial.currentKey,
-              difficulty: initial.difficulty,
-              status: initial.status,
-              vocalNote: initial.vocalNote ?? '',
-            }
-          : EMPTY,
-      );
-    }
+    if (!open) return;
+    setTitle(initial?.title ?? '');
+    setArtist(initial?.artist ?? '');
+    setKey(initial?.currentKey ?? '');
+    setDuration(initial?.durationSec ? `${Math.floor(initial.durationSec / 60)}:${String(initial.durationSec % 60).padStart(2, '0')}` : '');
+    setBpm(initial?.bpm ? String(initial.bpm) : '');
+    setNote(initial?.vocalNote ?? '');
+    setConfirmDelete(false);
   }, [open, initial]);
 
-  const canSubmit = values.title.trim().length > 0 && values.currentKey.trim().length > 0;
+  const parseDuration = (v: string) => {
+    const m = v.trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/);
+    if (!m) return undefined;
+    return Number(m[1]) * 60 + Number(m[2] ?? 0);
+  };
+  const durationInvalid = duration.trim() !== '' && parseDuration(duration) === undefined;
+  const valid = title.trim().length > 0 && !durationInvalid;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-white/5">
+      <DialogContent className="border-white/10 bg-[#0F1114] sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-serif text-2xl">
-            {initial ? 'Editar música' : 'Nova música'}
-          </DialogTitle>
+          <DialogTitle className="font-serif text-2xl font-light">{initial ? 'Editar música' : 'Nova música'}</DialogTitle>
+          <DialogDescription>O tom é o que mais importa no palco.</DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-4 py-2">
-          <Field label="Título">
-            <Input
-              className="bg-background border-white/5"
-              value={values.title}
-              onChange={(e) => setValues({ ...values, title: e.target.value })}
-              placeholder="Nome da música"
-            />
-          </Field>
-          <Field label="Artista">
-            <Input
-              className="bg-background border-white/5"
-              value={values.artist}
-              onChange={(e) => setValues({ ...values, artist: e.target.value })}
-              placeholder="Quem canta?"
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Tom original">
-              <Input
-                className="bg-background border-white/5"
-                value={values.originalKey}
-                onChange={(e) => setValues({ ...values, originalKey: e.target.value })}
-                placeholder="Ex.: G"
-              />
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!valid) return;
+            onSubmit({
+              title: title.trim(),
+              artist: artist.trim() || undefined,
+              currentKey: key,
+              durationSec: parseDuration(duration),
+              bpm: bpm ? Number(bpm) || undefined : undefined,
+              vocalNote: note.trim() || undefined,
+            });
+          }}
+        >
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Nome da música" htmlFor="sf-title">
+              <Input id="sf-title" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="border-white/10 bg-background" />
             </Field>
-            <Field label="Tom atual">
-              <Input
-                className="bg-background border-white/5"
-                value={values.currentKey}
-                onChange={(e) => setValues({ ...values, currentKey: e.target.value })}
-                placeholder="Ex.: F#"
-              />
+            <Field label="Artista" htmlFor="sf-artist">
+              <Input id="sf-artist" value={artist} onChange={(e) => setArtist(e.target.value)} className="border-white/10 bg-background" />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Dificuldade">
-              <Select
-                value={values.difficulty}
-                onValueChange={(v) => setValues({ ...values, difficulty: v as SongDifficulty })}
-              >
-                <SelectTrigger className="bg-background border-white/5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-white/5">
-                  {DIFFICULTY.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <Field label={key ? `Tom: ${key}` : 'Tom (ainda não definido)'}>
+            <KeyGrid value={key} onChange={setKey} compact />
+          </Field>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-[140px_120px_1fr]">
+            <Field label="Duração (m:ss)" htmlFor="sf-dur">
+              <Input id="sf-dur" inputMode="numeric" placeholder="3:45" value={duration} onChange={(e) => setDuration(e.target.value)} aria-invalid={durationInvalid} className="border-white/10 bg-background aria-[invalid=true]:border-[#C87F6A]" />
             </Field>
-            <Field label="Status">
-              <Select
-                value={values.status}
-                onValueChange={(v) => setValues({ ...values, status: v as SongStatus })}
-              >
-                <SelectTrigger className="bg-background border-white/5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-white/5">
-                  {STATUS.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field label="BPM (opcional)" htmlFor="sf-bpm">
+              <Input id="sf-bpm" inputMode="numeric" value={bpm} onChange={(e) => setBpm(e.target.value.replace(/\D/g, ''))} className="border-white/10 bg-background" />
+            </Field>
+            <Field label="Observação" htmlFor="sf-note">
+              <Textarea id="sf-note" rows={1} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex.: entrada só voz e violão" className="min-h-10 border-white/10 bg-background" />
             </Field>
           </div>
-          <Field label="Observação">
-            <Textarea
-              className="bg-background border-white/5 min-h-[80px]"
-              value={values.vocalNote}
-              onChange={(e) => setValues({ ...values, vocalNote: e.target.value })}
-              placeholder="Anotações vocais, trechos difíceis, etc."
-            />
-          </Field>
-        </div>
-
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button
-            className="w-full bg-primary text-background font-bold h-12"
-            disabled={!canSubmit}
-            onClick={() => canSubmit && onSubmit(values)}
-          >
-            {initial ? 'Salvar alterações' : 'Adicionar música'}
-          </Button>
-          {initial && onDelete && (
-            <Button
-              variant="ghost"
-              className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
-              onClick={onDelete}
-            >
-              Excluir música
-            </Button>
-          )}
-        </DialogFooter>
+          <DialogFooter className="gap-2 pt-2 sm:justify-between">
+            {initial && onDelete ? (
+              confirmDelete ? (
+                <span className="flex items-center gap-2">
+                  <Button type="button" variant="danger" onClick={onDelete}><Trash2 /> Confirmar remoção</Button>
+                  <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)}>Manter</Button>
+                </span>
+              ) : (
+                <Button type="button" variant="ghost" className="hover:text-[#D9A08C]" onClick={() => setConfirmDelete(true)}><Trash2 /> Remover do projeto</Button>
+              )
+            ) : <span />}
+            <span className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+              <Button type="submit" disabled={!valid}>{initial ? 'Salvar' : 'Adicionar'}</Button>
+            </span>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <Label className="text-[10px] uppercase tracking-widest text-muted">{label}</Label>
+    <div className="space-y-1.5">
+      <Label htmlFor={htmlFor} className="text-[13px] font-normal text-[rgba(232,228,220,0.72)]">{label}</Label>
       {children}
     </div>
   );

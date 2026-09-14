@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 import { searchSpotifyTracks, SpotifyTrack } from '@/lib/api/spotify';
 import { toast } from 'sonner';
 import type { RepertoireProject } from '@/lib/types';
-import { addSong } from '@/lib/repertoire/store';
+import { addSongs, type SongTarget } from '@/lib/repertoire/store';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 
@@ -80,11 +80,19 @@ const SEARCH_QUERIES: Record<string, Subcategory[]> = {
 };
 
 const RECENT_KEY = 'cantare_recent_searches_v3';
+const SEARCH_ERROR = 'Não conseguimos buscar músicas agora. Você ainda pode adicioná-las manualmente.';
 
 interface TrendingSongsDialogProps {
   project: RepertoireProject;
   onSongsAdded: () => void;
   trigger?: React.ReactNode;
+  /** Onde as músicas entram. Padrão: último bloco. */
+  target?: SongTarget;
+  targetLabel?: string;
+  /** Modo controlado (ex.: abrir a partir de um campo de busca já preenchido). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  initialQuery?: string;
 }
 
 interface RecentSearch {
@@ -94,8 +102,14 @@ interface RecentSearch {
   query: string;
 }
 
-export function TrendingSongsDialog({ project, onSongsAdded, trigger }: TrendingSongsDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, targetLabel, open, onOpenChange, initialQuery }: TrendingSongsDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setOpen = (v: boolean) => {
+    if (open === undefined) setInternalOpen(v);
+    onOpenChange?.(v);
+  };
+  const setIsOpen = setOpen;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSub, setSelectedSub] = useState<Subcategory | null>(null);
   const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
@@ -135,7 +149,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
 
     if (query.length >= 3) {
       searchTimeoutRef.current = setTimeout(() => {
-        runSearch(query, 'Erro ao pesquisar músicas.');
+        runSearch(query, SEARCH_ERROR);
       }, 500);
     } else {
       requestIdRef.current++;
@@ -144,6 +158,15 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
       setError(null);
     }
   };
+
+  // Aberto a partir de um campo de busca: já pesquisa o termo digitado.
+  useEffect(() => {
+    if (isOpen && initialQuery && initialQuery.trim().length >= 3) {
+      setSearchQuery(initialQuery);
+      runSearch(initialQuery.trim(), SEARCH_ERROR);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initialQuery]);
 
   useEffect(() => {
     try {
@@ -179,7 +202,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
 
   const handleSubSelect = (sub: Subcategory, categoryId = selectedCategory) => {
     setSelectedSub(sub);
-    runSearch(sub.query, 'Erro de conexão. Tente novamente.');
+    runSearch(sub.query, SEARCH_ERROR);
 
     const cat = CATEGORIES.find(c => c.id === categoryId);
     if (cat) saveRecentSearch(cat.id, cat.name, sub.name, sub.query);
@@ -209,21 +232,35 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
     const tracksToAdd = tracks.filter(t => selectedTracks.has(t.id));
     if (tracksToAdd.length === 0) return;
 
-    // O Spotify não informa o tom: fica vazio até o cantor preencher na edição.
-    for (const track of tracksToAdd) {
-      addSong(project.id, {
-        title: track.name,
-        artist: track.artist,
-        originalKey: '',
-        currentKey: '',
-        difficulty: 'unknown',
-        status: 'to_study',
-      });
+    // O Spotify não informa o tom nem BPM confiável: o tom fica para o cantor definir.
+    // A duração vem da própria faixa.
+    try {
+      addSongs(
+        project.id,
+        tracksToAdd.map((track) => ({
+          title: track.name,
+          artist: track.artist,
+          originalKey: '',
+          currentKey: '',
+          difficulty: 'unknown' as const,
+          status: 'to_study' as const,
+          durationSec: track.duration_ms ? Math.round(track.duration_ms / 1000) : undefined,
+          albumImageUrl: track.albumImageUrl || undefined,
+        })),
+        target,
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error('Não foi possível salvar as músicas. Tente novamente.');
+      return;
     }
 
     onSongsAdded();
-    toast.success(`${tracksToAdd.length} ${tracksToAdd.length === 1 ? 'música adicionada' : 'músicas adicionadas'} ao repertório!`);
-    setIsOpen(false);
+    toast.success(
+      `${tracksToAdd.length} ${tracksToAdd.length === 1 ? 'música adicionada' : 'músicas adicionadas'}${targetLabel ? ` em ${targetLabel}` : ''}`,
+      { description: 'Defina o tom de cada uma antes do show.' },
+    );
+    setOpen(false);
     resetModal();
   };
 
@@ -252,7 +289,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
   };
 
   const retry = () => {
-    if (searchQuery.length >= 3) runSearch(searchQuery, 'Erro ao pesquisar músicas.');
+    if (searchQuery.length >= 3) runSearch(searchQuery, SEARCH_ERROR);
     else if (selectedSub) handleSubSelect(selectedSub);
   };
 
@@ -263,23 +300,25 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger }: Trending
       setIsOpen(open);
       if (!open) resetModal();
     }}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button size="sm" variant="ghost" className="text-primary hover:bg-primary/10 gap-2 h-8">
-            <Search size={16} /> Buscar músicas
-          </Button>
-        )}
-      </DialogTrigger>
+      {open === undefined && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button size="sm" variant="secondary">
+              <Search /> Buscar músicas
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
 
-      <DialogContent className="max-w-none w-full h-[100dvh] flex flex-col p-0 bg-background border-none rounded-none outline-none">
+      <DialogContent hideClose className="max-w-none w-full h-[100dvh] flex flex-col p-0 bg-background border-none rounded-none outline-none">
         {/* HEADER */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 z-50 bg-background">
           <DialogTitle className="font-serif text-3xl text-white font-normal">Buscar músicas</DialogTitle>
           <div className="flex items-center gap-4">
             <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify" className="h-6 w-6" />
-            <button onClick={() => setIsOpen(false)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-              <X size={20} />
-            </button>
+            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Fechar busca">
+              <X />
+            </Button>
           </div>
         </div>
 

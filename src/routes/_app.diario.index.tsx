@@ -1,456 +1,470 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useMemo, useState } from 'react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Check, Lock, Play, RotateCcw } from 'lucide-react';
 import { EnvironmentCheckSheet } from '@/components/diario/EnvironmentCheckSheet';
-import { VocalBody } from '@/components/illustrations';
+import { ExerciseGlyph } from '@/components/diario/ExerciseGlyph';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { NoteLadder } from '@/components/vocal/NoteLadder';
+import { VoiceBodyMap, type BodyRegion } from '@/components/vocal/VoiceBodyMap';
+import { DayRing } from '@/components/home/TodayTraining';
+import { LAURY_TIP } from '@/components/home/HomeSections';
+import { C, LINING, Panel, SANS, SERIF, TextLink, focusRing } from '@/components/home/primitives';
+import { EXERCISE_LIST, PITCH_TARGETS, WARMUP_ID, isLocked, type ExerciseData } from '@/lib/diario/exercises';
+import { isoDay, loadDiaryProgress, minutesToday, type DiaryProgress } from '@/lib/diario/progress';
+import { loadWeekSummary, type WeekSummary } from '@/lib/home/today';
 import { loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
-import { loadProjects as loadRepertoireProjects } from '@/lib/repertoire/store';
-import type { RepertoireProject } from '@/lib/types';
-import { getSuggestedTrainingFocus, getRepertoireSummary } from '@/lib/home/summary';
-
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+import { noteLabelToMidi } from '@/lib/audio/pitch';
 
 export const Route = createFileRoute('/_app/diario/')({
   component: DiarioPage,
 });
 
-type Exercise = { id: string; name: string; duration: string };
-
-const EXERCISES: Exercise[] = [
-  { id: '1', name: 'Aquecimento Geral', duration: '3 min' },
-  { id: '2', name: 'Respiração Profunda', duration: '30 seg' },
-  { id: '3', name: 'Coordenação Vocal', duration: '2 min' },
-  { id: '4', name: 'Flexibilidade Vocal', duration: '2 min' },
-  { id: '5', name: 'Afinação Básica', duration: '3 min' },
-  { id: '6', name: 'Voz Mista', duration: '2 min' },
-  { id: '7', name: 'Desaquecimento', duration: '2 min' },
-];
-
-const STORAGE_KEY = 'cantare:diario';
-
-type Progress = {
-  date: string;
-  completed: string[];
-  streak: number;
-  lastCompletedDate: string | null;
+const SEEN_KEY = 'cantare:diario:seen';
+const REGION_MAP: Record<ExerciseData['region'], BodyRegion[]> = {
+  peito: ['peito'],
+  cabeca: ['cabeca', 'rosto'],
+  misto: ['peito', 'garganta', 'cabeca'],
 };
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
-const yesterdayISO = () => {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
-};
+type RowState = 'done' | 'next' | 'available' | 'locked';
 
-function loadProgress(): Progress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const p = JSON.parse(raw) as Progress;
-      if (p.date !== todayISO()) {
-        const keepStreak = p.lastCompletedDate === yesterdayISO();
-        return {
-          date: todayISO(),
-          completed: [],
-          streak: keepStreak ? p.streak : 0,
-          lastCompletedDate: p.lastCompletedDate,
-        };
-      }
-      return p;
-    }
-  } catch {}
-  return { date: todayISO(), completed: [], streak: 0, lastCompletedDate: null };
-}
-
-function saveProgress(p: Progress) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-  } catch {}
+function formatDur(sec: number) {
+  return sec < 60 ? `${sec} seg` : `${Math.round(sec / 60)} min`;
 }
 
 function DiarioPage() {
   const navigate = useNavigate();
-  const [progress, setProgress] = useState<Progress>(() => {
-    if (typeof window === 'undefined') {
-      return { date: todayISO(), completed: [], streak: 0, lastCompletedDate: null };
-    }
-    return loadProgress();
-  });
+  const [progress, setProgress] = useState<DiaryProgress | null>(null);
+  const [week, setWeek] = useState<WeekSummary | null>(null);
+  const [todayMin, setTodayMin] = useState(0);
+  const [profile, setProfile] = useState<VocalProfile | null>(null);
+  const [selectedId, setSelectedId] = useState<string>(WARMUP_ID);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
+  const [justDone, setJustDone] = useState<string[]>([]);
+  const [nudgeId, setNudgeId] = useState<string | null>(null);
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  useEffect(() => {
-    saveProgress(progress);
-  }, [progress]);
-
-  const [vocalProfile, setVocalProfile] = useState<VocalProfile | null>(null);
-  const [repertoire, setRepertoire] = useState<RepertoireProject[]>([]);
-  useEffect(() => {
-    setVocalProfile(loadVocalProfile());
-    setRepertoire(loadRepertoireProjects());
+  const refresh = useCallback(() => {
+    const p = loadDiaryProgress();
+    setProgress(p);
+    setWeek(loadWeekSummary());
+    setTodayMin(minutesToday());
+    setProfile(loadVocalProfile());
+    return p;
   }, []);
-  const focus = useMemo(
-    () => getSuggestedTrainingFocus(vocalProfile, repertoire),
-    [vocalProfile, repertoire],
-  );
-  const repSummary = useMemo(() => getRepertoireSummary(repertoire), [repertoire]);
 
-  const total = EXERCISES.length;
-  const doneCount = progress.completed.length;
-  const allDone = doneCount === total;
-  const percent = (doneCount / total) * 100;
-  const day = Math.max(1, progress.streak || 1);
+  const handledRef = useRef(false);
 
-  const toggle = (id: string) => {
-    setProgress((prev) => {
-      const isDone = prev.completed.includes(id);
-      const completed = isDone
-        ? prev.completed.filter((x) => x !== id)
-        : [...prev.completed, id];
-      let streak = prev.streak;
-      let lastCompletedDate = prev.lastCompletedDate;
-      if (completed.length === total && !isDone) {
-        if (prev.lastCompletedDate !== todayISO()) {
-          streak = prev.lastCompletedDate === yesterdayISO() ? prev.streak + 1 : 1;
-          lastCompletedDate = todayISO();
+  useEffect(() => {
+    const p = refresh();
+    // O que foi concluído desde a última visita ganha a animação de check e um toast de contexto.
+    // (ref evita rodar duas vezes no StrictMode e engolir o toast)
+    if (!handledRef.current) try {
+      handledRef.current = true;
+      const key = `${SEEN_KEY}:${isoDay()}`;
+      const stored = sessionStorage.getItem(key);
+      const seen: string[] = stored ? JSON.parse(stored) : [];
+      const fresh = p.completed.filter((id) => !seen.includes(id));
+      if (stored !== null && fresh.length) {
+        setJustDone(fresh);
+        const nxt = EXERCISE_LIST.find((e) => !p.completed.includes(e.id));
+        const last = EXERCISE_LIST.find((e) => e.id === fresh[fresh.length - 1]);
+        if (last) {
+          window.setTimeout(
+            () => toast.success(`${last.name} concluído`, { description: nxt ? `Agora: ${nxt.name}.` : 'Treino do dia completo.' }),
+            300,
+          );
         }
       }
-      return { ...prev, completed, streak, lastCompletedDate };
-    });
+      sessionStorage.setItem(key, JSON.stringify(p.completed));
+    } catch {
+      /* sessionStorage indisponível */
+    }
+    const nxt = EXERCISE_LIST.find((e) => !p.completed.includes(e.id));
+    setSelectedId(nxt?.id ?? EXERCISE_LIST[EXERCISE_LIST.length - 1].id);
+    const onVisible = () => document.visibilityState === 'visible' && refresh();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [refresh]);
+
+  const completed = progress?.completed ?? [];
+  const total = EXERCISE_LIST.length;
+  const done = EXERCISE_LIST.filter((e) => completed.includes(e.id)).length;
+  const next = EXERCISE_LIST.find((e) => !completed.includes(e.id)) ?? null;
+  const allDone = !next;
+  const remainingSec = EXERCISE_LIST.filter((e) => !completed.includes(e.id)).reduce((s, e) => s + e.duration, 0);
+  const totalMin = Math.round(EXERCISE_LIST.reduce((s, e) => s + e.duration, 0) / 60);
+  const streak = progress?.streak ?? 0;
+  const selected = EXERCISE_LIST.find((e) => e.id === selectedId) ?? EXERCISE_LIST[0];
+
+  const stateOf = (id: string): RowState => {
+    if (completed.includes(id)) return 'done';
+    if (isLocked(id, completed)) return 'locked';
+    if (next?.id === id) return 'next';
+    return 'available';
   };
 
-  const [pendingExerciseId, setPendingExerciseId] = useState<string | null>(null);
+  const status = useMemo(() => {
+    if (allDone) return { title: 'Treino concluído.', text: 'Sua voz trabalhou hoje. Agora é hidratar e descansar.' };
+    if (done === 0) return { title: 'Seu treino está pronto.', text: `Hoje são ${totalMin} minutos. Vamos começar preparando sua voz.` };
+    if (total - done === 1) return { title: 'Falta só mais um.', text: `Último exercício: ${next?.name}.` };
+    return { title: `${done} de ${total} concluídos.`, text: `Agora: ${next?.name}. Faltam cerca de ${Math.max(1, Math.round(remainingSec / 60))} min.` };
+  }, [allDone, done, total, totalMin, next, remainingSec]);
 
-  const VALIDATION_KEY = `cantare:diario:validated:${todayISO()}`;
-
-  const openExercise = (id: string) => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem(VALIDATION_KEY)) {
-      navigate({ to: '/diario/exercicio/$exerciseId', params: { exerciseId: id } });
-    } else {
-      setPendingExerciseId(id);
+  const validatedToday = () => {
+    try {
+      return !!sessionStorage.getItem(`cantare:diario:validated:${isoDay()}`);
+    } catch {
+      return false;
     }
   };
 
-  const startNext = () => {
-    const next = EXERCISES.find((e) => !progress.completed.includes(e.id));
-    if (next) openExercise(next.id);
+  const openExercise = (id: string) => {
+    if (startingId) return; // evita clique duplo
+    if (isLocked(id, completed)) {
+      setSelectedId(WARMUP_ID);
+      setNudgeId(WARMUP_ID);
+      const row = rowRefs.current[WARMUP_ID];
+      row?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      row?.querySelector<HTMLButtonElement>('button[data-start]')?.focus({ preventScroll: true });
+      toast('Faça o aquecimento primeiro', { description: 'Ele prepara sua voz para o restante do treino.' });
+      window.setTimeout(() => setNudgeId(null), 1200);
+      return;
+    }
+    setSelectedId(id);
+    setStartingId(id);
+    if (validatedToday()) {
+      navigate({ to: '/diario/exercicio/$exerciseId', params: { exerciseId: id } });
+    } else {
+      setPendingId(id);
+      window.setTimeout(() => setStartingId(null), 250);
+    }
   };
 
   const onValidationComplete = () => {
     try {
-      sessionStorage.setItem(VALIDATION_KEY, '1');
-    } catch {}
-    const id = pendingExerciseId;
-    setPendingExerciseId(null);
-    if (id) navigate({ to: '/diario/exercicio/$exerciseId', params: { exerciseId: id } });
+      sessionStorage.setItem(`cantare:diario:validated:${isoDay()}`, '1');
+    } catch {
+      /* ignore */
+    }
+    const id = pendingId;
+    setPendingId(null);
+    if (id) {
+      setStartingId(id);
+      navigate({ to: '/diario/exercicio/$exerciseId', params: { exerciseId: id } });
+    }
   };
 
-  const buttonText = allDone
-    ? 'Treino Concluído ✓'
-    : doneCount === 0
-      ? 'Começar Treino'
-      : 'Continuar Treino';
+  if (!progress || !week) return null;
 
-  const size = 200;
-  const stroke = 2;
-  const radius = (size - stroke * 2) / 2 - 4;
-  const circ = 2 * Math.PI * radius;
-  const offset = circ - (percent / 100) * circ;
-
-  const streakLabel = progress.streak || 1;
+  const dateLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="relative pb-40 lg:pb-12">
-      <div className="mx-auto w-full max-w-md lg:max-w-6xl lg:grid lg:grid-cols-[minmax(0,1fr)_1.2fr] lg:gap-16 space-y-6 lg:space-y-0">
-        {/* LEFT column (sticky on desktop) */}
-        <div className="space-y-8 lg:sticky lg:top-4 lg:self-start lg:py-4 animate-card-in">
-          <header className="flex items-start justify-between pt-2">
-            <div className="space-y-2">
-              <p
-                className="text-[10px] text-[#B8955A] uppercase"
-                style={{ fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.18em' }}
-              >
-                III · SALA DE ENSAIO
-              </p>
-              <h1
-                className="text-[38px] lg:text-[64px] leading-none text-white flex items-baseline gap-3"
-                style={{ fontFamily: 'Newsreader, serif', fontWeight: 500, fontStyle: 'italic' }}
-              >
-                Dia <span className="text-[#B8955A]">{ROMAN[day - 1] || day}</span>
-                <span className="text-[18px] lg:text-[22px] text-[#666677]" style={{ fontStyle: 'normal', fontWeight: 300 }}>
-                  / VII
-                </span>
-              </h1>
-              <p
-                className="text-[13px] lg:text-[15px] text-[#888899]"
-                style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300 }}
-              >
-                {doneCount} de {total} concluídos hoje
-              </p>
-            </div>
+    <div style={LINING} className="grid grid-cols-1 gap-5 lg:grid-cols-12 2xl:h-[calc(100dvh-3rem)] 2xl:grid-rows-[auto_minmax(0,1fr)]">
+      {/* ===== Cabeçalho ===== */}
+      <header className="flex flex-wrap items-end justify-between gap-4 px-1 lg:col-span-12">
+        <div>
+          <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(40px, 4vw, 68px)', color: C.paper, lineHeight: 1 }}>
+            Seu treino de <em style={{ color: C.gold }}>hoje</em>
+          </h1>
+          <p className="mt-2" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 17, color: C.paper2 }}>
+            Uma rotina completa para você evoluir com consistência.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3" style={{ fontFamily: SANS, fontSize: 14 }}>
+          <span className="first-letter:uppercase" style={{ color: C.paper3 }}>{dateLabel}</span>
+          <Link to="/diario/evolucao" className={buttonVariants({ variant: 'secondary', size: 'sm' })} title="Ver evolução">
+            <StreakMark /> {streak > 0 ? `${streak} ${streak === 1 ? 'dia seguido' : 'dias seguidos'}` : 'Comece sua sequência'}
+          </Link>
+        </div>
+      </header>
 
-            <div className="flex flex-col items-end gap-2">
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-full border border-[#B8955A]/30 bg-[#B8955A]/5"
-                style={{ fontFamily: 'DM Sans, sans-serif' }}
-              >
-                <span className="text-[#B8955A]">♦</span>
-                <span className="text-[11px] text-[#B8955A]">
-                  {streakLabel} dia{streakLabel > 1 ? 's' : ''} seguido{streakLabel > 1 ? 's' : ''}
-                </span>
+      {/* ===== Coluna principal ===== */}
+      <div className="flex min-h-0 flex-col gap-5 lg:col-span-7">
+        <Panel glow bodyClassName="!p-0">
+          <div className="grid grid-cols-1 items-center gap-6 p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-6 2xl:gap-8 2xl:p-7">
+            <div className="hidden sm:block">
+              <DayRing day={Math.max(1, streak || 1)} done={done} total={total} completed={EXERCISE_LIST.map((e) => completed.includes(e.id))} size={150} caption="exercícios" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-4">
+                <div className="shrink-0 sm:hidden">
+                  <DayRing day={Math.max(1, streak || 1)} done={done} total={total} completed={EXERCISE_LIST.map((e) => completed.includes(e.id))} size={96} caption="" />
+                </div>
+                <p style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 30, color: C.paper, lineHeight: 1.1 }} aria-live="polite">{status.title}</p>
               </div>
-              <button
-                onClick={() => navigate({ to: '/diario/evolucao' })}
-                className="text-[11px] text-[#B8955A] hover:opacity-80 transition-opacity"
-                style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 400 }}
-              >
-                Ver evolução →
-              </button>
-            </div>
-          </header>
+              <p className="mt-1.5" style={{ fontFamily: SANS, fontSize: 15, color: C.paper2, lineHeight: 1.5 }}>{status.text}</p>
 
-          <div className="relative flex flex-col items-center gap-6 py-6 lg:py-10 lg:px-8">
-            <VocalBody
-              size={280}
-              className="hidden lg:block absolute inset-0 mx-auto pointer-events-none"
-              style={{ opacity: 0.06, top: '10%' }}
-            />
-            <div className="relative animate-breathe" style={{ width: size, height: size }}>
-              <svg width={size} height={size} className="-rotate-90">
-                <circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke="rgba(255,255,255,0.05)"
-                  strokeWidth={stroke}
-                  fill="none"
-                />
-                <circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke="#B8955A"
-                  strokeWidth={stroke}
-                  fill="none"
-                  strokeDasharray={circ}
-                  strokeDashoffset={offset}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 800ms cubic-bezier(0.4,0,0.2,1)' }}
-                />
-                {Array.from({ length: total }).map((_, i) => {
-                  const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
-                  const inner = radius - 8;
-                  const outer = radius + 4;
-                  const cx = size / 2;
-                  const cy = size / 2;
-                  const isDone = i < doneCount;
-                  return (
-                    <line
-                      key={i}
-                      x1={cx + Math.cos(angle) * inner}
-                      y1={cy + Math.sin(angle) * inner}
-                      x2={cx + Math.cos(angle) * outer}
-                      y2={cy + Math.sin(angle) * outer}
-                      stroke={isDone ? '#B8955A' : 'rgba(255,255,255,0.08)'}
-                      strokeWidth={1}
-                      style={{ transition: 'stroke 400ms ease' }}
-                    />
-                  );
-                })}
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span
-                  className="text-white leading-none flex items-baseline"
-                  style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 64, fontStyle: 'italic' }}
-                >
-                  {doneCount}
-                  <span className="text-[#666677] text-[32px]" style={{ fontStyle: 'normal' }}>/{total}</span>
-                </span>
-                <span
-                  className="text-[10px] text-[#888899] mt-2 uppercase"
-                  style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 400, letterSpacing: '0.22em' }}
-                >
-                  Exercícios
-                </span>
+              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2" style={{ fontFamily: SANS }}>
+                <div>
+                  <dt style={{ fontSize: 12, color: C.paper3 }}>Tempo total</dt>
+                  <dd style={{ fontFamily: SERIF, fontSize: 22, color: C.paper }}>{totalMin} min</dd>
+                </div>
+                <div>
+                  <dt style={{ fontSize: 12, color: C.paper3 }}>{allDone ? 'Hoje' : 'Próximo'}</dt>
+                  <dd style={{ fontFamily: SERIF, fontSize: 22, color: C.paper }}>{allDone ? `${todayMin} min treinados` : next?.name}</dd>
+                </div>
+                <div>
+                  <dt style={{ fontSize: 12, color: C.paper3 }}>Sua faixa</dt>
+                  <dd style={{ fontFamily: SERIF, fontSize: 22, color: profile ? C.gold : C.paper3 }}>
+                    {profile ? `${profile.lowestNote} – ${profile.highestNote}` : 'sem teste vocal'}
+                  </dd>
+                </div>
+              </dl>
+
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                {allDone ? (
+                  <>
+                    <Button size="lg" disabled className="disabled:opacity-80"><Check /> Treino concluído</Button>
+                    <Link to="/diario/concluido" className={buttonVariants({ variant: 'secondary', size: 'lg' })}>Ver resumo do dia</Link>
+                  </>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto sm:min-w-[210px]"
+                    loading={!!startingId && startingId === next?.id}
+                    loadingLabel="Preparando treino"
+                    onClick={() => next && openExercise(next.id)}
+                  >
+                    <Play className="fill-current" /> {done === 0 ? 'Começar treino' : 'Continuar treino'}
+                  </Button>
+                )}
+                {!profile && <TextLink to="/teste-vocal">Fazer teste vocal para personalizar</TextLink>}
               </div>
             </div>
-
-            {/* sound wave hairline */}
-            <svg width="220" height="28" viewBox="0 0 220 28" className="opacity-70">
-              {Array.from({ length: 34 }).map((_, i) => {
-                const active = i / 34 < percent / 100;
-                const h = 4 + Math.abs(Math.sin(i * 0.9)) * 18;
-                return (
-                  <rect
-                    key={i}
-                    x={i * 6.4}
-                    y={14 - h / 2}
-                    width={2}
-                    height={h}
-                    rx={1}
-                    fill={active ? '#B8955A' : 'rgba(255,255,255,0.08)'}
-                    style={{ transition: 'fill 500ms ease' }}
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Desktop inline CTA */}
-            <button
-              onClick={startNext}
-              disabled={allDone}
-              className="hidden lg:block w-full h-14 text-[#07080A] font-medium transition-all active:scale-[0.988] hover:brightness-110 disabled:opacity-90 rounded-2xl mt-2"
-              style={{
-                backgroundColor: '#B8955A',
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: 13,
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-              }}
-            >
-              {buttonText}
-            </button>
           </div>
+        </Panel>
+
+        <Panel title="Sequência do treino" subtitle="Toque em um exercício para ver o que seu corpo faz." labelledBy="sequencia" className="min-h-0 flex-1" bodyClassName="!pt-2">
+          <ol className="flex flex-1 flex-col justify-between gap-1.5">
+            {EXERCISE_LIST.map((ex, i) => {
+              const st = stateOf(ex.id);
+              const isSel = selectedId === ex.id;
+              return (
+                <li key={ex.id}>
+                  <div
+                    ref={(el) => {
+                      rowRefs.current[ex.id] = el;
+                    }}
+                    className={`group relative flex items-center gap-2 rounded-[8px] pr-2 transition-[background-color,border-color,opacity] duration-[var(--dur-state)] ${st === 'locked' ? 'opacity-60' : ''} ${nudgeId === ex.id ? 'diario-nudge' : ''}`}
+                    style={{
+                      border: `1px solid ${isSel ? 'rgba(184,149,90,0.45)' : st === 'next' ? 'rgba(184,149,90,0.25)' : C.rule}`,
+                      background: isSel ? 'rgba(184,149,90,0.06)' : st === 'next' ? 'rgba(184,149,90,0.03)' : 'rgba(255,255,255,0.012)',
+                    }}
+                  >
+                    {st === 'next' && <span aria-hidden className="absolute bottom-2 left-0 top-2 w-[2px] rounded-full" style={{ background: C.gold }} />}
+
+                    <button
+                      onClick={() => setSelectedId(ex.id)}
+                      aria-pressed={isSel}
+                      aria-label={`${ex.name}, ${formatDur(ex.duration)}, ${st === 'done' ? 'concluído' : st === 'locked' ? 'bloqueado até o aquecimento' : st === 'next' ? 'próximo' : 'disponível'}`}
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-[8px] py-2 pl-3 text-left transition-colors hover:bg-white/[0.02] 2xl:py-2.5 ${focusRing}`}
+                    >
+                      <span
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${justDone.includes(ex.id) ? 'diario-pop' : ''}`}
+                        style={{
+                          border: `1px solid ${st === 'done' || st === 'next' ? C.gold : 'rgba(232,228,220,0.2)'}`,
+                          background: st === 'done' ? C.gold : 'transparent',
+                          color: st === 'done' ? C.ink : st === 'next' ? C.gold : C.paper3,
+                          fontFamily: SANS,
+                          fontSize: 13,
+                          transition: 'background-color var(--dur-state), color var(--dur-state)',
+                        }}
+                      >
+                        {st === 'done' ? <Check size={16} strokeWidth={2.2} /> : i + 1}
+                      </span>
+                      <ExerciseGlyph id={ex.id} color={st === 'locked' ? C.paper3 : C.gold} className="hidden shrink-0 sm:block" />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate" style={{ fontFamily: SANS, fontSize: 15, fontWeight: st === 'next' ? 500 : 400, color: st === 'done' ? C.paper2 : C.paper }}>{ex.name}</span>
+                          {st === 'next' && (
+                            <span className="shrink-0 rounded-[4px] px-1.5 py-0.5" style={{ fontFamily: SANS, fontSize: 11, color: C.ink, background: C.gold }}>Agora</span>
+                          )}
+                        </span>
+                        <span className="block truncate" style={{ fontFamily: SANS, fontSize: 12.5, color: C.paper3 }}>
+                          {st === 'locked' ? 'Libera depois do aquecimento' : ex.objective}
+                        </span>
+                      </span>
+                      <span className="shrink-0 pl-2 tabular-nums" style={{ fontFamily: SANS, fontSize: 13, color: C.paper3 }}>{formatDur(ex.duration)}</span>
+                    </button>
+
+                    <Button
+                      data-start
+                      variant={st === 'next' ? 'primary' : st === 'done' ? 'ghost' : 'secondary'}
+                      size="icon-sm"
+                      loading={startingId === ex.id}
+                      loadingLabel={`Abrindo ${ex.name}`}
+                      onClick={() => openExercise(ex.id)}
+                      aria-label={st === 'done' ? `Refazer ${ex.name}` : st === 'locked' ? `${ex.name} bloqueado: faça o aquecimento primeiro` : `Começar ${ex.name}`}
+                      title={st === 'locked' ? 'Faça o aquecimento primeiro' : st === 'done' ? 'Refazer' : 'Começar'}
+                    >
+                      {st === 'done' ? <RotateCcw /> : st === 'locked' ? <Lock /> : <Play className="fill-current" />}
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </Panel>
+      </div>
+
+      {/* ===== Coluna de contexto ===== */}
+      <div className="flex min-h-0 flex-col gap-5 lg:col-span-5">
+        <FocusPanel exercise={selected} state={stateOf(selected.id)} onStart={() => openExercise(selected.id)} starting={startingId === selected.id} />
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Panel title="Sua evolução" action={{ to: '/diario/evolucao', label: 'Ver tudo' }} labelledBy="evo">
+            <dl className="grid grid-cols-3 gap-2" style={{ fontFamily: SANS }}>
+              <MiniStat value={String(streak)} label={streak === 1 ? 'dia seguido' : 'dias seguidos'} />
+              <MiniStat value={String(week.exercises)} label="na semana" />
+              <MiniStat value={week.accuracy !== null ? `${week.accuracy}%` : '—'} label="precisão" />
+            </dl>
+            {week.exercises === 0 && (
+              <p className="mt-2" style={{ fontSize: 12, color: C.paper3, fontFamily: SANS }}>Conclua o primeiro exercício para começar seu histórico.</p>
+            )}
+          </Panel>
+
+          <Panel title="Dica da Laury" labelledBy="dica">
+            <blockquote style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 300, fontSize: 17, color: C.paper, lineHeight: 1.35 }}>
+              “{LAURY_TIP}”
+            </blockquote>
+            <p className="mt-2" style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>Laury · fonoaudióloga</p>
+          </Panel>
         </div>
 
+        <Panel title="Precisa de algo específico hoje?" action={{ to: '/saude', label: 'Ver todos' }} labelledBy="necessidades">
+          <ul className="grid grid-cols-2 gap-2.5">
+            {NEEDS.map((n) => (
+              <li key={n.id}>
+                <Link
+                  to="/saude/$warmupId"
+                  params={{ warmupId: n.id }}
+                  className={`motion-lift group flex items-center gap-3 rounded-[6px] px-3 py-2.5 transition-[background-color,border-color,transform] duration-[var(--dur-hover)] hover:-translate-y-px hover:border-[rgba(184,149,90,0.45)] hover:bg-[rgba(184,149,90,0.05)] active:scale-[0.98] ${focusRing}`}
+                  style={{ border: `1px solid ${C.rule}` }}
+                >
+                  <NeedMark kind={n.mark} />
+                  <span className="min-w-0">
+                    <span className="block truncate" style={{ fontFamily: SANS, fontSize: 14, color: C.paper }}>{n.title}</span>
+                    <span className="block truncate text-[rgba(232,228,220,0.5)] transition-colors group-hover:text-[rgba(232,228,220,0.78)]" style={{ fontFamily: SANS, fontSize: 12 }}>{n.desc}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </div>
 
-        {/* RIGHT column: exercises */}
-        <div className="space-y-3 lg:space-y-4 lg:py-4">
-          {/* Contexto — Perfil Vocal + Repertório */}
-          {vocalProfile ? (
-            <div
-              className="rounded-2xl p-4 border border-white/[0.04] bg-[#0D0F12]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              <p className="text-[10px] uppercase text-[#B8955A]" style={{ letterSpacing: '0.28em' }}>
-                Treino baseado no seu perfil vocal
-              </p>
-              <p className="mt-2 text-[13px] text-white">
-                {vocalProfile.voiceType} · <b>{vocalProfile.lowestNote} → {vocalProfile.highestNote}</b>
-              </p>
-              <p className="text-[12px] text-[#888899]">
-                Zona confortável: {vocalProfile.comfortableLow} → {vocalProfile.comfortableHigh}
-              </p>
-              <p className="mt-2 text-[12px] text-[#B8955A]">
-                Foco sugerido: <span className="text-white">{focus.label}</span>
-              </p>
-              <p className="text-[11px] text-[#888899]">{focus.reason}</p>
+      <EnvironmentCheckSheet open={pendingId !== null} onDismiss={() => setPendingId(null)} onComplete={onValidationComplete} />
+
+      <style>{`
+        @keyframes diario-nudge { 0%,100% { box-shadow: 0 0 0 0 rgba(184,149,90,0) } 40% { box-shadow: 0 0 0 4px rgba(184,149,90,0.35) } }
+        .diario-nudge { animation: diario-nudge 1.1s var(--ease-out) 1; }
+        @keyframes diario-pop { 0% { transform: scale(.6); opacity: .2 } 70% { transform: scale(1.08) } 100% { transform: scale(1); opacity: 1 } }
+        .diario-pop { animation: diario-pop 520ms var(--ease-out) 1; }
+      `}</style>
+    </div>
+  );
+}
+
+/* ---------- painel do exercício selecionado ---------- */
+
+function FocusPanel({ exercise, state, onStart, starting }: { exercise: ExerciseData; state: RowState; onStart: () => void; starting: boolean }) {
+  const targets = PITCH_TARGETS[exercise.id];
+  const isBreath = exercise.id === '2';
+  const subtitle = targets ? 'Afinação acontece na escada de notas.' : 'Onde este exercício mais trabalha.';
+
+  return (
+    <Panel title={exercise.name} subtitle={subtitle} labelledBy="foco" className="min-h-[400px] flex-1">
+      <div key={exercise.id} className="grid min-h-0 flex-1 grid-cols-1 gap-5 animate-in fade-in duration-300 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="relative flex min-h-[220px] items-center justify-center">
+          {targets ? (
+            <div className="flex h-full w-full items-stretch justify-center gap-4 py-2">
+              <div className="h-full min-h-[220px] w-[90px]">
+                <NoteLadder
+                  min={55}
+                  max={79}
+                  range={{ low: noteLabelToMidi(targets[0].note), high: Math.max(...targets.map((t) => noteLabelToMidi(t.note))) }}
+                  ariaLabel={`Notas-alvo: ${[...new Set(targets.map((t) => t.note))].join(', ')}`}
+                />
+              </div>
+              <ol className="flex flex-col justify-center gap-0.5" style={{ fontFamily: SERIF, fontSize: 17, color: C.gold }}>
+                {targets.map((t, i) => <li key={i}>{t.note}</li>)}
+              </ol>
             </div>
           ) : (
-            <button
-              onClick={() => navigate({ to: '/teste-vocal' })}
-              className="w-full text-left rounded-2xl p-4 border border-[#B8955A]/25 bg-[#B8955A]/[0.04] hover:bg-[#B8955A]/[0.08] transition-colors"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              <p className="text-[10px] uppercase text-[#B8955A]" style={{ letterSpacing: '0.28em' }}>
-                Faça o Teste Vocal
-              </p>
-              <p className="mt-1 text-[13px] text-white">
-                Com seu perfil vocal, o Cantare adapta treino e repertório à sua voz.
-              </p>
-              <p className="mt-2 text-[11px] text-[#B8955A]" style={{ letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                Iniciar Teste Vocal →
-              </p>
-            </button>
+            <VoiceBodyMap active={REGION_MAP[exercise.region]} breathing={isBreath} showLabels={false} className="h-full max-h-[320px] w-full" />
           )}
+        </div>
 
-          {repSummary.difficultCount > 0 && (
-            <div
-              className="rounded-2xl p-4 border border-[#D4A574]/25 bg-[#D4A574]/[0.04]"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
-            >
-              <p className="text-[12px] text-white">
-                Seu repertório tem <b>{repSummary.difficultCount}</b>{' '}
-                {repSummary.difficultCount === 1 ? 'música difícil' : 'músicas difíceis'}.
-              </p>
-              <p className="mt-1 text-[11px] text-[#888899]">
-                Sugestão de treino: Afinação · Flexibilidade · Voz Mista.
-              </p>
-            </div>
-          )}
-
-          <p
-            className="hidden lg:block text-[11px] uppercase text-[#888899] mb-2 pt-2"
-            style={{ fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.22em' }}
-          >
-            Exercícios de hoje
+        <div className="flex min-w-0 flex-col" style={{ fontFamily: SANS }}>
+          <dl className="space-y-3">
+            <Guide label="Objetivo" text={exercise.objective} />
+            <Guide label="Como fazer" text={exercise.technique} />
+            <Guide label="Foco" text={exercise.focus} gold />
+          </dl>
+          <p className="mt-4 pl-3" style={{ borderLeft: `2px solid ${C.warn}`, fontSize: 12.5, color: C.paper2, lineHeight: 1.45 }}>
+            Sem forçar. Dor ou rouquidão? Pare e procure um profissional.
           </p>
-          {EXERCISES.map((ex, i) => {
-            const done = progress.completed.includes(ex.id);
-            return (
-              <button
-                key={ex.id}
-                onClick={() => openExercise(ex.id)}
-                className="group w-full flex items-center gap-4 bg-[#0D0F12] hover:bg-[#131519] transition-all p-[14px] lg:p-6 text-left rounded-xl lg:rounded-2xl border border-white/[0.03] hover:border-[#B8955A]/25 animate-card-in"
-                style={{ animationDelay: `${80 + i * 60}ms` }}
-              >
-                <span
-                  className="w-8 transition-colors"
-                  style={{
-                    fontFamily: 'Newsreader, serif',
-                    fontStyle: 'italic',
-                    fontWeight: 400,
-                    fontSize: 18,
-                    color: done ? '#B8955A' : 'rgba(184,149,90,0.45)',
-                  }}
-                >
-                  {ROMAN[i] || String(i + 1)}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-[14px] lg:text-[17px] text-white truncate"
-                    style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}
-                  >
-                    {ex.name}
-                  </p>
-                  <p
-                    className="text-[12px] lg:text-[13px] text-[#888899]"
-                    style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 300 }}
-                  >
-                    {ex.duration}
-                  </p>
-                </div>
-                {/* mini equalizer / check */}
-                {done ? (
-                  <span className="text-[#B8955A] text-lg lg:text-xl">✓</span>
-                ) : (
-                  <span className="flex items-end gap-[3px] h-4 opacity-60 group-hover:opacity-100 transition-opacity">
-                    <span className="w-[2px] h-[6px] bg-[#B8955A]/60" />
-                    <span className="w-[2px] h-[12px] bg-[#B8955A]/60" />
-                    <span className="w-[2px] h-[8px] bg-[#B8955A]/60" />
-                    <span className="w-[2px] h-[14px] bg-[#B8955A]/60" />
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          <div className="mt-auto pt-5">
+            {state === 'locked' ? (
+              <Button variant="secondary" onClick={onStart}><Lock /> Liberado após o aquecimento</Button>
+            ) : (
+              <Button variant={state === 'next' ? 'primary' : 'secondary'} onClick={onStart} loading={starting} loadingLabel="Abrindo exercício">
+                {state === 'done' ? <><RotateCcw /> Refazer exercício</> : <><Play className="fill-current" /> Começar este exercício</>}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+    </Panel>
+  );
+}
 
-
-      {/* Mobile fixed CTA */}
-      <div
-        className="fixed left-0 right-0 bottom-0 z-40 px-4 pointer-events-none lg:hidden"
-        style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}
-      >
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <button
-            onClick={startNext}
-            disabled={allDone}
-            className="w-full h-14 text-[#07080A] font-medium transition-all active:scale-[0.98] disabled:opacity-90 rounded-2xl"
-            style={{
-              backgroundColor: '#B8955A',
-              fontFamily: 'DM Sans, sans-serif',
-              fontSize: 15,
-              letterSpacing: '0.02em',
-            }}
-          >
-            {buttonText}
-          </button>
-        </div>
-      </div>
-      <EnvironmentCheckSheet
-        open={pendingExerciseId !== null}
-        onDismiss={() => setPendingExerciseId(null)}
-        onComplete={onValidationComplete}
-      />
+function Guide({ label, text, gold = false }: { label: string; text: string; gold?: boolean }) {
+  return (
+    <div>
+      <dt style={{ fontSize: 12, color: C.paper3 }}>{label}</dt>
+      <dd style={{ fontSize: 15, color: gold ? C.gold : C.paper, lineHeight: 1.45 }}>{text}</dd>
     </div>
+  );
+}
+
+function MiniStat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col-reverse">
+      <dt style={{ fontSize: 12, color: C.paper3 }}>{label}</dt>
+      <dd style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 30, color: C.paper, lineHeight: 1 }}>{value}</dd>
+    </div>
+  );
+}
+
+/* ---------- necessidades ---------- */
+
+const NEEDS = [
+  { id: 'agudos', title: 'Nos agudos', desc: 'Leveza no alto', mark: 'up' as const },
+  { id: 'graves', title: 'Nos graves', desc: 'Corpo e apoio', mark: 'down' as const },
+  { id: 'geral', title: 'Antes do show', desc: 'Aquecimento geral', mark: 'warm' as const },
+  { id: 'desaquecimento', title: 'Pós-show', desc: 'Desaquecer', mark: 'rest' as const },
+];
+
+function NeedMark({ kind }: { kind: 'up' | 'down' | 'warm' | 'rest' }) {
+  const s = { stroke: C.gold, strokeWidth: 1.4, strokeLinecap: 'round' as const, fill: 'none' };
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden className="shrink-0">
+      {kind === 'up' && <g className="transition-transform duration-[var(--dur-hover)] group-hover:-translate-y-0.5"><path d="M12 20V5m-5 5 5-5 5 5" {...s} /></g>}
+      {kind === 'down' && <g className="transition-transform duration-[var(--dur-hover)] group-hover:translate-y-0.5"><path d="M12 4v15m-5-5 5 5 5-5" {...s} /></g>}
+      {kind === 'warm' && <path d="M4 17h16M7 17c0-4 2-7 5-7s5 3 5 7M12 4v2" {...s} />}
+      {kind === 'rest' && <path d="M2 10c3 0 4 6 7 6s3-4 6-4 3 3 7 3" {...s} />}
+    </svg>
+  );
+}
+
+function StreakMark() {
+  return (
+    <svg width="14" height="16" viewBox="0 0 14 16" aria-hidden>
+      <path d="M7 1c1 2.3.4 3.6-.7 4.8C5 7.1 4.2 8.4 4.2 10a2.8 2.8 0 0 0 5.6 0c0-1.7-.8-3-2-4.2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
   );
 }

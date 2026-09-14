@@ -38,25 +38,54 @@
 }
 
 
+/*
+ * Tokens do Cantare — fonte única para cor, raio e movimento.
+ * Paleta: docs/DESIGN.md. Nada de roxo/rosa: primary é o dourado envelhecido.
+ */
 :root {
-  --background: #09090B;
-  --foreground: #FFFFFF;
-  --card: #121214;
-  --card-foreground: #FFFFFF;
-  --popover: #121214;
-  --popover-foreground: #FFFFFF;
-  --primary: #8B5CF6;
-  --primary-foreground: #FFFFFF;
-  --secondary: #B8955A;
-  --secondary-foreground: #09090B;
-  --accent: #F43F5E;
-  --accent-foreground: #FFFFFF;
-  --muted: #71717A;
-  --muted-foreground: #A1A1AA;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #8B5CF6;
-  --radius: 1.5rem;
+  /* cor */
+  --background: #07080A;
+  --foreground: #E8E4DC;
+  --card: #0F1114;
+  --card-foreground: #E8E4DC;
+  --popover: #111318;
+  --popover-foreground: #E8E4DC;
+  --primary: #B8955A;
+  --primary-foreground: #07080A;
+  --secondary: rgba(232, 228, 220, 0.06);
+  --secondary-foreground: #E8E4DC;
+  --accent: rgba(232, 228, 220, 0.06);
+  --accent-foreground: #E8E4DC;
+  --muted: rgba(232, 228, 220, 0.08);
+  --muted-foreground: rgba(232, 228, 220, 0.6);
+  --destructive: #B8604C;
+  --destructive-foreground: #F5EDE6;
+  --border: rgba(232, 228, 220, 0.08);
+  --input: rgba(232, 228, 220, 0.12);
+  --ring: #B8955A;
+  --radius: 0.5rem;
+
+  --gold: #B8955A;
+  --gold-hover: #C9A66A;
+  --warn: #C87F6A;
+
+  /* movimento */
+  --dur-press: 110ms;
+  --dur-hover: 180ms;
+  --dur-state: 300ms;
+  --dur-context: 420ms;
+  --dur-progress: 600ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Movimento reduzido: tira deslocamento e animação decorativa, mantém mudança de estado. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .motion-lift:hover, .motion-lift:active { transform: none !important; }
 }
 
 
@@ -115,23 +144,6 @@
 
 .premium-card:active {
   transform: translateY(0) scale(0.99);
-}
-
-.aura-violet {
-  position: relative;
-}
-
-.aura-violet::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 140%;
-  height: 140%;
-  background: radial-gradient(circle, rgba(123, 94, 167, 0.04) 0%, transparent 70%);
-  z-index: -1;
-  pointer-events: none;
 }
 
 .nav-item-active {
