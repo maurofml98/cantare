@@ -264,7 +264,7 @@ function DiarioPage() {
         </Panel>
 
         <Panel title="Sequência do treino" subtitle="Toque em um exercício para ver o que seu corpo faz." labelledBy="sequencia" className="min-h-0 flex-1" bodyClassName="!pt-2">
-          <ol className="flex flex-1 flex-col justify-between gap-1.5">
+          <ol className="-mr-2 flex min-h-0 flex-1 flex-col justify-between gap-1 overflow-y-auto pr-2 [scrollbar-width:thin]">
             {EXERCISE_LIST.map((ex, i) => {
               const st = stateOf(ex.id);
               const isSel = selectedId === ex.id;
@@ -286,10 +286,10 @@ function DiarioPage() {
                       onClick={() => setSelectedId(ex.id)}
                       aria-pressed={isSel}
                       aria-label={`${ex.name}, ${formatDur(ex.duration)}, ${st === 'done' ? 'concluído' : st === 'locked' ? 'bloqueado até o aquecimento' : st === 'next' ? 'próximo' : 'disponível'}`}
-                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-[8px] py-2 pl-3 text-left transition-colors hover:bg-white/[0.02] 2xl:py-2.5 ${focusRing}`}
+                      className={`flex min-w-0 flex-1 items-center gap-3 rounded-[8px] py-1 pl-3 text-left transition-colors hover:bg-white/[0.02] ${focusRing}`}
                     >
                       <span
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${justDone.includes(ex.id) ? 'diario-pop' : ''}`}
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${justDone.includes(ex.id) ? 'diario-pop' : ''}`}
                         style={{
                           border: `1px solid ${st === 'done' || st === 'next' ? C.gold : 'rgba(232,228,220,0.2)'}`,
                           background: st === 'done' ? C.gold : 'transparent',
@@ -304,12 +304,12 @@ function DiarioPage() {
                       <ExerciseGlyph id={ex.id} color={st === 'locked' ? C.paper3 : C.gold} className="hidden shrink-0 sm:block" />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center gap-2">
-                          <span className="truncate" style={{ fontFamily: SANS, fontSize: 15, fontWeight: st === 'next' ? 500 : 400, color: st === 'done' ? C.paper2 : C.paper }}>{ex.name}</span>
+                          <span className="truncate" style={{ fontFamily: SANS, fontSize: 15, lineHeight: 1.3, fontWeight: st === 'next' ? 500 : 400, color: st === 'done' ? C.paper2 : C.paper }}>{ex.name}</span>
                           {st === 'next' && (
                             <span className="shrink-0 rounded-[4px] px-1.5 py-0.5" style={{ fontFamily: SANS, fontSize: 11, color: C.ink, background: C.gold }}>Agora</span>
                           )}
                         </span>
-                        <span className="block truncate" style={{ fontFamily: SANS, fontSize: 12.5, color: C.paper3 }}>
+                        <span className="block truncate" style={{ fontFamily: SANS, fontSize: 12.5, lineHeight: 1.3, color: C.paper3 }}>
                           {st === 'locked' ? 'Libera depois do aquecimento' : ex.objective}
                         </span>
                       </span>
@@ -337,7 +337,7 @@ function DiarioPage() {
       </div>
 
       {/* ===== Coluna de contexto ===== */}
-      <div className="flex min-h-0 flex-col gap-5 lg:col-span-5">
+      <div className="flex min-h-0 flex-col gap-5 lg:col-span-5 2xl:-mr-2 2xl:overflow-y-auto 2xl:pr-2 2xl:[scrollbar-width:thin]">
         <FocusPanel exercise={selected} state={stateOf(selected.id)} onStart={() => openExercise(selected.id)} starting={startingId === selected.id} />
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -402,7 +402,7 @@ function FocusPanel({ exercise, state, onStart, starting }: { exercise: Exercise
   const subtitle = targets ? 'Afinação acontece na escada de notas.' : 'O que seu corpo faz neste exercício.';
 
   return (
-    <Panel title={exercise.name} subtitle={subtitle} labelledBy="foco" className="min-h-[400px] flex-1">
+    <Panel title={exercise.name} subtitle={subtitle} labelledBy="foco" className="min-h-[400px] flex-1 2xl:min-h-[300px]">
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         {/* a foto troca com crossfade; fica fora do `key` para a camada antiga poder sair */}
         <div className="relative flex min-h-[220px] items-center justify-center overflow-hidden rounded-[6px]" style={{ border: `1px solid ${C.rule}` }}>

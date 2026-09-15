@@ -7,12 +7,24 @@ export function detectPitch(buf: Float32Array, sampleRate: number): number {
   rms = Math.sqrt(rms / SIZE);
   if (rms < 0.01) return -1;
 
-  // Trim silence at edges
+  // Trim silence at edges: corta só até a PRIMEIRA amostra baixa de cada ponta (ACF2+).
+  // Sem o `break`, r1/r2 iam parar perto do meio do buffer (todo sinal periódico passa por
+  // zero), o trecho ficava com < 512 amostras e a função devolvia -1 para qualquer voz.
   const THRESH = 0.2;
   let r1 = 0;
   let r2 = SIZE - 1;
-  for (let i = 0; i < SIZE / 2; i++) if (Math.abs(buf[i]) < THRESH) r1 = i;
-  for (let i = 1; i < SIZE / 2; i++) if (Math.abs(buf[SIZE - i]) < THRESH) r2 = SIZE - i;
+  for (let i = 0; i < SIZE / 2; i++) {
+    if (Math.abs(buf[i]) < THRESH) {
+      r1 = i;
+      break;
+    }
+  }
+  for (let i = 1; i < SIZE / 2; i++) {
+    if (Math.abs(buf[SIZE - i]) < THRESH) {
+      r2 = SIZE - i;
+      break;
+    }
+  }
   const trimmed = buf.subarray(r1, r2);
   const N = trimmed.length;
   if (N < 512) return -1;

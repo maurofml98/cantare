@@ -55,6 +55,36 @@ export function loadDailyStats(): DailyStats {
   }
 }
 
+/**
+ * Marca um exercício como concluído hoje e registra precisão/duração.
+ * Sequência (streak) sobe quando os 7 são concluídos no dia. Mesma regra da tela antiga.
+ */
+export function markExerciseComplete(id: string, accuracy: number | null = null, duration = 0) {
+  try {
+    const today = isoDay();
+    const stats = loadDailyStats();
+    const day = stats[today] || { entries: {} };
+    day.entries[id] = { accuracy, duration };
+    stats[today] = day;
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+
+    const raw = localStorage.getItem(DIARY_KEY);
+    const p: DiaryProgress = raw ? JSON.parse(raw) : empty();
+    if (p.date !== today) {
+      p.date = today;
+      p.completed = [];
+    }
+    if (!p.completed.includes(id)) p.completed.push(id);
+    if (p.completed.length === 7 && p.lastCompletedDate !== today) {
+      p.streak = p.lastCompletedDate === isoDay(-1) ? (p.streak || 0) + 1 : 1;
+      p.lastCompletedDate = today;
+    }
+    localStorage.setItem(DIARY_KEY, JSON.stringify(p));
+  } catch {
+    /* localStorage indisponível */
+  }
+}
+
 /** Minutos efetivamente treinados hoje (soma das durações registradas). */
 export function minutesToday(stats: DailyStats = loadDailyStats()): number {
   const entries = Object.values(stats[isoDay()]?.entries ?? {});

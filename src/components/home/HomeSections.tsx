@@ -98,7 +98,7 @@ function StaffLines() {
 /* ============ Dica da Laury ============ */
 
 // TODO(Laury): texto provisório, reaproveitado da dica do aquecimento
-// (src/components/diario/WarmupInstrumentHUD.tsx). O texto final e a rotação de
+// (hoje em src/lib/diario/sessions.ts). O texto final e a rotação de
 // dicas vêm dela — não inventar conteúdo clínico.
 export const LAURY_TIP = 'Inspire pelo nariz, expire com controle. Sinta o ar sustentando o som.';
 const TIP = LAURY_TIP;
