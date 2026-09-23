@@ -195,7 +195,7 @@ e `process.env`, sem prefixo `VITE_`, e nunca chegam ao navegador.
   ao repertório. Não é curadoria nem "em alta": é busca de faixas do Spotify
 - **Saúde Vocal** — 6 cards de aquecimento por situação, tela de exercícios
 - **Diário de Treino** — Dia 1, círculo de progresso, lista de 7 exercícios (conteúdo
-  é placeholder)
+  é placeholder). **Estrutura substituída pela aba Treinos — ver seção 13**
 - **Evolução** — nível, XP, streak, gráfico semanal, 6 conquistas (dados zerados)
 - Layout web com sidebar + versão mobile com bottom nav
 
@@ -297,10 +297,14 @@ playlist.
 Treino é uma casca. Nenhum modelo de IA resolve isso — é conhecimento clínico que só
 ela pode produzir e assinar.
 
+**Atualização 22/09/2026:** ela entregou a especificação da aba Treinos (seção 13):
+5 objetivos × 3 exercícios. Destrava o motor, mas não fecha tudo.
+
 **Pendente com ela:**
 - Exercícios de aquecimento por estilo (agudo, grave, gravação, dicção, pós-show)
-- Exercícios de treino por tipo vocal e por etapa do currículo
-- Quantos dias tem o programa básico
+  — e onde o aquecimento entra no modelo de academia (seção 13, contradição 1)
+- Metas numéricas de cada exercício (só o S sustentado tem: 8/10/12/15s)
+- Desenho das escalas (quantas notas, quais intervalos)
 - O que muda entre um tipo vocal e outro na prática
 
 ### Outras pendências
@@ -420,14 +424,15 @@ juridicamente.
 ## 11. Próximos passos
 
 **Bloqueadores (nada avança sem isso):**
-1. Currículo de exercícios com a Laury
+1. ~~Currículo de exercícios com a Laury~~ — estrutura entregue (seção 13); faltam
+   metas numéricas, escalas e a resposta sobre aquecimento
 2. Rotacionar a chave de API exposta
 3. Escolher 3–5 referências visuais concretas
 
 **Técnico:**
 4. Migrar o código do Lovable para GitHub e rodar local
 5. Integrar o teste de extensão vocal (já implementado isoladamente) no onboarding
-6. Construir o motor único de treino com as notas-alvo vindas do currículo
+6. Construir o motor único de treino nos 8 passos da seção 13
 7. ~~Auditar os IDs de playlist do Spotify um por um~~ — feito, IDs removidos
    (seção 7)
 
@@ -450,3 +455,123 @@ juridicamente.
 - **Estado vazio é convite, não erro.** O cantor sem projeto precisa saber o que
   fazer, não ler "sem dados".
 - **Não usar linguagem clínica.** Reler a seção 10 em caso de dúvida.
+
+---
+
+## 13. Aba Treinos — especificação da Laury (recebida em 22/09/2026)
+
+Fonte: `docs/laury/Especificação do app — Aba Treinos + Home.pdf` (18 páginas).
+É o primeiro conteúdo clínico entregue por ela e **muda a estrutura do produto**.
+Onde contradiz o que está acima, ver "Contradições em aberto" no fim desta seção —
+não resolver por conta própria.
+
+### O que muda
+
+**O Diário de Treino como sequência fixa do dia (aquecimento → respiração →
+coordenação → … → desaquecimento, herdada do Vocal Coach) está substituído.** O
+modelo agora é de academia: o cantor entra em Treinos e **escolhe o objetivo** que
+quer desenvolver.
+
+```
+Objetivo → Treino → Exercício → Execução → Resultado → Evolução
+```
+
+Princípio dela: o cantor deve sentir "estou treinando minha voz", não "estou
+assistindo a exercícios de fonoaudiologia". Gamificação estimula evolução
+**individual** — superar a própria marca, não competir com outros usuários.
+
+### Cinco objetivos, três exercícios cada
+
+| Objetivo | Exercícios |
+|---|---|
+| **Respiração** — controle e sustentação do ar | 1. S sustentado · 2. S pulsado (força vem do abdômen) · 3. Controle respiratório com "X" (mais ar e mais tempo a cada repetição; lembrete "relaxe os ombros") |
+| **Flexibilidade** — mobilidade em escala | 1. Escala em vibração de lábios · 2. Escala com vogais A-E-I-O-U (mostrar a vogal atual) · 3. Escala com som de "Z" |
+| **Firmeza Vocal** — voz grave, estável, "de radialista" | 1. Espaguete + "VU" grave sustentado (bochechas infladas) · 2. Finger kazoo — "VU" pulsado no grave, dedo na boca, **sem** inflar bochechas · 3. Som de sapo — "HUM" glotal e pulsado |
+| **Ressonância** — sensação e projeção | 1. Alongamento de estruturas orais — mastigação exagerada com "HUMMMM" · 2. Messa di voce / slow crescendo — "cara de nojo", MM → NH → AAAH, "em escala crescente" · 3. Humming — vários "HUM" do grave ao agudo |
+| **Articulação e Dicção** — clareza e velocidade | 6 trava-línguas cronometrados (texto na tela + cronômetro + meta). Modalidade futura: palavra + ritmo sobre uma batida, com velocidade crescente |
+
+Exigências por objetivo: Respiração pede ilustração da inspiração (inspirar →
+abdômen firme → emitir). Flexibilidade pede pista visual (movimento das notas),
+pista auditiva (modelo da escala) e feedback de acerto/erro. Firmeza pede loop da
+execução, demonstração corporal, contagem de inspiração e de emissão, e nota de
+referência.
+
+**Meta do S sustentado: 8 → 10 → 12 → 15 segundos.** Isso responde a pergunta do
+teto clínico que estava aberta: o "SSS de 30s" do Vocal Coach (ver `ARQUITETURA.md`)
+não é a referência — a progressão começa em 8s e o teto definido por ela é 15s.
+Não subir além disso sem ela.
+
+### Arquitetura de tela obrigatória — 8 passos (seção 09 do PDF)
+
+Todo exercício, sem exceção, passa por:
+
+1. **O que fazer** — explicação extremamente curta
+2. **Como fazer** — demonstração visual/animada
+3. **Modelo** — referência auditiva, quando houver
+4. **Executar** — microfone ativo
+5. **Feedback** — o app analisa a execução
+6. **Resultado** — desempenho mostrado visualmente
+7. **Meta** — o próximo objetivo
+8. **Evolução** — registro do progresso individual
+
+É o contrato do motor único: o componente é um só, e os 8 passos são os seus
+estados. Exercício novo continua sendo configuração, não tela.
+
+### Capacidades de detecção que os 15 exercícios exigem
+
+| Capacidade | Usada em | Estado |
+|---|---|---|
+| **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3 | **Existe** (seção 9). Vibração de lábios modula a amplitude e pode instabilizar a leitura — testar com voz real |
+| **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Pendente — bug do microfone.** "S" e "X" são **surdos** (sem pitch): a detecção tem que ser por energia (RMS/banda de chiado), não por autocorrelação. Chiado se confunde com ruído ambiente, o que torna a validação de ambiente ainda mais crítica aqui |
+| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Não existe** |
+| **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Não existe.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho |
+| **Tempo de leitura** | Articulação (trava-línguas) | Trivial — cronômetro, com início/fim por toque ou por detecção de voz |
+
+### O que NÃO é mensurável — não prometer
+
+Isto fica como **instrução visual** (animação, lembrete), nunca como feedback,
+pontuação ou acerto/erro:
+
+- **Clareza articulatória do trava-língua.** Exigiria reconhecimento de fala em
+  português, offline, no aparelho — pouco confiável e pesado para Android simples.
+  O app mede **tempo**, não se a pessoa articulou bem. "Abra mais a boca" e
+  "articule com precisão" são orientação, não correção
+- **Expressão facial** ("cara de nojo" da messa di voce, lábios em bico)
+- **Bochechas infladas ou não** (Espaguete + VU vs. Finger kazoo)
+- **Abdômen firme, ombros relaxados, mastigação**
+- **Qual vogal está sendo cantada** na escala com vogais — a tela mostra, não confere
+
+### Contradições em aberto (levar à Laury antes de implementar)
+
+1. **Aquecimento e desaquecimento não aparecem no PDF.** Era a regra ética mais
+   forte dela (seção 10, item 2). O modelo de academia, onde o cantor escolhe o
+   objetivo e entra direto, não diz onde o aquecimento entra. **Até ela responder,
+   a seção 10 prevalece:** aquecimento travado antes de qualquer treino. Além
+   disso, exercícios que ela deu antes como **aquecimento** (espaguete, mastigação
+   exagerada, vibração) agora aparecem como **treino** — falta dizer se são a
+   mesma coisa
+2. **Tom visual.** Ela pede identidade "mais divertida", "estímulos cômicos e
+   ilustrações engraçadas" na Ressonância e "representação divertida" no Som de
+   sapo. O briefing de design diz "não gamificação infantil". Ela mesma limita:
+   divertido dentro do exercício, interface geral "moderna, limpa", "produto
+   tecnológico premium". Leitura provável: humor nas ilustrações de demonstração,
+   não no chrome do app — confirmar
+3. **Emoji nos cards** da barra lateral (🫁 🎵 🎙 ✨ 🗣) e "ícones intuitivos" na
+   direção de design. Emoji e ícones de biblioteca em cards estão proibidos (seção
+   9). Provavelmente marcador de rascunho, não pedido literal — confirmar
+4. **Tipo vocal e teste de extensão não são mencionados.** O onboarding vocal era
+   "o coração do produto". As escalas precisam da faixa do cantor para não forçar,
+   então o perfil vocal continua necessário — mas ela não diz se o exercício muda
+   por tipo vocal (pergunta 3 da Parte 2 do `CURRICULO-LAURY.md` segue aberta)
+5. **O currículo herdado do Vocal Coach sumiu.** Afinação, coordenação, voz mista
+   e belting/resistência não estão nos cinco objetivos. Não há ordem entre
+   objetivos nem "dia N"
+6. **Messa di voce "em escala crescente"** é ambíguo: crescendo de intensidade na
+   mesma nota (sentido clássico; "mostrar o crescimento da emissão" sugere isso)
+   ou escala ascendente? Define se o analisador é intensidade ou pitch
+7. **Faltam números.** Só o S sustentado tem meta. Pulsos-meta, tempo-meta dos
+   trava-línguas, desenho da escala (quantas notas, quais intervalos), repetições
+   — nada definido. Não inventar (seção 12)
+8. **"Níveis de dificuldade"** está na lista de funcionalidades. Ela corrigiu que
+   aquecimento não tem nível; para treino faz sentido, mas não pode vazar para o
+   aquecimento
