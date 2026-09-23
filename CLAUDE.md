@@ -521,11 +521,15 @@ estados. Exercício novo continua sendo configuração, não tela.
 
 | Capacidade | Usada em | Estado |
 |---|---|---|
-| **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3 | **Existe** (seção 9). Vibração de lábios modula a amplitude e pode instabilizar a leitura — testar com voz real |
-| **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Pendente — bug do microfone.** "S" e "X" são **surdos** (sem pitch): a detecção tem que ser por energia (RMS/banda de chiado), não por autocorrelação. Chiado se confunde com ruído ambiente, o que torna a validação de ambiente ainda mais crítica aqui |
-| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Não existe** |
-| **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Não existe.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho |
-| **Tempo de leitura** | Articulação (trava-línguas) | Trivial — cronômetro, com início/fim por toque ou por detecção de voz |
+| **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3 | **Existe**, com gate de clareza (23/09/2026: sem ele, 41/50 quadros de chiado viravam nota). Testado só com sinal sintético. Vibração de lábios pode instabilizar — testar com voz real |
+| **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Implementado, não testado com voz** (`src/lib/audio/detectors.ts`). Por energia em bandas contra o ruído da sala calibrado, não gate fixo de RMS — funciona com chiado surdo e com Bluetooth cortando agudo |
+| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Implementado, não testado com voz** |
+| **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Implementado, não testado com voz.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho |
+| **Tempo de leitura** | Articulação (trava-línguas) | Implementado (modo `timer`, início/fim pela voz) |
+
+Cada exercício declara seus modos em `src/lib/treinos/exercises.ts`. Bancada de teste com
+voz real: rota `/lab/microfone` (gera relatório JSON). Limiares dos detectores são
+provisórios até esse teste.
 
 ### O que NÃO é mensurável — não prometer
 

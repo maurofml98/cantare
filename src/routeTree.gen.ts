@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TesteVocalExecutarRouteImport } from './routes/teste-vocal.executar'
 import { Route as PalcoProjectIdRouteImport } from './routes/palco.$projectId'
+import { Route as LabMicrofoneRouteImport } from './routes/lab.microfone'
 import { Route as DiarioConcluidoRouteImport } from './routes/diario.concluido'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
 import { Route as AppTesteVocalIndexRouteImport } from './routes/_app.teste-vocal.index'
@@ -49,6 +50,11 @@ const TesteVocalExecutarRoute = TesteVocalExecutarRouteImport.update({
 const PalcoProjectIdRoute = PalcoProjectIdRouteImport.update({
   id: '/palco/$projectId',
   path: '/palco/$projectId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabMicrofoneRoute = LabMicrofoneRouteImport.update({
+  id: '/lab/microfone',
+  path: '/lab/microfone',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiarioConcluidoRoute = DiarioConcluidoRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/lab/microfone': typeof LabMicrofoneRoute
   '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/diario/evolucao': typeof AppDiarioEvolucaoRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/lab/microfone': typeof LabMicrofoneRoute
   '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/diario/evolucao': typeof AppDiarioEvolucaoRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_app/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
+  '/lab/microfone': typeof LabMicrofoneRoute
   '/palco/$projectId': typeof PalcoProjectIdRoute
   '/teste-vocal/executar': typeof TesteVocalExecutarRoute
   '/_app/diario/evolucao': typeof AppDiarioEvolucaoRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/diario/concluido'
+    | '/lab/microfone'
     | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/diario/evolucao'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/home'
     | '/diario/concluido'
+    | '/lab/microfone'
     | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/diario/evolucao'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_app/home'
     | '/diario/concluido'
+    | '/lab/microfone'
     | '/palco/$projectId'
     | '/teste-vocal/executar'
     | '/_app/diario/evolucao'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
   DiarioConcluidoRoute: typeof DiarioConcluidoRoute
+  LabMicrofoneRoute: typeof LabMicrofoneRoute
   PalcoProjectIdRoute: typeof PalcoProjectIdRoute
   TesteVocalExecutarRoute: typeof TesteVocalExecutarRoute
   DiarioExercicioExerciseIdRoute: typeof DiarioExercicioExerciseIdRoute
@@ -274,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/palco/$projectId'
       fullPath: '/palco/$projectId'
       preLoaderRoute: typeof PalcoProjectIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lab/microfone': {
+      id: '/lab/microfone'
+      path: '/lab/microfone'
+      fullPath: '/lab/microfone'
+      preLoaderRoute: typeof LabMicrofoneRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diario/concluido': {
@@ -394,6 +414,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
   DiarioConcluidoRoute: DiarioConcluidoRoute,
+  LabMicrofoneRoute: LabMicrofoneRoute,
   PalcoProjectIdRoute: PalcoProjectIdRoute,
   TesteVocalExecutarRoute: TesteVocalExecutarRoute,
   DiarioExercicioExerciseIdRoute: DiarioExercicioExerciseIdRoute,

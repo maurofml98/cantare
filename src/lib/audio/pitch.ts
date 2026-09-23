@@ -1,5 +1,9 @@
 // Pitch detection via normalized autocorrelation (McLeod-like simplified).
 // Returns frequency in Hz, or -1 if no confident pitch.
+
+/** Abaixo disso o quadro não tem altura definida (CLAUDE.md, seção 9). */
+export const CLARITY_GATE = 0.55;
+
 export function detectPitch(buf: Float32Array, sampleRate: number): number {
   const SIZE = buf.length;
   let rms = 0;
@@ -48,6 +52,11 @@ export function detectPitch(buf: Float32Array, sampleRate: number): number {
     }
   }
   if (maxIdx <= 0) return -1;
+
+  // Clareza: correlação no período, normalizada pelo número de termos somados. Sem este gate,
+  // chiado ("S", "X") e ruído de sala viravam nota em 41 de 50 quadros.
+  const clarity = (c[maxIdx] * N) / ((N - maxIdx) * c[0]);
+  if (clarity < CLARITY_GATE) return -1;
 
   // Parabolic interpolation
   const y1 = c[maxIdx - 1] ?? c[maxIdx];
