@@ -303,6 +303,10 @@ function ExecuteStep({ ex, run, goal }: { ex: RunnableExercise; run: TreinoRun; 
       <Stage>
         <p style={{ fontSize: 15, letterSpacing: '0.14em', color: C.gold }}>INSPIRE</p>
         <Big>{live.inhaleLeft}</Big>
+        {/* texto já visível no preparo: o cronômetro abre com a primeira sílaba */}
+        {ex.engine.text && (
+          <p style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(22px, 6vw, 32px)', lineHeight: 1.3, color: C.paper2 }}>{ex.engine.text}</p>
+        )}
       </Stage>
     );
 

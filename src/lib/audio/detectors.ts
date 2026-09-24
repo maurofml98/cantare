@@ -37,6 +37,12 @@ export class SustainDetector {
   private segs: [number, number][] = [];
   private start: number | null = null;
   private lastAbove = 0;
+  /**
+   * Caiu abaixo do limiar de saída. Para retomar precisa do limiar de entrada: sem isso, picos
+   * isolados do ruído da sala (que chega a ~5 dB) estendiam o fim — 24/09/2026, trava-língua
+   * sintético de 2,6 s medido como 3,6 s.
+   */
+  private inGap = false;
 
   /**
    * @param gapMs queda abaixo do limiar mais curta que isso não quebra a emissão
@@ -51,11 +57,14 @@ export class SustainDetector {
       if (a >= this.cal.onDb) {
         this.start = f.t;
         this.lastAbove = f.t;
+        this.inGap = false;
       }
-    } else if (a >= this.cal.offDb) {
+    } else if (a >= (this.inGap ? this.cal.onDb : this.cal.offDb)) {
       this.lastAbove = f.t;
-    } else if ((f.t - this.lastAbove) * 1000 > this.gapMs) {
-      this.close();
+      this.inGap = false;
+    } else {
+      if (a < this.cal.offDb) this.inGap = true;
+      if ((f.t - this.lastAbove) * 1000 > this.gapMs) this.close();
     }
   }
 
@@ -100,15 +109,28 @@ export interface PulseResult {
 /*
  * Um pulso é uma subida de `riseDb` a partir do vale anterior. Não exige voltar ao silêncio:
  * no finger kazoo e no sapo a voz pode não parar entre um pulso e outro, só cair de volume.
+ *
+ * O vale só conta depois de durar `minValleyMs`. Sem isso, um buraco de 15 ms no meio de um
+ * pulso (queda de áudio com o aparelho sob carga, falha breve no "S") virava dois pulsos —
+ * reproduzido em 24/09/2026 com áudio sintético: 10 pulsos com buraco de 15 ms contavam 20.
  */
 export class PulseDetector {
   private high = false;
   private min = 0;
   private max = 0;
+  /** início da queda em andamento, enquanto ainda não durou o bastante para ser vale */
+  private fallAt: number | null = null;
+  private fallMin = 0;
   private onsets: number[] = [];
 
   /** Provisórios, ajustar com voz real. */
-  constructor(private cal: Calibration, private riseDb = 6, private fallDb = 5, private minGapMs = 90) {}
+  constructor(
+    private cal: Calibration,
+    private riseDb = 6,
+    private fallDb = 5,
+    private minGapMs = 90,
+    private minValleyMs = 50,
+  ) {}
 
   push(f: Frame) {
     const a = activityDb(f, this.cal);
@@ -119,13 +141,25 @@ export class PulseDetector {
         this.onsets.push(f.t);
         this.high = true;
         this.max = a;
+        this.fallAt = null;
+      }
+      return;
+    }
+    if (a <= this.max - this.fallDb || a < this.cal.offDb) {
+      if (this.fallAt === null) {
+        this.fallAt = f.t;
+        this.fallMin = a;
+      }
+      this.fallMin = Math.min(this.fallMin, a);
+      if ((f.t - this.fallAt) * 1000 >= this.minValleyMs) {
+        this.high = false;
+        this.min = this.fallMin;
+        this.fallAt = null;
       }
     } else {
+      // voltou antes de virar vale: era buraco dentro do mesmo pulso
+      this.fallAt = null;
       this.max = Math.max(this.max, a);
-      if (a <= this.max - this.fallDb || a < this.cal.offDb) {
-        this.high = false;
-        this.min = a;
-      }
     }
   }
 

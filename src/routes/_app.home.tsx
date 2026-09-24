@@ -4,16 +4,11 @@ import { store } from '@/lib/store';
 import type { RepertoireProject, User } from '@/lib/types';
 import { loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
 import { loadProjects } from '@/lib/repertoire/store';
-import {
-  DIARY_EXERCISES,
-  greetingFor,
-  loadDiaryToday,
-  loadWeekSummary,
-  mostRecentProject,
-  type DiaryToday,
-  type WeekSummary,
-} from '@/lib/home/today';
-import { TodayTrainingCard, TrainingSequence, VoicePanel } from '@/components/home/TodayTraining';
+import { greetingFor, loadDiaryToday, loadWeekSummary, mostRecentProject, type WeekSummary } from '@/lib/home/today';
+import { TodayTrainingCard, TreinoObjectives, VoicePanel, type ObjectiveRow } from '@/components/home/TodayTraining';
+import { exercisesOf, isRunnable, OBJECTIVES } from '@/lib/treinos/exercises';
+import { attemptsToday } from '@/lib/treinos/progress';
+import { warmedUpToday } from '@/lib/treinos/warmup';
 import { EvolutionPanel, HealthShortcuts, LauryTip, WeekRepertoire } from '@/components/home/HomeSections';
 import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
 import { preloadAsset } from '@/components/media/CinematicImage';
@@ -27,8 +22,12 @@ interface HomeData {
   user: User | null;
   profile: VocalProfile | null;
   project: RepertoireProject | null;
-  diary: DiaryToday;
+  /** streak do Diário antigo — só o painel Evolução ainda usa */
+  streak: number;
   week: WeekSummary;
+  warmedUp: boolean;
+  attemptsToday: number;
+  objectives: ObjectiveRow[];
 }
 
 function readHomeData(): HomeData {
@@ -36,8 +35,14 @@ function readHomeData(): HomeData {
     user: store.getUser(),
     profile: loadVocalProfile(),
     project: mostRecentProject(loadProjects()),
-    diary: loadDiaryToday(),
+    streak: loadDiaryToday().streak,
     week: loadWeekSummary(),
+    warmedUp: warmedUpToday(),
+    attemptsToday: attemptsToday(),
+    objectives: OBJECTIVES.map((o) => {
+      const list = exercisesOf(o.id);
+      return { id: o.id, name: o.name, ready: list.filter(isRunnable).length, total: list.length };
+    }),
   };
 }
 
@@ -59,14 +64,12 @@ function HomePage() {
   if (!data?.user) return null;
 
   const name = data.user.name?.trim().split(/\s+/)[0];
-  const { completedIds, streak } = data.diary;
-  const done = DIARY_EXERCISES.filter((e) => completedIds.includes(e.id)).length;
-  const subtitle =
-    done === DIARY_EXERCISES.length
-      ? 'Treino feito. Hoje sua voz merece descanso.'
-      : done > 0
-        ? 'Seu treino está pela metade. Bora terminar?'
-        : 'Sua voz está pronta para o treino de hoje.';
+  const { streak } = data;
+  const subtitle = !data.warmedUp
+    ? 'Aqueça a voz e escolha o que treinar hoje.'
+    : data.attemptsToday > 0
+      ? 'Bom treino hoje. Volte quando quiser superar sua marca.'
+      : 'Voz aquecida. Escolha o que treinar.';
 
   /*
    * Em telas grandes (≥1536px de largura e ≥1000px de altura útil) a Home ocupa exatamente a altura da janela, em três faixas
@@ -92,7 +95,12 @@ function HomePage() {
             {subtitle}
           </p>
         </header>
-        <TodayTrainingCard exercises={DIARY_EXERCISES} completedIds={completedIds} day={Math.max(1, streak)} />
+        <TodayTrainingCard
+          warmedUp={data.warmedUp}
+          attemptsToday={data.attemptsToday}
+          readyObjectives={data.objectives.filter((o) => o.ready > 0).length}
+          totalObjectives={data.objectives.length}
+        />
       </div>
 
       <div className="min-h-0 lg:col-span-4">
@@ -101,7 +109,7 @@ function HomePage() {
 
       {/* Faixa 2 */}
       <div className="min-h-0 lg:col-span-4">
-        <TrainingSequence exercises={DIARY_EXERCISES} completedIds={completedIds} />
+        <TreinoObjectives objectives={data.objectives} />
       </div>
       <div className="min-h-0 lg:col-span-4">
         <WeekRepertoire project={data.project} />

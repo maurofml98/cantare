@@ -2,31 +2,32 @@ import { Link } from '@tanstack/react-router';
 import { NoteLadder } from '@/components/vocal/NoteLadder';
 import { CinematicImage, useSpotlight } from '@/components/media/CinematicImage';
 import type { VocalProfile } from '@/lib/vocal/profile';
-import { formatDuration, profileRanges, totalMinutes, type DiaryExercise } from '@/lib/home/today';
+import { profileRanges } from '@/lib/home/today';
+import type { ObjectiveId } from '@/lib/treinos/exercises';
 import { C, Panel, PrimaryButton, SANS, SecondaryButton, SERIF, TextLink, focusRing } from './primitives';
 
 /* ============ Treino de hoje ============ */
 
+/*
+ * Lê a aba Treinos (modelo de academia: o cantor escolhe o objetivo). Não há sequência fixa do
+ * dia nem "Dia N" — isso era o Diário, fora da navegação até a Laury dizer se ele volta.
+ */
 interface TodayTrainingCardProps {
-  exercises: DiaryExercise[];
-  completedIds: string[];
-  day: number;
+  /** aquecimento feito hoje — sem ele o treino fica travado (CLAUDE.md, seção 10) */
+  warmedUp: boolean;
+  /** tentativas registradas hoje, em qualquer exercício */
+  attemptsToday: number;
+  /** objetivos com pelo menos um exercício pronto */
+  readyObjectives: number;
+  totalObjectives: number;
 }
 
-export function TodayTrainingCard({ exercises, completedIds, day }: TodayTrainingCardProps) {
-  const total = exercises.length;
-  const done = exercises.filter((e) => completedIds.includes(e.id)).length;
-  const next = exercises.find((e) => !completedIds.includes(e.id)) ?? null;
-  const minutes = totalMinutes(exercises);
-  const remaining = Math.round(
-    exercises.filter((e) => !completedIds.includes(e.id)).reduce((s, e) => s + e.durationSec, 0) / 60,
-  );
-
-  const lede = !next
-    ? 'Treino completo. Agora é hidratar e deixar a voz descansar.'
-    : done === 0
-      ? 'Aqueça, ative sua voz e chegue mais longe no que importa: a sua música.'
-      : 'Você já começou. Termine a sequência enquanto a voz está aquecida.';
+export function TodayTrainingCard({ warmedUp, attemptsToday, readyObjectives, totalObjectives }: TodayTrainingCardProps) {
+  const lede = !warmedUp
+    ? 'Comece pelo aquecimento. Depois escolha o que quer desenvolver.'
+    : attemptsToday > 0
+      ? 'Você já treinou hoje. Tente superar a sua marca.'
+      : 'Voz aquecida. Escolha um objetivo e treine.';
 
   const spot = useSpotlight<HTMLDivElement>();
 
@@ -53,30 +54,21 @@ export function TodayTrainingCard({ exercises, completedIds, day }: TodayTrainin
             </h2>
           </div>
           <p className="mt-2" style={{ fontFamily: SANS, fontSize: 15, color: C.paper2 }}>
-            {total} exercícios <span style={{ color: C.gold }}>·</span> {minutes} min
-            {next && done > 0 && <span style={{ color: C.paper3 }}> · faltam {remaining} min</span>}
+            {totalObjectives} objetivos <span style={{ color: C.gold }}>·</span> {readyObjectives} {readyObjectives === 1 ? 'pronto' : 'prontos'}
           </p>
           <p className="mt-4 max-w-md" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 15, color: C.paper2, lineHeight: 1.55 }}>
             {lede}
           </p>
 
-          <div className="mt-auto flex flex-col gap-4 pt-6 sm:flex-row sm:items-center">
-            {next ? (
-              <>
-                <PrimaryButton to="/treinos">{done === 0 ? 'Começar aquecimento' : 'Continuar treino'}</PrimaryButton>
-                <div className="whitespace-nowrap" style={{ fontFamily: SANS, fontSize: 13, lineHeight: 1.35 }}>
-                  <span className="block" style={{ color: C.paper3 }}>{done === 0 ? 'Primeiro passo' : 'Próximo'}</span>
-                  <span style={{ color: C.paper }}>{next.name}</span>
-                  <span style={{ color: C.paper3 }}> · {formatDuration(next.durationSec)}</span>
-                </div>
-              </>
-            ) : (
-              <TextLink to="/diario/evolucao">Ver como foi sua semana</TextLink>
-            )}
+          <div className="mt-auto pt-6">
+            <PrimaryButton to="/treinos">Escolher objetivo</PrimaryButton>
           </div>
         </div>
 
-        <DayRing day={day} done={done} total={total} completed={exercises.map((e) => completedIds.includes(e.id))} />
+        <dl className="flex min-w-[168px] flex-col justify-end gap-3 self-end" style={{ fontFamily: SANS }}>
+          <Fact label="Aquecimento" value={warmedUp ? 'feito' : 'pendente'} gold={warmedUp} />
+          <Fact label="Tentativas hoje" value={String(attemptsToday)} />
+        </dl>
       </div>
     </Panel>
   );
@@ -215,52 +207,38 @@ function Fact({ label, value, gold = false }: { label: string; value: string; go
   );
 }
 
-/* ============ Sequência ============ */
+/* ============ Objetivos ============ */
 
-export function TrainingSequence({ exercises, completedIds }: { exercises: DiaryExercise[]; completedIds: string[] }) {
-  const nextId = exercises.find((e) => !completedIds.includes(e.id))?.id;
+export interface ObjectiveRow {
+  id: ObjectiveId;
+  name: string;
+  /** exercícios prontos para o motor */
+  ready: number;
+  total: number;
+}
 
+export function TreinoObjectives({ objectives }: { objectives: ObjectiveRow[] }) {
   return (
-    <Panel title="Sequência de treino" subtitle="Seu treino de hoje, passo a passo." labelledBy="sequencia" className="h-full">
-      <ol className="relative flex flex-1 flex-col justify-between">
-        {/* fio que liga os passos */}
-        <span aria-hidden className="absolute bottom-3 left-[11px] top-3 w-px" style={{ background: C.rule }} />
-        {exercises.map((ex, i) => {
-          const isDone = completedIds.includes(ex.id);
-          const isNext = ex.id === nextId;
-          return (
-            <li key={ex.id}>
-              <Link
-                to="/treinos"
-                className={`group relative flex items-center gap-3 rounded-[4px] py-[5px] pr-1 transition-colors hover:bg-white/[0.03] ${focusRing}`}
-              >
-                <span
-                  className="relative z-10 flex h-[23px] w-[23px] shrink-0 items-center justify-center rounded-full"
-                  style={{
-                    background: isDone ? C.gold : C.surface,
-                    border: `1px solid ${isDone || isNext ? C.gold : 'rgba(232,228,220,0.22)'}`,
-                    color: isDone ? C.ink : isNext ? C.gold : C.paper3,
-                    fontFamily: SANS,
-                    fontSize: 11,
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <span
-                  className="min-w-0 truncate"
-                  style={{ fontFamily: SANS, fontSize: 14, color: isDone ? C.paper3 : C.paper, fontWeight: isNext ? 500 : 400 }}
-                >
-                  {ex.name}
-                </span>
-                <span aria-hidden className="mx-1 h-px min-w-4 flex-1" style={{ borderBottom: `1px dotted ${C.rule}` }} />
-                <span style={{ fontFamily: SANS, fontSize: 12, color: isDone ? C.gold : C.paper3 }}>
-                  {isDone ? 'feito' : formatDuration(ex.durationSec)}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
+    <Panel title="Objetivos" subtitle="Escolha o que quer desenvolver." labelledBy="objetivos" className="h-full">
+      <ul className="flex flex-1 flex-col justify-between">
+        {objectives.map((o) => (
+          <li key={o.id}>
+            <Link
+              to="/treinos/$objectiveId"
+              params={{ objectiveId: o.id }}
+              className={`group flex items-center gap-3 rounded-[4px] py-[5px] pr-1 transition-colors hover:bg-white/[0.03] ${focusRing}`}
+            >
+              <span className="min-w-0 truncate" style={{ fontFamily: SANS, fontSize: 14, color: o.ready ? C.paper : C.paper3 }}>
+                {o.name}
+              </span>
+              <span aria-hidden className="mx-1 h-px min-w-4 flex-1" style={{ borderBottom: `1px dotted ${C.rule}` }} />
+              <span style={{ fontFamily: SANS, fontSize: 12, color: o.ready ? C.gold : C.paper3 }}>
+                {o.ready ? `${o.ready} de ${o.total}` : 'em preparação'}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </Panel>
   );
 }

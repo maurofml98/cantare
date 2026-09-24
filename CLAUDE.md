@@ -384,6 +384,25 @@ A própria Laury teve resultado diferente em dias diferentes.
   artificialmente baixa. No teste não atrapalhou (o "S" ficou ~50 dB acima), mas
   em ambiente ruidoso o gate pode cortar início/fim de emissões fracas ou deixar
   o ruído passar como voz. Validar em sala barulhenta antes de confiar no iOS
+- **Calibração com silêncio digital (zeros) desliga a detecção** (achado em 24/09/2026,
+  áudio sintético): se o microfone entrega zeros exatos durante os 2 s de calibração,
+  todas as bandas ficam abaixo do piso, são tratadas como "mortas" e nada é captado
+  depois ("Não captamos o som"). É o extremo do gate do iOS acima. Não corrigido
+- **Contagem de pulsos — buraco dentro do pulso (corrigido 24/09/2026).** Em 1 de 5
+  rodadas, 10 pulsos sintéticos contaram 13. Causa confirmada: qualquer queda de áudio
+  ≥15 ms no meio de um pulso (glitch do aparelho sob carga, falha breve no "S")
+  virava dois pulsos — áudio com buraco de 15 ms contava 20 em vez de 10. O detector
+  agora só aceita um vale que dure ≥50 ms (`minValleyMs`, provisório); testes em
+  `detectors.test.ts`. **Risco que continua:** o limiar é de sinal sintético. Pulsos
+  mais rápidos que ~6/s ou vales de voz real mais curtos que 50 ms seriam contados a
+  menos. Validar com voz real no `/lab/microfone` antes de a Laury definir a meta de
+  repetições
+- **Duração e cronômetro — ruído estendendo o fim (corrigido 24/09/2026).** Um
+  trava-língua sintético de 2,6 s media 3,6 s: nas pausas, picos do ruído da sala
+  (~5 dB) passavam do limiar de saída (4 dB) e mantinham o trecho aberto. Agora, depois
+  de cair abaixo do limiar de saída, só o limiar de entrada retoma a emissão. Afeta
+  também S sustentado e "X" (menos, porque a janela é 250 ms e não 600 ms). Efeito
+  colateral possível: emissão muito fraca, perto do limiar, quebra mais cedo
 
 ### Identidade visual (última definida, não validada)
 
@@ -539,7 +558,7 @@ estados. Exercício novo continua sendo configuração, não tela.
 |---|---|---|
 | **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3 | **Existe**, com gate de clareza (23/09/2026: sem ele, 41/50 quadros de chiado viravam nota). Testado só com sinal sintético. Vibração de lábios pode instabilizar — testar com voz real |
 | **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Implementado, não testado com voz** (`src/lib/audio/detectors.ts`). Por energia em bandas contra o ruído da sala calibrado, não gate fixo de RMS — funciona com chiado surdo e com Bluetooth cortando agudo |
-| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Implementado, não testado com voz** |
+| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Implementado, não testado com voz.** Contava buraco de ≥15 ms dentro do pulso como pulso extra — corrigido com vale mínimo de 50 ms (ver seção 9, limitações) |
 | **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Implementado, não testado com voz.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho |
 | **Tempo de leitura** | Articulação (trava-línguas) | Implementado (modo `timer`, início/fim pela voz) |
 

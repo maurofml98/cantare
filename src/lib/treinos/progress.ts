@@ -98,6 +98,12 @@ export function loadAttempts(exerciseId: string): Attempt[] {
   return readAll().filter((a) => a.exerciseId === exerciseId);
 }
 
+/** Tentativas registradas hoje (data local), em qualquer exercício. */
+export function attemptsToday(now = new Date()): number {
+  const day = now.toDateString();
+  return readAll().filter((a) => new Date(a.at).toDateString() === day).length;
+}
+
 export function saveAttempt(exerciseId: string, value: number) {
   try {
     const all = [...readAll(), { exerciseId, at: new Date().toISOString(), value }];
