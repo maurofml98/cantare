@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
-import { BookOpen, ChartNoAxesColumn, Heart, House, LogOut, Music2, AudioLines } from 'lucide-react';
+import { Dumbbell, ChartNoAxesColumn, Heart, House, LogOut, Music2, AudioLines } from 'lucide-react';
 import { store } from '../lib/store';
 
 export function Sidebar() {
@@ -12,7 +12,7 @@ export function Sidebar() {
     if (path === '/diario/evolucao') return pathname === '/diario/evolucao';
     if (path === '/home') return pathname === '/home';
     if (path === '/teste-vocal') return pathname.startsWith('/teste-vocal');
-    if (path === '/diario') return pathname.startsWith('/diario') && pathname !== '/diario/evolucao';
+    if (path === '/treinos') return pathname.startsWith('/treinos');
     if (path === '/repertorio') return pathname.startsWith('/repertorio');
     if (path === '/saude') return pathname.startsWith('/saude');
     return false;
@@ -22,7 +22,7 @@ export function Sidebar() {
   const items = [
     { label: 'Home', path: '/home', Icon: House },
     { label: 'Teste Vocal', path: '/teste-vocal', Icon: AudioLines },
-    { label: 'Diário de Treino', path: '/diario', Icon: BookOpen },
+    { label: 'Treinos', path: '/treinos', Icon: Dumbbell },
     { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
     { label: 'Repertório', path: '/repertorio', Icon: Music2 },
     { label: 'Saúde Vocal', path: '/saude', Icon: Heart },

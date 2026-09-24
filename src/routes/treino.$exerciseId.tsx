@@ -6,7 +6,7 @@ import { TreinoEngine } from '@/components/treinos/TreinoEngine';
 import { isRunnable, TREINO_BY_ID } from '@/lib/treinos/exercises';
 import { warmedUpToday } from '@/lib/treinos/warmup';
 
-export const Route = createFileRoute('/treinos/$exerciseId')({
+export const Route = createFileRoute('/treino/$exerciseId')({
   head: ({ params }) => ({
     meta: [{ title: `${TREINO_BY_ID[params.exerciseId]?.name ?? 'Treino'} — Cantare` }],
   }),
@@ -39,7 +39,7 @@ function Gate({ title, text, warmup = false }: { title: string; text: string; wa
             Fazer aquecimento
           </Link>
         )}
-        <Link to="/home" className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
+        <Link to="/treinos" className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
           Voltar
         </Link>
       </div>

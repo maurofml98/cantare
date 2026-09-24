@@ -7,6 +7,7 @@ import { useReducedMotion } from '@/components/diario/session/visuals/shared';
 import type { SustainResult } from '@/lib/audio/detectors';
 import type { DemoStep, Metric, RunnableExercise } from '@/lib/treinos/exercises';
 import { evaluate, goalFor, loadAttempts, saveAttempt, type Attempt, type Evaluation, type Goal } from '@/lib/treinos/progress';
+import { dec, fmt, fmtGoal, fmtU, unit } from '@/lib/treinos/format';
 import { useTreinoRun, type RunOutcome, type TreinoRun } from './useTreinoRun';
 
 /**
@@ -28,15 +29,6 @@ const STEPS: { id: Step; label: string }[] = [
 ];
 
 const SAFETY = 'Sentiu dor, rouquidão ou desconforto? Pare e procure um profissional.';
-
-/* ---------------- formatação ---------------- */
-
-const dec = (v: number, d = 1) => v.toFixed(d).replace('.', ',');
-const unit = (m: Metric) => (m === 'pulseCount' ? 'pulsos' : 's');
-// Metas inteiras ("8 s") sem casa decimal; medições sempre com uma ("9,0 s").
-const fmt = (v: number, m: Metric) => (m === 'pulseCount' ? `${Math.round(v)}` : dec(v));
-const fmtGoal = (v: number, m: Metric) => (Number.isInteger(v) ? `${v} ${unit(m)}` : fmtU(v, m));
-const fmtU = (v: number, m: Metric) => `${fmt(v, m)} ${unit(m)}`;
 
 export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
   const cfg = exercise.engine;
@@ -77,7 +69,7 @@ export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
 
   const exit = () => {
     run.cancel();
-    navigate({ to: '/home' });
+    navigate({ to: '/treinos/$objectiveId', params: { objectiveId: exercise.objective } });
   };
 
   const goal = goalFor(exercise, history);

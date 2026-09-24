@@ -1,11 +1,11 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { AudioLines, BookOpen, ChartNoAxesColumn, Heart, House, Music2 } from 'lucide-react';
+import { AudioLines, Dumbbell, ChartNoAxesColumn, Heart, House, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ITEMS = [
   { to: '/home', label: 'Home', Icon: House, match: (p: string) => p === '/home' },
   { to: '/teste-vocal', label: 'Teste Vocal', Icon: AudioLines, match: (p: string) => p.startsWith('/teste-vocal') },
-  { to: '/diario', label: 'Diário de Treino', Icon: BookOpen, match: (p: string) => p.startsWith('/diario') && p !== '/diario/evolucao' },
+  { to: '/treinos', label: 'Treinos', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') },
   { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
   { to: '/repertorio', label: 'Repertório', Icon: Music2, match: (p: string) => p.startsWith('/repertorio') },
   { to: '/saude', label: 'Saúde Vocal', Icon: Heart, match: (p: string) => p.startsWith('/saude') },

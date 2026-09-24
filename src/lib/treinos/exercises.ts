@@ -12,6 +12,23 @@ import type { DetectMode } from '@/lib/audio/detectors';
 
 export type ObjectiveId = 'respiracao' | 'flexibilidade' | 'firmeza' | 'ressonancia' | 'articulacao';
 
+export interface Objective {
+  id: ObjectiveId;
+  name: string;
+  /** texto da Laury (PDF, seção 01) */
+  desc: string;
+}
+
+export const OBJECTIVES: Objective[] = [
+  { id: 'respiracao', name: 'Respiração', desc: 'Controle respiratório e sustentação do ar.' },
+  { id: 'flexibilidade', name: 'Flexibilidade', desc: 'Mobilidade e flexibilidade vocal.' },
+  { id: 'firmeza', name: 'Firmeza Vocal', desc: 'Estabilidade, sustentação e sensação de voz grave e firme.' },
+  { id: 'ressonancia', name: 'Ressonância', desc: 'Sensações de ressonância e projeção vocal.' },
+  { id: 'articulacao', name: 'Articulação e Dicção', desc: 'Clareza, precisão articulatória e velocidade da fala.' },
+];
+
+export const OBJECTIVE_BY_ID = Object.fromEntries(OBJECTIVES.map((o) => [o.id, o])) as Record<ObjectiveId, Objective>;
+
 /** O número que o exercício produz, lido do resultado dos detectores. */
 export type Metric =
   /** maior trecho de emissão contínua, em segundos */
@@ -119,3 +136,5 @@ export const TREINO_BY_ID: Record<string, TreinoExercise> = Object.fromEntries(T
 export type RunnableExercise = TreinoExercise & { engine: EngineConfig };
 
 export const isRunnable = (e: TreinoExercise | undefined): e is RunnableExercise => !!e?.engine;
+
+export const exercisesOf = (objective: ObjectiveId) => TREINO_EXERCISES.filter((e) => e.objective === objective);
