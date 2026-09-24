@@ -179,6 +179,9 @@ O espaço vago: cantor + saúde vocal + Brasil.
 
 **Onde está:** projeto no Lovable — `blank-canvas-spark-4329.lovable.app`
 **Para onde vai:** GitHub → VSCode → Claude Code no terminal
+**Deploy:** Vercel, automático a cada push no `main` — `https://cantare-olive.vercel.app`.
+Teste de microfone com voz real: `/lab/microfone` (sem link no app, `noindex`, sem
+proteção — decisão de 23/09/2026)
 
 **Stack:** TanStack Start (React, SSR, servidor Nitro) + Vite + Tailwind.
 Não existe banco de dados: projetos, perfil vocal e usuário ficam todos em
@@ -368,6 +371,14 @@ A própria Laury teve resultado diferente em dias diferentes.
 - Voz grave com microfone ruim → erro de oitava
 - Vibrato forte → dificulta a estabilização
 - Ruído ambiente → resultado não confiável (daí a validação obrigatória)
+- **iOS Safari ignora parte do `getUserMedia`** (teste real de 23/09/2026, iPhone):
+  `getSettings()` só devolve `echoCancellation`; `noiseSuppression` e
+  `autoGainControl` nem aparecem, então não há como confirmar que foram desligados.
+  O piso de ruído calibrado saiu entre -82 e -101 dB — impossível numa sala real:
+  é um gate do iOS zerando o silêncio. A calibração do ruído da sala fica
+  artificialmente baixa. No teste não atrapalhou (o "S" ficou ~50 dB acima), mas
+  em ambiente ruidoso o gate pode cortar início/fim de emissões fracas ou deixar
+  o ruído passar como voz. Validar em sala barulhenta antes de confiar no iOS
 
 ### Identidade visual (última definida, não validada)
 

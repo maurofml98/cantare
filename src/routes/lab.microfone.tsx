@@ -48,7 +48,7 @@ function MicLab() {
   const raf = useRef<number | null>(null);
   const calFrames = useRef<Frame[]>([]);
   const an = useRef<Analysis | null>(null);
-  const rec = useRef({ trace: [] as number[], lastTrace: 0 });
+  const rec = useRef({ trace: [] as number[], lastTrace: 0, t0: null as number | null, lastT: 0 });
 
   useEffect(() => () => {
     if (raf.current) cancelAnimationFrame(raf.current);
@@ -87,12 +87,16 @@ function MicLab() {
   const startRec = () => {
     if (!mic || !cal) return;
     an.current = createAnalysis([mode], cal);
-    rec.current = { trace: [], lastTrace: 0 };
+    rec.current = { trace: [], lastTrace: 0, t0: null, lastT: 0 };
     setPhase('recording');
     let lastUi = 0;
-    loop(mic, (f) => {
+    loop(mic, (raw) => {
       const a = an.current;
       if (!a) return false;
+      // raw.t conta desde a abertura do microfone; o teste conta desde o próprio início
+      rec.current.t0 ??= raw.t;
+      const f = { ...raw, t: raw.t - rec.current.t0 };
+      rec.current.lastT = f.t;
       a.push(f);
       const act = activityDb(f, cal);
       if (f.t - rec.current.lastTrace >= 0.05) {
@@ -120,7 +124,7 @@ function MicLab() {
     setPhase('idle');
     if (!a) return;
     const trace = rec.current.trace;
-    setRuns((r) => [...r, { mode, note, durSec: +(trace.length * 0.05).toFixed(1), result: a.result(), trace }]);
+    setRuns((r) => [...r, { mode, note, durSec: +rec.current.lastT.toFixed(1), result: a.result(), trace }]);
     setNote('');
   };
 
