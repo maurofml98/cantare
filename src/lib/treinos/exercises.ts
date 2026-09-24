@@ -113,8 +113,60 @@ export const TREINO_EXERCISES: TreinoExercise[] = [
       ],
     },
   },
-  { id: 'resp-s-pulsado', objective: 'respiracao', name: 'S pulsado', detect: ['pulses'], targets: null },
-  { id: 'resp-x', objective: 'respiracao', name: 'Controle respiratório com "X"', detect: ['sustain'], targets: null },
+  {
+    id: 'resp-s-pulsado',
+    objective: 'respiracao',
+    name: 'S pulsado',
+    detect: ['pulses'],
+    // TODO(Laury): "meta progressiva de repetições" sem números — até lá, superar o próprio recorde.
+    targets: null,
+    engine: {
+      what: 'Inspire e solte o ar com som de “S” pulsado, sem exagerar na pressão. A força vem do abdômen.',
+      how: [
+        { label: 'Inspire', cue: 'inhale' },
+        { label: 'Abdômen firme', cue: 'hold' },
+        { label: '“S” pulsado', cue: 'pulse' },
+      ],
+      model: null,
+      reminders: ['A força vem do abdômen'],
+      inhaleSec: 3,
+      metric: 'pulseCount',
+      better: 'higher',
+      goal: 'record',
+      todo: [
+        'Meta progressiva de repetições (quantos pulsos em cada meta)',
+        'Critério de regularidade: hoje conta todos os pulsos; o PDF pede "pulsos realizados com regularidade"',
+        'Animação da contração do abdômen a cada pulso — hoje é um círculo pulsando',
+        'Tempo de inspiração antes do "S" (usado 3 s, provisório)',
+      ],
+    },
+  },
+  {
+    id: 'resp-x',
+    objective: 'respiracao',
+    name: 'Controle respiratório com "X"',
+    detect: ['sustain'],
+    // TODO(Laury): "mais ar e mais tempo a cada repetição" sem números — até lá, superar o próprio recorde.
+    targets: null,
+    engine: {
+      what: 'Inspire e solte o ar com som de “X”, firmando o abdômen. A cada repetição, mais ar e mais tempo.',
+      how: [
+        { label: 'Inspire', cue: 'inhale' },
+        { label: 'Abdômen firme', cue: 'hold' },
+        { label: 'Solte o “X”', cue: 'emit' },
+      ],
+      model: null,
+      reminders: ['Relaxe os ombros'],
+      inhaleSec: 3,
+      metric: 'longestSec',
+      better: 'higher',
+      goal: 'record',
+      todo: [
+        'Progressão por repetição: quantas repetições e quanto aumentar o tempo em cada uma',
+        'Se a inspiração também deve crescer a cada repetição (hoje é fixa em 3 s, provisório)',
+      ],
+    },
+  },
 
   { id: 'flex-labios', objective: 'flexibilidade', name: 'Escala em vibração de lábios', detect: ['pitch'], targets: null, pending: 'Desenho da escala (notas, intervalos). Vibração de lábios pode instabilizar a altura.' },
   { id: 'flex-vogais', objective: 'flexibilidade', name: 'Escala com vogais A-E-I-O-U', detect: ['pitch'], targets: null, pending: 'Desenho da escala. A vogal é mostrada, não conferida.' },

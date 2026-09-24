@@ -340,7 +340,7 @@ function AchGlyph({ kind }: { kind: Achievement['glyph'] }) {
 function NewUserStory({ profile }: { profile: VocalProfile | null }) {
   const steps = [
     { n: 1, title: 'Faça o Teste Vocal', text: 'Descubra sua extensão para treinar dentro da sua faixa.', done: !!profile, to: '/teste-vocal', cta: 'Fazer teste vocal' },
-    { n: 2, title: 'Conclua seu primeiro treino', text: 'Sete exercícios, cerca de 15 minutos, começando pelo aquecimento.', done: false, to: '/diario', cta: 'Ir para o treino' },
+    { n: 2, title: 'Conclua seu primeiro treino', text: 'Escolha um objetivo e comece pelo aquecimento.', done: false, to: '/treinos', cta: 'Ir para o treino' },
     { n: 3, title: 'Volte para acompanhar', text: 'Aqui você vai ver precisão, tempo de treino e conquistas ao longo das semanas.', done: false, to: null, cta: null },
   ];
   const nextStep = steps.find((s) => !s.done && s.to);

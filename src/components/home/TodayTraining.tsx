@@ -63,7 +63,7 @@ export function TodayTrainingCard({ exercises, completedIds, day }: TodayTrainin
           <div className="mt-auto flex flex-col gap-4 pt-6 sm:flex-row sm:items-center">
             {next ? (
               <>
-                <PrimaryButton to="/diario">{done === 0 ? 'Começar aquecimento' : 'Continuar treino'}</PrimaryButton>
+                <PrimaryButton to="/treinos">{done === 0 ? 'Começar aquecimento' : 'Continuar treino'}</PrimaryButton>
                 <div className="whitespace-nowrap" style={{ fontFamily: SANS, fontSize: 13, lineHeight: 1.35 }}>
                   <span className="block" style={{ color: C.paper3 }}>{done === 0 ? 'Primeiro passo' : 'Próximo'}</span>
                   <span style={{ color: C.paper }}>{next.name}</span>
@@ -231,7 +231,7 @@ export function TrainingSequence({ exercises, completedIds }: { exercises: Diary
           return (
             <li key={ex.id}>
               <Link
-                to="/diario"
+                to="/treinos"
                 className={`group relative flex items-center gap-3 rounded-[4px] py-[5px] pr-1 transition-colors hover:bg-white/[0.03] ${focusRing}`}
               >
                 <span
