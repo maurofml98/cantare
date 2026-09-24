@@ -188,6 +188,11 @@ Não existe banco de dados: projetos, perfil vocal e usuário ficam todos em
 `localStorage`. Secrets (ex.: Spotify) são lidos só no servidor, via `createServerFn`
 e `process.env`, sem prefixo `VITE_`, e nunca chegam ao navegador.
 
+**Checagem de tipos:** `bun run typecheck` (ou `bunx tsc --noEmit`). **Não usar
+`npx tsc` no Windows:** o `bun install` cria só `tsc.exe`/`tsc.bunx` em
+`node_modules/.bin`, sem o `tsc.cmd` que o npx procura, e o npx acaba baixando o
+pacote `tsc` do npm, que é outro e não funciona.
+
 ### O que existe e funciona
 
 - Login/cadastro **de fachada** — grava o usuário em `localStorage` e aceita qualquer

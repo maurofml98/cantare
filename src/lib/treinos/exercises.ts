@@ -1,13 +1,60 @@
 /**
- * Aba Treinos — os exercícios da especificação da Laury (CLAUDE.md, seção 13; os 6
- * trava-línguas compartilham uma entrada) e o que cada um mede. Por enquanto só identidade +
- * detecção: textos, demonstrações, séries e o resto dos 8 passos entram com o motor.
+ * Aba Treinos — os exercícios da especificação da Laury (CLAUDE.md, seção 13) e o que cada um
+ * mede. Um exercício é configuração: o motor (`components/treinos/TreinoEngine.tsx`) é um só e
+ * percorre os 8 passos da seção 09 do PDF com o que estiver aqui.
+ *
+ * Só exercícios com `engine` rodam. Os outros ficam como identidade + detecção até a
+ * detecção de altura ser testada com voz real e as demonstrações existirem.
  *
  * Metas: só o S sustentado tem número dela. `null` = pendente com a Laury — não inventar.
  */
 import type { DetectMode } from '@/lib/audio/detectors';
 
 export type ObjectiveId = 'respiracao' | 'flexibilidade' | 'firmeza' | 'ressonancia' | 'articulacao';
+
+/** O número que o exercício produz, lido do resultado dos detectores. */
+export type Metric =
+  /** maior trecho de emissão contínua, em segundos */
+  | 'longestSec'
+  /** ataques contados no envelope */
+  | 'pulseCount'
+  /** do primeiro som ao último, em segundos (trava-línguas) */
+  | 'timerSec';
+
+/**
+ * De onde vem a meta:
+ * - `targets`: escada numérica da Laury (ex.: 8 → 10 → 12 → 15 s). No topo, a meta para lá.
+ * - `record`: sem número definido, a meta é superar o próprio recorde (seção 02 do PDF).
+ */
+export type GoalMode = 'targets' | 'record';
+
+/** Um quadro da demonstração do passo "Como fazer". */
+export interface DemoStep {
+  label: string;
+  /** o que o quadro anima; sem animação própria ainda, só o ritmo da sequência */
+  cue?: 'inhale' | 'hold' | 'emit' | 'pulse' | 'read';
+}
+
+export interface EngineConfig {
+  /** 1. O que fazer — uma frase, texto da Laury */
+  what: string;
+  /** 2. Como fazer — sequência demonstrada em loop */
+  how: DemoStep[];
+  /** 3. Modelo — referência auditiva. `null` = não se aplica (o passo é pulado) */
+  model: null | { src: string };
+  /** texto mostrado durante a execução (trava-línguas) */
+  text?: string;
+  /** lembretes visuais durante a execução, texto da Laury */
+  reminders?: string[];
+  /** contagem de preparo antes de abrir o som (segundos com "Inspire") */
+  inhaleSec?: number;
+  metric: Metric;
+  /** tempo de trava-língua: menor é melhor */
+  better: 'higher' | 'lower';
+  goal: GoalMode;
+  /** o que falta a Laury definir neste exercício — aparece como TODO na tela em desenvolvimento */
+  todo?: string[];
+}
 
 export interface TreinoExercise {
   id: string;
@@ -19,10 +66,36 @@ export interface TreinoExercise {
   targets: number[] | null;
   /** dúvida aberta que muda a detecção */
   pending?: string;
+  /** presente = exercício pronto para o motor */
+  engine?: EngineConfig;
 }
 
 export const TREINO_EXERCISES: TreinoExercise[] = [
-  { id: 'resp-s-sustentado', objective: 'respiracao', name: 'S sustentado', detect: ['sustain'], targets: [8, 10, 12, 15] },
+  {
+    id: 'resp-s-sustentado',
+    objective: 'respiracao',
+    name: 'S sustentado',
+    detect: ['sustain'],
+    targets: [8, 10, 12, 15],
+    engine: {
+      what: 'Inspire e solte o ar com som de “S”, sustentado e controlado, sem exagerar na pressão.',
+      how: [
+        { label: 'Inspire', cue: 'inhale' },
+        { label: 'Puxe o ar', cue: 'inhale' },
+        { label: 'Abdômen firme', cue: 'hold' },
+        { label: 'Solte o “S”', cue: 'emit' },
+      ],
+      model: null,
+      inhaleSec: 3,
+      metric: 'longestSec',
+      better: 'higher',
+      goal: 'targets',
+      todo: [
+        'Ilustração da inspiração (inspirar → puxar o ar → abdômen firme → emitir) — hoje é só a sequência de palavras',
+        'Tempo de inspiração antes do "S" (usado 3 s, provisório)',
+      ],
+    },
+  },
   { id: 'resp-s-pulsado', objective: 'respiracao', name: 'S pulsado', detect: ['pulses'], targets: null },
   { id: 'resp-x', objective: 'respiracao', name: 'Controle respiratório com "X"', detect: ['sustain'], targets: null },
 
@@ -40,3 +113,9 @@ export const TREINO_EXERCISES: TreinoExercise[] = [
 
   { id: 'art-trava-linguas', objective: 'articulacao', name: 'Trava-línguas cronometrado', detect: ['timer'], targets: null },
 ];
+
+export const TREINO_BY_ID: Record<string, TreinoExercise> = Object.fromEntries(TREINO_EXERCISES.map((e) => [e.id, e]));
+
+export type RunnableExercise = TreinoExercise & { engine: EngineConfig };
+
+export const isRunnable = (e: TreinoExercise | undefined): e is RunnableExercise => !!e?.engine;

@@ -6,6 +6,7 @@ import { VOCAL_DATA } from '../data/vocal-exercises';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { VoiceBodyMap, regionsFor } from '@/components/vocal/VoiceBodyMap';
 import { C, LINING, Panel, SANS, SERIF, focusRing } from '@/components/home/primitives';
+import { markWarmupDone } from '@/lib/treinos/warmup';
 
 export const Route = createFileRoute('/_app/saude/$warmupId')({
   component: WarmupPage,
@@ -44,7 +45,8 @@ function WarmupPage() {
   const next = () => {
     if (!isLast) return setStep((s) => s + 1);
     setFinishing(true);
-    // Não há registro de aquecimento concluído no sistema ainda — só confirmamos e voltamos.
+    // Libera a aba Treinos no dia. Desaquecimento não conta como aquecimento.
+    if (warmupId !== 'desaquecimento') markWarmupDone();
     toast.success('Aquecimento concluído', { description: 'Sua voz está pronta. Bom ensaio!' });
     setTimeout(() => navigate({ to: '/saude' }), 450);
   };
