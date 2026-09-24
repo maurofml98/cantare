@@ -61,3 +61,14 @@ describe('duração e cronômetro', () => {
       expect(Math.abs(sustain(withNoise(leitura), 6, fps, 600, 150).spanSec - 2.6)).toBeLessThan(tol));
   }
 });
+
+describe('último som (fim automático e "Terminou?")', () => {
+  for (const fps of [30, 60, 120])
+    test(`picos do ruído depois da emissão não adiam o último som (${fps} q/s)`, () => {
+      const d = new SustainDetector(cal, 600, 150);
+      const act = withNoise(inAny([[1, 3]]));
+      for (let t = 0; t < 8; t += 1 / fps) d.push({ t, bands: [NOISE + act(t), NOISE], rms: 0, peak: 0 });
+      expect(Math.abs(d.lastSoundAt - 3)).toBeLessThan(2 / fps);
+    });
+  test('sem som nenhum: −1', () => expect(new SustainDetector(cal).lastSoundAt).toBe(-1));
+});

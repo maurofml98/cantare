@@ -6,9 +6,9 @@ import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
 import { useReducedMotion } from '@/components/diario/session/visuals/shared';
 import type { SustainResult } from '@/lib/audio/detectors';
 import type { DemoStep, Metric, RunnableExercise } from '@/lib/treinos/exercises';
-import { countInvalidAttempts, evaluate, goalFor, loadAttempts, saveAttempt, type Attempt, type Evaluation, type Goal } from '@/lib/treinos/progress';
+import { countInvalidAttempts, evaluate, goalFor, loadAttempts, saveAttempt, suspicious, type Suspicion, type Attempt, type Evaluation, type Goal } from '@/lib/treinos/progress';
 import { dec, fmt, fmtGoal, fmtU, unit } from '@/lib/treinos/format';
-import { useTreinoRun, type RunOutcome, type TreinoRun } from './useTreinoRun';
+import { TIMER_HINT_SEC, useTreinoRun, type RunOutcome, type TreinoRun } from './useTreinoRun';
 
 /**
  * Motor único da aba Treinos: os 8 passos da seção 09 do PDF da Laury são os estados deste
@@ -52,21 +52,33 @@ export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
     if (n) setStep(n === 'model' && !cfg.model ? 'execute' : n);
   };
 
+  // tempo bom demais aguardando "Leu o texto inteiro?" — só grava depois da resposta
+  const [confirm, setConfirm] = useState<Suspicion | null>(null);
+
+  const commit = (value: number) => {
+    const hist = loadAttempts(exercise.id);
+    setEvaluation(evaluate(exercise, value, hist));
+    saveAttempt(exercise.id, value);
+    setHistory(loadAttempts(exercise.id));
+  };
+
   // Passo 5: terminou a captura → avalia contra a meta vigente e registra (antes de mostrar,
   // para a tentativa não se perder se a pessoa sair no meio do resultado).
   useEffect(() => {
     if (run.phase !== 'done' || !run.outcome) return;
     const { value } = run.outcome;
+    setEvaluation(null);
     if (value !== null) {
-      const hist = loadAttempts(exercise.id);
-      setEvaluation(evaluate(exercise, value, hist));
-      saveAttempt(exercise.id, value);
-      setHistory(loadAttempts(exercise.id));
-    } else setEvaluation(null);
+      const why = suspicious(exercise, value, loadAttempts(exercise.id));
+      if (why) setConfirm(why);
+      else commit(value);
+    }
     setStep('feedback');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [run.phase, run.outcome, exercise]);
 
   const retry = () => {
+    setConfirm(null);
     setEvaluation(null);
     setStep('execute');
     run.start();
@@ -97,7 +109,17 @@ export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
         {step === 'how' && <HowStep demo={cfg.how} onNext={next} />}
         {step === 'model' && cfg.model && <ModelStep src={cfg.model.src} onNext={next} />}
         {step === 'execute' && <ExecuteStep ex={exercise} run={run} goal={goal} />}
-        {step === 'feedback' && run.outcome && <FeedbackStep ex={exercise} outcome={run.outcome} onNext={next} onRetry={retry} />}
+        {step === 'feedback' && run.outcome && confirm && (
+          <ConfirmReading
+            why={confirm}
+            onYes={() => {
+              setConfirm(null);
+              commit(run.outcome!.value!);
+            }}
+            onNo={retry}
+          />
+        )}
+        {step === 'feedback' && run.outcome && !confirm && <FeedbackStep ex={exercise} outcome={run.outcome} onNext={next} onRetry={retry} />}
         {step === 'result' && evaluation && <ResultStep ex={exercise} ev={evaluation} onNext={next} />}
         {step === 'goal' && evaluation && <GoalStep ex={exercise} ev={evaluation} onNext={next} />}
         {step === 'evolution' && <EvolutionStep ex={exercise} history={history} invalid={invalid} goal={goal} onRetry={retry} onExit={exit} />}
@@ -329,6 +351,8 @@ function ExecuteStep({ ex, run, goal }: { ex: RunnableExercise; run: TreinoRun; 
     );
 
   // running (e o instante entre "done" e a troca de passo)
+  // trava-língua não encerra sozinho: calado por um tempo, a tela pergunta se terminou
+  const askDone = m === 'timerSec' && live.value > 0 && live.quietSec >= TIMER_HINT_SEC;
   return (
     <>
       <Stage>
@@ -336,10 +360,10 @@ function ExecuteStep({ ex, run, goal }: { ex: RunnableExercise; run: TreinoRun; 
           <p style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(24px, 6.5vw, 36px)', lineHeight: 1.3 }}>{ex.engine.text}</p>
         )}
         <LiveMeter m={m} value={live.value} emitting={live.emitting} goal={goal} />
-        <Reminders list={ex.engine.reminders} />
+        {askDone ? <p style={{ fontSize: 15, color: C.paper }}>Terminou? Toque em Terminei.</p> : <Reminders list={ex.engine.reminders} />}
       </Stage>
       <Actions>
-        <Button size="lg" variant="secondary" onClick={run.stop}>Terminei</Button>
+        <Button size="lg" variant={askDone ? 'default' : 'secondary'} onClick={run.stop}>Terminei</Button>
       </Actions>
     </>
   );
@@ -419,6 +443,24 @@ function FeedbackStep({ ex, outcome, onNext, onRetry }: { ex: RunnableExercise; 
       <Actions>
         <Button size="lg" onClick={onNext}>Ver resultado</Button>
         <Button size="lg" variant="ghost" onClick={onRetry}><RotateCcw /> Refazer</Button>
+      </Actions>
+    </>
+  );
+}
+
+/** Tempo bom demais: o app não sabe se o texto foi lido inteiro, então pergunta antes de gravar. */
+function ConfirmReading({ why, onYes, onNo }: { why: Suspicion; onYes: () => void; onNo: () => void }) {
+  return (
+    <>
+      <Stage>
+        <p style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 300 }}>Leu o texto inteiro?</p>
+        <p style={{ fontSize: 14, color: C.paper2 }}>
+          {why === 'melhora-grande' ? 'Esse tempo é bem melhor que o seu recorde.' : 'Esse tempo é rápido demais para o texto todo.'}
+        </p>
+      </Stage>
+      <Actions>
+        <Button size="lg" onClick={onYes}>Li tudo</Button>
+        <Button size="lg" variant="ghost" onClick={onNo}><RotateCcw /> Não conta, refazer</Button>
       </Actions>
     </>
   );

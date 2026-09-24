@@ -33,8 +33,14 @@ export interface RunOutcome {
 }
 
 const CALIBRATION_SEC = 2;
-/** Silêncio depois do último som que encerra a tentativa sozinha. Provisórios. */
-const QUIET_TO_STOP: Record<Metric, number> = { longestSec: 0.5, pulseCount: 2, timerSec: 1.5 };
+/**
+ * Silêncio depois do último som que encerra a tentativa sozinha. Provisórios.
+ * Trava-língua não encerra por silêncio: uma pausa no meio da leitura cortava o resto e virava
+ * recorde falso. Lá só o "Terminei" encerra (o tempo continua indo do primeiro ao último som,
+ * então tocar tarde não infla), e depois de TIMER_HINT_SEC calado a tela pergunta se terminou.
+ */
+const QUIET_TO_STOP: Record<Metric, number> = { longestSec: 0.5, pulseCount: 2, timerSec: Infinity };
+export const TIMER_HINT_SEC = 2.5;
 /** Sem nenhum som por este tempo: encerra e avisa. */
 const NOTHING_TIMEOUT_SEC = 15;
 const MAX_RUN_SEC = 90;
@@ -50,7 +56,7 @@ export function useTreinoRun(ex: RunnableExercise) {
   const { metric, inhaleSec = 0 } = ex.engine;
   const [phase, setPhase] = useState<RunPhase>('idle');
   const [cal, setCal] = useState<Calibration | null>(null);
-  const [live, setLive] = useState({ value: 0, t: 0, emitting: false, inhaleLeft: 0 });
+  const [live, setLive] = useState({ value: 0, t: 0, emitting: false, inhaleLeft: 0, quietSec: 0 });
   const [outcome, setOutcome] = useState<RunOutcome | null>(null);
 
   const mic = useRef<Mic | null>(null);
@@ -91,7 +97,11 @@ export function useTreinoRun(ex: RunnableExercise) {
     if (!c) return;
     const a = createAnalysis(ex.detect, c);
     go('running');
-    let heard = -1; // último instante com som acima do limiar de saída
+    // Último instante com som. Com detector de emissão, vem dele (mesma histerese da medição):
+    // o quadro cru acima do limiar de saída contava picos do ruído da sala e adiava o fim e o
+    // "Terminou?" indefinidamente. Pulsos não têm esse detector: fica o quadro cru.
+    let heard = -1;
+    const emission = a.timer ?? a.sustain;
     let lastUi = -1;
     let now = 0;
     const quiet = QUIET_TO_STOP[metric];
@@ -100,12 +110,13 @@ export function useTreinoRun(ex: RunnableExercise) {
       now = f.t;
       a.push(f);
       const act = activityDb(f, c);
-      if (act >= c.offDb) heard = f.t;
+      if (emission) heard = emission.lastSoundAt;
+      else if (act >= c.offDb) heard = f.t;
       const value = liveValue(a, metric);
       const measured = measure(a.result(), metric) !== null;
       if (f.t - lastUi >= 0.1) {
         lastUi = f.t;
-        setLive({ value, t: f.t, emitting: act >= c.offDb, inhaleLeft: 0 });
+        setLive({ value, t: f.t, emitting: emission ? emission.emitting : act >= c.offDb, inhaleLeft: 0, quietSec: heard >= 0 ? f.t - heard : 0 });
       }
       const finished =
         (measured && heard >= 0 && f.t - heard > quiet) || (!measured && f.t > NOTHING_TIMEOUT_SEC) || f.t > MAX_RUN_SEC;
@@ -166,7 +177,7 @@ export function useTreinoRun(ex: RunnableExercise) {
   const start = useCallback(async () => {
     if (!['idle', 'done', 'error', 'denied'].includes(phaseRef.current)) return;
     setOutcome(null);
-    setLive({ value: 0, t: 0, emitting: false, inhaleLeft: 0 });
+    setLive({ value: 0, t: 0, emitting: false, inhaleLeft: 0, quietSec: 0 });
     if (!mic.current) {
       go('opening');
       try {

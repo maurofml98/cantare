@@ -88,6 +88,11 @@ export class SustainDetector {
     return this.start !== null;
   }
 
+  /** último instante contado como som, com a mesma histerese da medição (−1 = nenhum ainda) */
+  get lastSoundAt() {
+    return this.start !== null || this.segs.length ? this.lastAbove : -1;
+  }
+
   /** duração do trecho atual, em segundos */
   get currentSec() {
     return this.start === null ? 0 : this.lastAbove - this.start;

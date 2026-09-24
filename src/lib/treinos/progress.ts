@@ -88,6 +88,35 @@ export interface Evaluation {
   next: Goal;
 }
 
+/*
+ * Leitura suspeita (trava-língua). O app mede tempo, não confere se o texto foi lido inteiro
+ * (CLAUDE.md, seção 13). Um tempo bom demais pode ser leitura interrompida — e viraria um
+ * recorde impossível de bater. Nesses casos o app pergunta antes de gravar.
+ * Limiares de detecção, não clínicos; provisórios até teste com voz real.
+ */
+/** Fala muito rápida fica em ~7 sílabas/s; acima disso, provavelmente não leu tudo. */
+const MAX_SYLLABLES_PER_SEC = 9;
+/** Melhora maior que isso sobre o próprio recorde, numa tentativa só. */
+const MAX_IMPROVEMENT = 0.25;
+
+/** Sílabas aproximadas: grupos de vogais ("qu"/"gu" + e/i contam como a vogal seguinte). Erra para menos. */
+export function estimateSyllables(text: string): number {
+  const t = text.toLowerCase().replace(/([qg])u(?=[eiéíê])/g, '$1');
+  return t.match(/[aeiouáéíóúâêôãõàü]+/g)?.length ?? 0;
+}
+
+export type Suspicion = 'rapido-demais' | 'melhora-grande';
+
+/** Por que este tempo precisa de confirmação antes de valer; `null` = pode gravar. */
+export function suspicious(ex: RunnableExercise, value: number, history: Attempt[]): Suspicion | null {
+  if (ex.engine.metric !== 'timerSec') return null;
+  const syl = ex.engine.text ? estimateSyllables(ex.engine.text) : 0;
+  if (syl && syl / value > MAX_SYLLABLES_PER_SEC) return 'rapido-demais';
+  const prev = best(ex, history);
+  if (prev !== null && value < prev * (1 - MAX_IMPROVEMENT)) return 'melhora-grande';
+  return null;
+}
+
 export function evaluate(ex: RunnableExercise, value: number, history: Attempt[]): Evaluation {
   const goal = goalFor(ex, history);
   const prevBest = best(ex, history);
