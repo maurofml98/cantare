@@ -9,6 +9,17 @@
 import { activityDb, signalDb, type Calibration, type Frame } from './levels';
 import { freqToMidi } from './pitch';
 
+/**
+ * Versão da medição, gravada em cada tentativa (`lib/treinos/progress.ts`). Subir sempre que
+ * uma mudança aqui, em `levels.ts` ou em `pitch.ts` alterar os números que um exercício
+ * produz, e dizer em `MIN_VALID_DETECTOR` (progress.ts) quais métricas deixaram de valer.
+ *
+ * 1 — até 23/09/2026 (tentativas sem campo `detector`). Pulso contado em dobro com queda de
+ *     áudio; fim da emissão esticado por picos do ruído (cronômetro 2,6 s → 3,6 s).
+ * 2 — 24/09/2026: vale mínimo de 50 ms nos pulsos; retomar emissão exige limiar de entrada.
+ */
+export const DETECTOR_VERSION = 2;
+
 export type DetectMode =
   /** duração de emissão contínua, com ou sem altura ("S", "X", "VU", "HUM") */
   | 'sustain'

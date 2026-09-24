@@ -119,6 +119,55 @@ Recorde e meta já vêm da Fase 1. Aqui entra o que é agregado.
 - [ ] Só comparação com o próprio histórico — a Laury pediu evolução individual,
       não competição entre usuários
 
+As regras de streak, pontuação e progresso desta fase seguem a seção **Gamificação**
+abaixo. Onde "XP e níveis" conflitar com ela, ela prevalece.
+
+---
+
+## Gamificação — referência Duolingo, com uma diferença crítica
+
+Registrado em 24/09/2026. **Para implementação futura.** Contexto: o Cantare é
+gamificado para amador em massa (seção 5 do `CLAUDE.md`), então mecânica de
+engajamento vale mais que refinamento técnico.
+
+**Referência declarada:** Duolingo.
+
+**A diferença crítica.** O Duolingo otimiza presença, não aprendizado — gente com 1000
+dias de streak que não sustenta uma conversa. No Cantare isso é risco real: um cantor
+com 300 dias de streak que continua forçando agudo não é sucesso, é lesão em
+construção, e a credibilidade da Laury está no meio. Copiar direto constrói um app que
+vicia e machuca.
+
+**O que o Cantare tem e o Duolingo não:** progresso mensurável de verdade. A extensão
+vocal aumenta e dá para medir. A pontuação não precisa ser XP inventado — pode ser a
+própria voz.
+
+### Quatro mecânicas a construir
+
+1. **Streak só conta com desaquecimento feito.** Inverte o incentivo: em vez de premiar
+   volume, premia prática segura. A regra ética da Laury vira a regra do jogo.
+   Depende de: exercícios de desaquecimento (pendentes com a Laury, seção 8 do
+   `CLAUDE.md`)
+2. **Dia de descanso é parte do streak, não quebra.** No Duolingo o freeze é compra;
+   aqui é prescrição. Depois de show longo, o app recomenda repouso e o dia conta como
+   cumprido. Depende de: critério de quando recomendar repouso — conteúdo clínico, vem
+   da Laury (ex.: duração do show no Repertório, Fase 6)
+3. **Forçar a voz tira pontos, não dá.** Sair da faixa segura sinaliza, não premia. É o
+   oposto do jogo tradicional e só um app com fonoaudióloga pode fazer. Depende de:
+   perfil vocal (Fase 3), detecção de altura confiável e definição da Laury do que é
+   "faixa segura". Linguagem: "sinal de atenção", nunca diagnóstico (seção 10)
+4. **Gravação do dia 1 contra a de hoje.** O cantor ouve a si mesmo 30 dias atrás e
+   agora. Nenhum número convence como isso, nenhum concorrente tem, e é o conteúdo mais
+   compartilhável do produto. Atenção: guardar áudio é dado biométrico (LGPD, seção 10
+   do `CLAUDE.md`) — consentimento explícito, guardado no aparelho, opção de apagar;
+   compartilhar só por ação do próprio cantor
+
+### Não implementar
+
+**Ligas e percentil contra outros usuários.** Comparar iniciante com profissional
+desmotiva. A competição é contra a própria voz de ontem — a única comparação honesta
+em canto.
+
 ---
 
 ## Fase 6 — Repertório para o palco
@@ -158,6 +207,7 @@ Abre a monetização B2B: fono, professor de canto, escola, igreja.
 - **Reconhecimento de fala para avaliar articulação** — português offline em
   Android simples não é confiável. O trava-língua mede tempo, não clareza
 - **Detectar expressão facial, bochechas, postura** — instrução visual, não feedback
+- **Ligas, ranking e percentil entre usuários** — ver seção Gamificação
 - **Separação vocal / remover voz da música** — direito autoral e custo. Moises e
   Lalal já fazem
 - **Transposição de áudio** — mesma questão

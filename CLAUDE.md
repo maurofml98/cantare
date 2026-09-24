@@ -173,6 +173,17 @@ OnSong é só iOS, MobileSheets é só Android, nenhum dos dois é brasileiro.
 
 O espaço vago: cantor + saúde vocal + Brasil.
 
+### Para quem (definido em 24/09/2026)
+
+**O Cantare é gamificado para amador em massa, não sofisticado para profissional.** O
+amador é o faturamento. O profissional chega depois, por descoberta. Isso reordena a
+prioridade: **mecânica de engajamento vale mais que refinamento técnico.**
+
+A gamificação tem referência declarada (Duolingo) e uma diferença crítica: premiar
+prática segura, não presença. Streak só com desaquecimento, descanso prescrito conta,
+forçar a voz tira pontos, gravação do dia 1 contra a de hoje, e nada de ligas ou
+percentil entre usuários. Detalhes em `docs/ROADMAP.md`, seção **Gamificação**.
+
 ---
 
 ## 6. Estado atual do código
@@ -406,7 +417,11 @@ A própria Laury teve resultado diferente em dias diferentes.
 - **Testes adversos** (`src/lib/audio/adversos.test.ts`, 24/09/2026): todos os detectores
   pelo microfone simulado (`sim.ts`: FFT 2048 como o AnalyserNode), com picos de ruído,
   quedas de áudio, calibração ruim e 30/60/120 q/s. Erros conhecidos ficam como
-  `test.failing`: quando corrigidos, o teste quebra e vira `test` normal. Em aberto:
+  `test.failing`: quando corrigidos, o teste quebra e vira `test` normal.
+  **É rede de segurança contra regressão, não validação de campo.** Prova o comportamento
+  contra sinal sintético em Node, não contra voz real no navegador. Suíte passando não
+  garante que funciona no aparelho da Laury — isso só o `/lab/microfone` com voz real.
+  Em aberto:
   - **Intensidade:** um quadro de ruído antes da voz vira o início da emissão; crescendo
     de +12 dB mede +26 a +57 dB, nota plana mede +52 dB. Mesmo defeito do cronômetro
   - **Ruído que sobe depois da calibração** (+9,5 dB): silêncio vira emissão — "S" de
@@ -414,6 +429,16 @@ A própria Laury teve resultado diferente em dias diferentes.
   - **Sopro na calibração** passa como ambiente ok
   - **Voz baixa sem altura:** gate fixo `rms < 0.01` em `pitch.ts` ignora voz 13 dB
     acima do ruído
+  - **"Ambiente instável" sensível demais — calibrar com ambiente real.** Picos de
+    +12 dB sobre o fundo (6/s) já classificam a sala como instável. Ventilador ou TV
+    ligada passariam disso: o usuário receberia "ruído excessivo" o tempo todo e
+    aprenderia a ignorar o aviso, o que é pior que não ter aviso. Limiar
+    `UNSTABLE_SWING_DB` em `levels.ts`
+- **Versão do detector em cada tentativa** (24/09/2026). `DETECTOR_VERSION` em
+  `detectors.ts`; `MIN_VALID_DETECTOR` por métrica em `lib/treinos/progress.ts`. Toda
+  correção que mude os números sobe a versão e diz quais métricas deixam de valer. As
+  inválidas ficam no aparelho mas não contam para meta, recorde nem evolução. A versão 1
+  (sem o campo) está invalidada nas três métricas
 
 ### Identidade visual (última definida, não validada)
 

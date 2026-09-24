@@ -6,7 +6,7 @@ import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
 import { useReducedMotion } from '@/components/diario/session/visuals/shared';
 import type { SustainResult } from '@/lib/audio/detectors';
 import type { DemoStep, Metric, RunnableExercise } from '@/lib/treinos/exercises';
-import { evaluate, goalFor, loadAttempts, saveAttempt, type Attempt, type Evaluation, type Goal } from '@/lib/treinos/progress';
+import { countInvalidAttempts, evaluate, goalFor, loadAttempts, saveAttempt, type Attempt, type Evaluation, type Goal } from '@/lib/treinos/progress';
 import { dec, fmt, fmtGoal, fmtU, unit } from '@/lib/treinos/format';
 import { useTreinoRun, type RunOutcome, type TreinoRun } from './useTreinoRun';
 
@@ -38,7 +38,12 @@ export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
   const [history, setHistory] = useState<Attempt[]>([]);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
 
-  useEffect(() => setHistory(loadAttempts(exercise.id)), [exercise.id]);
+  const [invalid, setInvalid] = useState(0);
+
+  useEffect(() => {
+    setHistory(loadAttempts(exercise.id));
+    setInvalid(countInvalidAttempts(exercise.id));
+  }, [exercise.id]);
 
   // Os 8 passos aparecem sempre (numeração da Laury); sem modelo, o passo 3 é pulado.
   const index = STEPS.findIndex((s) => s.id === step);
@@ -95,7 +100,7 @@ export function TreinoEngine({ exercise }: { exercise: RunnableExercise }) {
         {step === 'feedback' && run.outcome && <FeedbackStep ex={exercise} outcome={run.outcome} onNext={next} onRetry={retry} />}
         {step === 'result' && evaluation && <ResultStep ex={exercise} ev={evaluation} onNext={next} />}
         {step === 'goal' && evaluation && <GoalStep ex={exercise} ev={evaluation} onNext={next} />}
-        {step === 'evolution' && <EvolutionStep ex={exercise} history={history} goal={goal} onRetry={retry} onExit={exit} />}
+        {step === 'evolution' && <EvolutionStep ex={exercise} history={history} invalid={invalid} goal={goal} onRetry={retry} onExit={exit} />}
       </main>
     </div>
   );
@@ -532,7 +537,7 @@ function GoalStep({ ex, ev, onNext }: { ex: RunnableExercise; ev: Evaluation; on
 
 const RECENT = 12;
 
-function EvolutionStep({ ex, history, goal, onRetry, onExit }: { ex: RunnableExercise; history: Attempt[]; goal: Goal; onRetry: () => void; onExit: () => void }) {
+function EvolutionStep({ ex, history, invalid, goal, onRetry, onExit }: { ex: RunnableExercise; history: Attempt[]; invalid: number; goal: Goal; onRetry: () => void; onExit: () => void }) {
   const m = ex.engine.metric;
   const recent = history.slice(-RECENT);
   const max = Math.max(...recent.map((a) => a.value), goal.value ?? 0) || 1;
@@ -550,6 +555,11 @@ function EvolutionStep({ ex, history, goal, onRetry, onExit }: { ex: RunnableExe
           {history.length} {history.length === 1 ? 'tentativa' : 'tentativas'}
           {history.length > 0 && ` · melhor: ${fmtU(ex.engine.better === 'higher' ? Math.max(...history.map((a) => a.value)) : Math.min(...history.map((a) => a.value)), m)}`}
         </p>
+        {invalid > 0 && (
+          <p style={{ fontSize: 12, color: C.paper3 }}>
+            {invalid === 1 ? '1 tentativa antiga não conta: foi medida' : `${invalid} tentativas antigas não contam: foram medidas`} antes de uma correção do app.
+          </p>
+        )}
       </Stage>
       <Actions>
         <Button size="lg" onClick={onRetry}><RotateCcw /> Tentar de novo</Button>

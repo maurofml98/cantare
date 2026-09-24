@@ -3,9 +3,13 @@
  * `saveAttempt` tocam o localStorage (`cantare:treinos:tentativas`).
  *
  * O nível da escada de metas não é gravado à parte: sai do histórico de tentativas.
+ *
+ * Cada tentativa grava a versão do detector que a mediu. Tentativas de versão abaixo da
+ * mínima válida da métrica não contam para meta, recorde nem evolução — ficam no aparelho,
+ * só não são lidas. Sem isso, um recorde inflado por detector com erro valeria para sempre.
  */
-import type { AnalysisResult } from '@/lib/audio/detectors';
-import type { Metric, RunnableExercise } from './exercises';
+import { DETECTOR_VERSION, type AnalysisResult } from '@/lib/audio/detectors';
+import { TREINO_BY_ID, type Metric, type RunnableExercise } from './exercises';
 
 const KEY = 'cantare:treinos:tentativas';
 const MAX_ATTEMPTS = 2000;
@@ -15,7 +19,21 @@ export interface Attempt {
   /** ISO */
   at: string;
   value: number;
+  /** versão do detector (`DETECTOR_VERSION`); ausente = 1, anterior ao campo */
+  detector?: number;
 }
+
+/**
+ * Menor versão do detector cujas medições valem, por métrica. Subir a de uma métrica quando
+ * uma correção mudar os números dela.
+ *
+ * Versão 1 invalidada nas três (24/09/2026): pulso contado em dobro com queda de áudio, e o
+ * fim da emissão esticado por picos do ruído — o cronômetro chegou a medir 3,6 s em 2,6 s e a
+ * duração do "S" também crescia, menos.
+ */
+export const MIN_VALID_DETECTOR: Record<Metric, number> = { longestSec: 2, pulseCount: 2, timerSec: 2 };
+
+export const isValidAttempt = (a: Attempt, metric: Metric) => (a.detector ?? 1) >= MIN_VALID_DETECTOR[metric];
 
 /** O número da tentativa. `null` = os detectores não captaram nada útil. */
 export function measure(result: AnalysisResult, metric: Metric): number | null {
@@ -93,12 +111,21 @@ function readAll(): Attempt[] {
   }
 }
 
-/** Tentativas de um exercício, mais antiga primeiro. */
+const metricOf = (exerciseId: string) => TREINO_BY_ID[exerciseId]?.engine?.metric;
+
+/** Tentativas válidas de um exercício, mais antiga primeiro. */
 export function loadAttempts(exerciseId: string): Attempt[] {
-  return readAll().filter((a) => a.exerciseId === exerciseId);
+  const m = metricOf(exerciseId);
+  return readAll().filter((a) => a.exerciseId === exerciseId && (!m || isValidAttempt(a, m)));
 }
 
-/** Tentativas registradas hoje (data local), em qualquer exercício. */
+/** Tentativas guardadas mas medidas por detector já corrigido — não contam. */
+export function countInvalidAttempts(exerciseId: string): number {
+  const m = metricOf(exerciseId);
+  return m ? readAll().filter((a) => a.exerciseId === exerciseId && !isValidAttempt(a, m)).length : 0;
+}
+
+/** Tentativas registradas hoje (data local), em qualquer exercício. Conta prática, não medição: inclui as inválidas. */
 export function attemptsToday(now = new Date()): number {
   const day = now.toDateString();
   return readAll().filter((a) => new Date(a.at).toDateString() === day).length;
@@ -106,7 +133,7 @@ export function attemptsToday(now = new Date()): number {
 
 export function saveAttempt(exerciseId: string, value: number) {
   try {
-    const all = [...readAll(), { exerciseId, at: new Date().toISOString(), value }];
+    const all = [...readAll(), { exerciseId, at: new Date().toISOString(), value, detector: DETECTOR_VERSION }];
     localStorage.setItem(KEY, JSON.stringify(all.slice(-MAX_ATTEMPTS)));
   } catch {
     /* localStorage indisponível: a tentativa vale na tela, só não fica registrada */

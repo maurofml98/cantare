@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { TREINO_BY_ID, type RunnableExercise } from './exercises';
-import { evaluate, goalFor, measure, type Attempt } from './progress';
+import { DETECTOR_VERSION } from '@/lib/audio/detectors';
+import { countInvalidAttempts, evaluate, goalFor, isValidAttempt, loadAttempts, measure, MIN_VALID_DETECTOR, saveAttempt, type Attempt } from './progress';
 
 const s = TREINO_BY_ID['resp-s-sustentado'] as RunnableExercise;
 const hist = (...v: number[]): Attempt[] => v.map((value) => ({ exerciseId: s.id, at: '', value }));
@@ -39,4 +40,30 @@ describe('measure', () => {
   test('arredonda como a tela (7,96 conta como 8,0)', () =>
     expect(measure({ sustain: { segments: [[0, 7.96]], firstSec: 7.96, longestSec: 7.96, spanSec: 7.96 } }, 'longestSec')).toBe(8));
   test('nada captado = null', () => expect(measure({ sustain: { segments: [], firstSec: 0, longestSec: 0, spanSec: 0 } }, 'longestSec')).toBeNull());
+});
+
+describe('versão do detector', () => {
+  const store = new Map<string, string>();
+  (globalThis as { window?: unknown }).window ??= globalThis;
+  (globalThis as { localStorage?: unknown }).localStorage ??= {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => void store.set(k, v),
+  };
+  const KEY = 'cantare:treinos:tentativas';
+
+  test('tentativa sem versão (anterior à correção) não vale', () => expect(isValidAttempt({ exerciseId: s.id, at: '', value: 20 }, 'longestSec')).toBe(false));
+  test('tentativa da versão mínima vale', () =>
+    expect(isValidAttempt({ exerciseId: s.id, at: '', value: 9, detector: MIN_VALID_DETECTOR.longestSec }, 'longestSec')).toBe(true));
+
+  test('recorde inflado antigo sai da meta; a nova tentativa grava a versão', () => {
+    // 3,6 s de trava-língua e 15 s de "S" medidos pelo detector com erro
+    store.set(KEY, JSON.stringify([{ exerciseId: s.id, at: '2026-09-23T10:00:00Z', value: 15 }, { exerciseId: 'art-desafio-1', at: '2026-09-23T10:00:00Z', value: 3.6 }]));
+    expect(loadAttempts(s.id)).toEqual([]);
+    expect(countInvalidAttempts(s.id)).toBe(1);
+    expect(goalFor(s, loadAttempts(s.id))).toMatchObject({ value: 8, step: 1 });
+    saveAttempt(s.id, 9);
+    expect(loadAttempts(s.id)).toMatchObject([{ value: 9, detector: DETECTOR_VERSION }]);
+    // nada é apagado do aparelho
+    expect(JSON.parse(store.get(KEY)!)).toHaveLength(3);
+  });
 });

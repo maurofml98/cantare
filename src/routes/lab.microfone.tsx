@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { openMic, type Mic } from '@/lib/audio/mic';
 import { activityDb, calibrate, type Calibration, type Frame } from '@/lib/audio/levels';
-import { createAnalysis, type Analysis, type AnalysisResult, type DetectMode } from '@/lib/audio/detectors';
+import { createAnalysis, DETECTOR_VERSION, type Analysis, type AnalysisResult, type DetectMode } from '@/lib/audio/detectors';
 import { midiToNote } from '@/lib/audio/pitch';
 
 /**
@@ -132,6 +132,7 @@ function MicLab() {
     JSON.stringify(
       {
         quando: new Date().toISOString(),
+        versaoDetector: DETECTOR_VERSION,
         navegador: navigator.userAgent,
         microfone: mic?.label,
         sampleRate: mic?.sampleRate,
