@@ -3,7 +3,7 @@
  * o microfone para treino. O áudio não sai do aparelho (CLAUDE.md, seção 10).
  */
 import { bandLevels, type Frame } from './levels';
-import { detectPitch } from './pitch';
+import { detectPitch, PITCH_MIN_RMS } from './pitch';
 
 /** Altura custa caro (autocorrelação O(n²)); em celular simples, no máximo ~20×/s. */
 const PITCH_EVERY_MS = 50;
@@ -60,7 +60,7 @@ export async function openMic(): Promise<Mic> {
       const f: Frame = { t: (now - t0) / 1000, bands: bandLevels(spec, binHz), rms: Math.sqrt(s2 / wave.length), peak };
       if (withPitch && now - lastPitch >= PITCH_EVERY_MS) {
         lastPitch = now;
-        const hz = detectPitch(wave, ctx.sampleRate);
+        const hz = detectPitch(wave, ctx.sampleRate, PITCH_MIN_RMS);
         cost += performance.now() - now;
         costN++;
         f.hz = hz > 0 ? hz : null;

@@ -9,7 +9,7 @@
  * dobro, cronômetro esticado) só apareceram no navegador.
  */
 import { bandLevels, calibrate, type Calibration, type Frame } from './levels';
-import { detectPitch } from './pitch';
+import { detectPitch, PITCH_MIN_RMS } from './pitch';
 import { createAnalysis, type AnalysisResult, type DetectMode } from './detectors';
 
 export const SR = 48000;
@@ -50,6 +50,8 @@ export interface Adversity {
   dropouts?: [number, number][];
   /** ganho do fundo a partir de `at` segundos (ar-condicionado ligou depois da calibração) */
   floorStep?: { at: number; gain: number };
+  /** zumbido elétrico constante (geladeira, transformador): altura "limpa" o tempo todo */
+  hum?: { hz: number; amp: number };
   seed?: number;
 }
 
@@ -76,6 +78,7 @@ export function render(segs: Seg[], adv: Adversity = {}): Float32Array {
         let fl = floor * (adv.floorStep && t >= adv.floorStep.at ? adv.floorStep.gain : 1);
         if (spike[i]) fl *= adv.spikeGain ?? 4;
         v += fl * w;
+        if (adv.hum) v += adv.hum.amp * (Math.sin((2 * Math.PI * adv.hum.hz * i) / SR) + 0.5 * Math.sin((4 * Math.PI * adv.hum.hz * i) / SR));
       }
       const u = k / n;
       if (g.kind === 's') v += (g.amp ?? 0.25) * (g.env?.(u) ?? 1) * (w - prev) * 0.5;
@@ -152,7 +155,7 @@ export function frames(audio: Float32Array, fps: number, withPitch: boolean): Fr
     const f: Frame = { t, bands: bandLevels(fftMagDb(win), SR / FFT), rms: Math.sqrt(s2 / FFT), peak };
     if (withPitch && t - lastPitch >= PITCH_EVERY_S) {
       lastPitch = t;
-      const hz = detectPitch(win, SR);
+      const hz = detectPitch(win, SR, PITCH_MIN_RMS);
       f.hz = hz > 0 ? hz : null;
     }
     out.push(f);

@@ -104,14 +104,12 @@ matrix('altura: "S" surdo não vira nota', (adv, fps) => {
   expect(result!.pitch!.stableNotes).toEqual([]);
 }, SLOW);
 
-describe('altura: erros conhecidos', () => {
-  // Gate fixo `rms < 0.01` em `pitch.ts`: voz 13 dB acima do ruído da sala, mas baixa em
-  // absoluto (celular longe, voz suave), não tem altura nenhuma. Resolver na etapa 5.
-  test.failing('voz baixa (−40 dBFS) acima do ruído tem altura', () => {
-    const { result } = run(render([CAL, floor(0.5), { kind: 'voice', dur: 2, f0: 220, amp: 0.02 }, floor(0.5)]), ['pitch'], 60);
-    expect(result!.pitch!.medianMidi).not.toBeNull();
-  }, SLOW);
-});
+// Antes (até a versão 2 do detector): gate fixo `rms < 0.01` ignorava voz 13 dB acima do
+// ruído só por ser baixa em absoluto (celular longe, voz suave).
+matrix('altura: voz baixa (−40 dBFS), acima do ruído da sala', (adv, fps) => {
+  const { result } = run(render([CAL, floor(0.5), { kind: 'voice', dur: 2, f0: 220, amp: 0.02 }, floor(0.5)], adv), ['pitch'], fps);
+  expect(result!.pitch!.stableNotes).toEqual([57]);
+}, SLOW);
 
 /* ---------------- intensidade (messa di voce) ---------------- */
 

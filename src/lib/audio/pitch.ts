@@ -4,12 +4,20 @@
 /** Abaixo disso o quadro não tem altura definida (CLAUDE.md, seção 9). */
 export const CLARITY_GATE = 0.55;
 
-export function detectPitch(buf: Float32Array, sampleRate: number): number {
+/**
+ * Gate de volume do caminho novo (`mic.ts`): só evita trabalho com silêncio digital. Quem
+ * decide se há voz é o `PitchTracker`, relativo ao ruído da sala calibrado. O gate fixo
+ * antigo (0,01) ignorava voz 13 dB acima do ruído só por ser baixa em absoluto — fica como
+ * padrão para as telas antigas (Diário, Tom), que não calibram a sala.
+ */
+export const PITCH_MIN_RMS = 0.001;
+
+export function detectPitch(buf: Float32Array, sampleRate: number, minRms = 0.01): number {
   const SIZE = buf.length;
   let rms = 0;
   for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
   rms = Math.sqrt(rms / SIZE);
-  if (rms < 0.01) return -1;
+  if (rms < minRms) return -1;
 
   // Trim silence at edges: corta só até a PRIMEIRA amostra baixa de cada ponta (ACF2+).
   // Sem o `break`, r1/r2 iam parar perto do meio do buffer (todo sinal periódico passa por

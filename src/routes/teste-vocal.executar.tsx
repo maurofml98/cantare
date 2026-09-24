@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { VocalTestStep, type CaptureConfidence } from '@/components/vocal/VocalTestStep';
+import { useVocalMic, type VocalMic } from '@/components/vocal/useVocalMic';
 import {
   buildVocalProfile,
   combineConfidence,
@@ -22,7 +23,7 @@ export const Route = createFileRoute('/teste-vocal/executar')({
   component: TesteVocalExecutar,
 });
 
-type Stage = 'intro' | 'confortavel' | 'grave' | 'aguda' | 'resultado' | 'incoerente';
+type Stage = 'intro' | 'ambiente' | 'confortavel' | 'grave' | 'aguda' | 'resultado' | 'incoerente';
 
 function TesteVocalExecutar() {
   const navigate = useNavigate();
@@ -33,6 +34,12 @@ function TesteVocalExecutar() {
   const [comfortConf, setComfortConf] = useState<CaptureConfidence>('high');
   const [lowConf, setLowConf] = useState<CaptureConfidence>('high');
   const [highConf, setHighConf] = useState<CaptureConfidence>('high');
+  const mic = useVocalMic();
+
+  // sala medida e aceita → primeira nota
+  useEffect(() => {
+    if (stage === 'ambiente' && mic.phase === 'ready') setStage('confortavel');
+  }, [stage, mic.phase]);
 
   const profile = useMemo<VocalProfile | null>(() => {
     if (stage !== 'resultado' || !lowHz || !highHz) return null;
@@ -122,12 +129,20 @@ function TesteVocalExecutar() {
 
       <div className="relative z-10 flex-1 overflow-y-auto px-6 py-10">
         {stage === 'intro' && (
-          <IntroPanel onStart={() => setStage('confortavel')} />
+          <IntroPanel
+            onStart={() => {
+              setStage('ambiente');
+              mic.start();
+            }}
+          />
         )}
+
+        {stage === 'ambiente' && <EnvironmentPanel mic={mic} />}
 
         {stage === 'confortavel' && (
           <VocalTestStep
             instruction="confortavel"
+            mic={mic}
             onCaptured={(hz, _n, c) => { setComfortHz(hz); setComfortConf(c); setStage('grave'); }}
             onCancel={() => setStage('intro')}
           />
@@ -136,6 +151,7 @@ function TesteVocalExecutar() {
         {stage === 'grave' && (
           <VocalTestStep
             instruction="grave"
+            mic={mic}
             onCaptured={(hz, _n, c) => { setLowHz(hz); setLowConf(c); goToAguda(); }}
             onCancel={() => setStage('intro')}
           />
@@ -144,6 +160,7 @@ function TesteVocalExecutar() {
         {stage === 'aguda' && (
           <VocalTestStep
             instruction="aguda"
+            mic={mic}
             onCaptured={onHighCaptured}
             onCancel={() => setStage('intro')}
           />
@@ -196,7 +213,7 @@ function IntroPanel({ onStart }: { onStart: () => void }) {
         Você vai cantar três vezes: confortável, grave e aguda.
       </h1>
       <p className="mt-4 text-[14px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.6 }}>
-        Encontre um lugar silencioso. Aproxime o microfone. Cante em "AAAAH" sustentado — cada nota é medida quando você segurar por cerca de 1,5 segundo.
+        Encontre um lugar silencioso. Primeiro medimos 2 segundos de silêncio; depois, cante em "AAAAH" sustentado — cada nota vale quando você segurar por 1 segundo. O áudio não sai do aparelho.
       </p>
       <button
         onClick={onStart}
@@ -213,6 +230,57 @@ function IntroPanel({ onStart }: { onStart: () => void }) {
       >
         Começar →
       </button>
+    </div>
+  );
+}
+
+/** Microfone e ruído da sala antes da primeira nota — mesmas regras do motor de treino. */
+function EnvironmentPanel({ mic }: { mic: VocalMic }) {
+  const title: Record<string, string> = {
+    idle: 'Preparando o microfone',
+    opening: 'Permita o uso do microfone',
+    calibrating: 'Silêncio',
+    noisy: 'Ruído de fundo excessivo',
+    contaminated: 'Captamos som no silêncio',
+    denied: 'Sem acesso ao microfone',
+    error: 'O microfone não abriu',
+    ready: 'Pronto',
+  };
+  const text: Record<string, string> = {
+    calibrating: 'Medindo o som do ambiente por 2 segundos.',
+    noisy: 'Com barulho, a nota pode sair errada — foi assim que a mesma voz já deu soprano num dia e contralto no outro.',
+    contaminated: 'Fique 2 segundos sem falar nem soprar, e meça de novo.',
+    denied: 'Libere o microfone para este site nas configurações do navegador.',
+    error: 'Feche outros apps que usem o microfone e tente de novo.',
+  };
+  const btn = 'text-[10px] uppercase text-[#8A8A95] hover:text-white transition-colors';
+  return (
+    <div className="mx-auto max-w-md text-center">
+      <h1 className="mt-3 text-white" style={{ fontFamily: 'Newsreader, serif', fontWeight: 300, fontSize: 30, lineHeight: 1.1 }}>
+        {title[mic.phase]}
+      </h1>
+      {text[mic.phase] && (
+        <p className="mt-4 text-[14px] text-[#8A8A95]" style={{ fontWeight: 300, lineHeight: 1.6 }}>
+          {text[mic.phase]}
+        </p>
+      )}
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
+        {(mic.phase === 'noisy' || mic.phase === 'contaminated') && (
+          <button onClick={mic.recalibrate} className={btn} style={{ letterSpacing: '0.28em', color: '#E8C97E' }}>
+            ↺ Medir de novo
+          </button>
+        )}
+        {mic.phase === 'noisy' && (
+          <button onClick={mic.acceptNoise} className={btn} style={{ letterSpacing: '0.28em' }}>
+            Continuar mesmo assim
+          </button>
+        )}
+        {(mic.phase === 'denied' || mic.phase === 'error') && (
+          <button onClick={mic.start} className={btn} style={{ letterSpacing: '0.28em', color: '#E8C97E' }}>
+            ↺ Tentar de novo
+          </button>
+        )}
+      </div>
     </div>
   );
 }

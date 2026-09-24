@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { clearVocalProfile, loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
+import { clearVocalProfile, isLegacyProfile, loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
 import { freqToMidi } from '@/lib/audio/pitch';
 import { profileRanges } from '@/lib/home/today';
 import { LadderSteps, type JourneyNotes } from '@/components/vocal/VoiceJourney';
@@ -132,7 +132,11 @@ function TesteVocalIndex() {
                   <li className="flex gap-2.5"><Tick />Sugestão de tom para cada música do repertório</li>
                   <li className="flex gap-2.5"><Tick />Acompanhar como sua voz muda com o tempo</li>
                 </ul>
-                {profile?.confidence && profile.confidence !== 'high' && (
+                {profile && isLegacyProfile(profile) ? (
+                  <p className="mt-3" style={{ fontFamily: SANS, fontSize: 13, color: C.warn, lineHeight: 1.4 }}>
+                    Seu teste foi feito numa versão anterior, que podia errar a nota mais grave e a mais aguda. Refaça para um resultado confiável.
+                  </p>
+                ) : profile?.confidence && profile.confidence !== 'high' && (
                   <p className="mt-3" style={{ fontFamily: SANS, fontSize: 13, color: C.warn, lineHeight: 1.4 }}>
                     Seu último teste teve interferência. Vale refazer num lugar mais quieto.
                   </p>

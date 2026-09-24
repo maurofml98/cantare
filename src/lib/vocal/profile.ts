@@ -1,4 +1,5 @@
 import { freqToMidi, freqToNoteLabel, noteLabelToMidi } from '@/lib/audio/pitch';
+import { DETECTOR_VERSION } from '@/lib/audio/detectors';
 import { midiOfKeyPeak, transposeKey } from '@/lib/music/keys';
 
 export type VoiceType =
@@ -27,7 +28,16 @@ export interface VocalProfile {
   voiceTypeConfidence?: 'estimated';
   comfortHz?: number;
   comfortNote?: string;
+  /**
+   * Versão do detector que mediu (`DETECTOR_VERSION`). Ausente = captura antiga (até
+   * 24/09/2026): registrava a primeira nota estável, não o limite, e cortava pela metade
+   * graves acima de 260 Hz. A tela pede para refazer.
+   */
+  detector?: number;
 }
+
+/** Perfil medido antes da captura atual do teste vocal — pedir para refazer. */
+export const isLegacyProfile = (p: VocalProfile) => (p.detector ?? 0) < 3;
 
 const STORAGE_KEY = 'cantare:vocal-profile';
 
@@ -132,6 +142,7 @@ export function buildVocalProfile(lowestHz: number, highestHz: number, opts: Bui
     voiceTypeConfidence: 'estimated',
     comfortHz: opts.comfortHz && opts.comfortHz > 0 ? opts.comfortHz : undefined,
     comfortNote: opts.comfortHz && opts.comfortHz > 0 ? freqToNoteLabel(opts.comfortHz) : undefined,
+    detector: DETECTOR_VERSION,
   };
 }
 

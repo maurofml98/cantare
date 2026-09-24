@@ -382,6 +382,29 @@ Método: sobreposição sobre união, penalizada pela distância entre os centro
 **Tratar como estimativa, nunca como definitivo.** Permitir refazer sempre.
 A própria Laury teve resultado diferente em dias diferentes.
 
+**Divergência a resolver:** o código (`classifyVoice`, `lib/vocal/profile.ts`) não usa o
+método acima — classifica quase só pela nota mais grave, com um ajuste se a aguda passar
+de G5. Não alterado na migração de 24/09/2026; decidir qual vale (e validar com a Laury).
+
+### Teste vocal — captura (migrada em 24/09/2026)
+
+Mesmo caminho de altura dos treinos (`mic.ts` → `PitchTracker`), `lib/vocal/capture.ts`
++ `components/vocal/useVocalMic.ts`. Antes de cantar: 2 s de silêncio calibrando a sala
+(contaminada só permite medir de novo; ruidosa permite continuar, com confiança média).
+
+- **Nota vale se segurada por 1 s** (`HOLD_SEC`, provisório — confirmar com a Laury).
+  Confortável = a segurada por mais tempo; grave = a mais baixa segurada; aguda = a mais
+  alta. Grave e aguda terminam quando a voz para, não na primeira nota estável
+- Altura só conta com voz acima do ruído da sala — zumbido elétrico não vira nota
+- **Erros da captura antiga** (reproduzidos no simulador e cobertos por
+  `capture.test.ts`): registrava a primeira nota estável (grave/aguda saíam iguais à
+  confortável quando o cantor descia/subia até o limite, como a tela pede); cortava pela
+  metade qualquer grave acima de 260 Hz (C4 da soprano virava C3); estabilidade em
+  quadros, não em tempo; vibrato de ±½ semitom e voz baixa não capturavam nada
+- Perfis salvos pela captura antiga (sem `detector`) mostram aviso pedindo para refazer
+- **Nunca testado com voz humana.** Validar no `/lab/microfone` (modo altura) antes de
+  confiar — a suíte é sinal sintético
+
 ### Limitações conhecidas da detecção
 
 - Voz grave com microfone ruim → erro de oitava
@@ -428,8 +451,8 @@ A própria Laury teve resultado diferente em dias diferentes.
     6 s mede 8,4 s, trava-língua de 2,6 s mede 5,0 s
   - ~~Sopro na calibração passa como ambiente ok~~ — resolvido, ver "Calibração
     contaminada" abaixo
-  - **Voz baixa sem altura:** gate fixo `rms < 0.01` em `pitch.ts` ignora voz 13 dB
-    acima do ruído
+  - ~~Voz baixa sem altura~~ — resolvido na versão 3 do detector: altura relativa ao
+    ruído da sala, sem gate fixo de volume (teste vocal e treinos)
   - **"Ambiente instável" sensível demais — calibrar com ambiente real.** Picos de
     +12 dB sobre o fundo (6/s) já classificam a sala como instável. Ventilador ou TV
     ligada passariam disso: o usuário receberia "ruído excessivo" o tempo todo e

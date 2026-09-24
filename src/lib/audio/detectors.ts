@@ -17,8 +17,11 @@ import { freqToMidi } from './pitch';
  * 1 — até 23/09/2026 (tentativas sem campo `detector`). Pulso contado em dobro com queda de
  *     áudio; fim da emissão esticado por picos do ruído (cronômetro 2,6 s → 3,6 s).
  * 2 — 24/09/2026: vale mínimo de 50 ms nos pulsos; retomar emissão exige limiar de entrada.
+ * 3 — 24/09/2026: altura só durante emissão (relativa ao ruído da sala), sem o gate fixo de
+ *     volume; notas seguradas com duração. Nenhuma métrica gravada de treino usa altura — as
+ *     tentativas da versão 2 continuam válidas. O teste vocal passa a usar este caminho.
  */
-export const DETECTOR_VERSION = 2;
+export const DETECTOR_VERSION = 3;
 
 export type DetectMode =
   /** duração de emissão contínua, com ou sem altura ("S", "X", "VU", "HUM") */
@@ -276,6 +279,13 @@ export interface PitchResult {
   highestMidi: number | null;
   /** notas estáveis na ordem em que apareceram, sem repetição consecutiva (confere escala) */
   stableNotes: number[];
+  /** notas seguradas: altura mediana (MIDI, fracionário) e por quanto tempo, na ordem */
+  holds: Hold[];
+}
+
+export interface Hold {
+  midi: number;
+  sec: number;
 }
 
 /*
@@ -287,23 +297,47 @@ const STABLE_WINDOW_S = 0.42;
 const STABLE_TOL = 0.7;
 const MIN_STABLE_READS = 6;
 
+/*
+ * Nota segurada: leituras estáveis seguidas, todas a ±STABLE_TOL do começo da sequência. A
+ * duração soma a janela de estabilidade: a primeira leitura estável já vem de 420 ms de nota.
+ */
 export class PitchTracker {
   private reads: { t: number; midi: number | null }[] = [];
   private stable: number[] = [];
   private window: { t: number; midi: number }[] = [];
   private emitting = 0;
+  private holds: Hold[] = [];
+  private run: { start: number; end: number; mids: number[] } | null = null;
   live: { midi: number | null; stableMidi: number | null } = { midi: null, stableMidi: null };
 
   constructor(private cal: Calibration) {}
+
+  /** notas seguradas até agora, incluindo a atual (barato: para chamar a cada quadro) */
+  get allHolds(): Hold[] {
+    return this.run ? [...this.holds, toHold(this.run)] : [...this.holds];
+  }
+
+  /** nota sendo segurada agora (para o visual e para encerrar a captura) */
+  get currentHold(): Hold | null {
+    return this.run ? toHold(this.run) : null;
+  }
+
+  private endRun() {
+    if (this.run) this.holds.push(toHold(this.run));
+    this.run = null;
+  }
 
   push(f: Frame) {
     if (f.hz === undefined) return;
     const emitting = activityDb(f, this.cal) >= this.cal.offDb;
     if (emitting) this.emitting++;
-    const midi = f.hz && f.hz > 0 ? freqToMidi(f.hz) : null;
+    // Altura só com voz acima do ruído da sala: zumbido de geladeira ou transformador tem
+    // altura "limpa" e, sem isso, virava a nota mais grave do teste vocal.
+    const midi = emitting && f.hz && f.hz > 0 ? freqToMidi(f.hz) : null;
     this.live.midi = midi;
     if (midi === null) {
       this.live.stableMidi = null;
+      this.endRunAfterGap(f.t);
       return;
     }
     this.reads.push({ t: f.t, midi });
@@ -315,7 +349,17 @@ export class PitchTracker {
     if (ok) {
       const note = Math.round(m);
       if (this.stable[this.stable.length - 1] !== note) this.stable.push(note);
-    }
+      if (this.run && Math.abs(m - this.run.mids[0]) > STABLE_TOL) this.endRun();
+      if (this.run) {
+        this.run.end = f.t;
+        this.run.mids.push(m);
+      } else this.run = { start: f.t, end: f.t, mids: [m] };
+    } else this.endRunAfterGap(f.t);
+  }
+
+  /** leitura sem nota estável: só encerra a nota segurada depois de HOLD_GAP_S (queda de áudio, consoante) */
+  private endRunAfterGap(t: number) {
+    if (this.run && t - this.run.end > HOLD_GAP_S) this.endRun();
   }
 
   result(): PitchResult {
@@ -327,9 +371,17 @@ export class PitchTracker {
       lowestMidi: s.length ? Math.min(...s) : null,
       highestMidi: s.length ? Math.max(...s) : null,
       stableNotes: [...s],
+      holds: this.allHolds,
     };
   }
 }
+
+const HOLD_GAP_S = 0.2;
+
+const toHold = (r: { start: number; end: number; mids: number[] }): Hold => ({
+  midi: +median(r.mids).toFixed(2),
+  sec: +(r.end - r.start + STABLE_WINDOW_S).toFixed(2),
+});
 
 /* ---------------- composição por exercício ---------------- */
 
