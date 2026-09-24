@@ -183,7 +183,7 @@ function MicLab() {
           </button>
           {cal && (
             <p className="text-xs text-muted-foreground">
-              Sala: <strong className="text-foreground">{cal.quality}</strong> · ruído {cal.noiseLevelDb.toFixed(0)} dBFS · oscilação {cal.noiseSwingDb.toFixed(1)} dB · limiar {cal.onDb.toFixed(1)} dB
+              Sala: <strong className="text-foreground">{cal.quality}</strong> · ruído {cal.noiseLevelDb.toFixed(0)} dBFS · oscilação {cal.noiseSwingDb.toFixed(1)} dB · limiar {cal.onDb.toFixed(1)} dB · som no silêncio {cal.contaminationMs} ms
             </p>
           )}
         </section>

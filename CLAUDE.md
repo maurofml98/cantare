@@ -426,7 +426,8 @@ A própria Laury teve resultado diferente em dias diferentes.
     de +12 dB mede +26 a +57 dB, nota plana mede +52 dB. Mesmo defeito do cronômetro
   - **Ruído que sobe depois da calibração** (+9,5 dB): silêncio vira emissão — "S" de
     6 s mede 8,4 s, trava-língua de 2,6 s mede 5,0 s
-  - **Sopro na calibração** passa como ambiente ok
+  - ~~Sopro na calibração passa como ambiente ok~~ — resolvido, ver "Calibração
+    contaminada" abaixo
   - **Voz baixa sem altura:** gate fixo `rms < 0.01` em `pitch.ts` ignora voz 13 dB
     acima do ruído
   - **"Ambiente instável" sensível demais — calibrar com ambiente real.** Picos de
@@ -439,6 +440,14 @@ A própria Laury teve resultado diferente em dias diferentes.
   correção que mude os números sobe a versão e diz quais métricas deixam de valer. As
   inválidas ficam no aparelho mas não contam para meta, recorde nem evolução. A versão 1
   (sem o campo) está invalidada nas três métricas
+- **Calibração contaminada** (24/09/2026). Som ≥10 dB acima do percentil 20 de cada
+  banda, por ≥150 ms seguidos, nos 2 s de silêncio → `quality: 'contaminada'`. O motor
+  mostra "Captamos som no silêncio" e só oferece medir de novo — sem "continuar", porque
+  todo número sairia errado. Pega sopro, tosse, fala e "S" antes da hora; não pega picos
+  curtos (<100 ms) nem ventilador constante. **Limite:** som que ocupa os 2 s inteiros
+  vira o próprio fundo; fala alta é pega pelo nível (`ruidoso`), fala baixa contínua passa.
+  Limiares de sinal sintético — **calibrar com sala real**, pelo mesmo risco do "instável":
+  aviso falso frequente ensina a ignorar. O `/lab/microfone` mostra "som no silêncio" em ms
 
 ### Identidade visual (última definida, não validada)
 

@@ -3,7 +3,7 @@ import { PulseDetector, SustainDetector } from './detectors';
 import type { Calibration } from './levels';
 
 const NOISE = -70;
-const cal: Calibration = { noiseDb: [NOISE, NOISE], onDb: 8, offDb: 4, noiseSwingDb: 3, noiseLevelDb: NOISE, quality: 'ok' };
+const cal: Calibration = { noiseDb: [NOISE, NOISE], onDb: 8, offDb: 4, noiseSwingDb: 3, noiseLevelDb: NOISE, quality: 'ok', contaminationMs: 0 };
 
 /** Conta pulsos num envelope `act(t)` (dB acima do ruído), lido a `fps` quadros por segundo. */
 function count(act: (t: number) => number, sec: number, fps: number) {

@@ -35,7 +35,13 @@ export interface Calibration {
   noiseSwingDb: number;
   /** nível total do ruído em dBFS */
   noiseLevelDb: number;
-  quality: 'ok' | 'ruidoso' | 'instavel';
+  /**
+   * `contaminada`: houve som (sopro, tosse, fala, "S" antes da hora) durante os 2 s que
+   * deviam ser silêncio. O ruído medido está errado — refazer, não seguir.
+   */
+  quality: 'ok' | 'ruidoso' | 'instavel' | 'contaminada';
+  /** maior trecho contínuo de som durante a calibração, em ms (diagnóstico) */
+  contaminationMs: number;
 }
 
 const FLOOR_DB = -120;
@@ -97,6 +103,38 @@ const NOISY_LEVEL_DB = -45;
 /** Oscilação acima disso = ruído variável (TV, conversa, trânsito). */
 const UNSTABLE_SWING_DB = 8;
 
+/*
+ * Calibração contaminada: som ≥ CONTAM_DB acima do "silêncio de verdade" (percentil 20 de
+ * cada banda — a mediana não serve: fala em mais da metade da janela virava o próprio fundo)
+ * por ≥ CONTAM_RUN_MS seguidos. Picos curtos de ruído (estalo, teclado) ficam abaixo de
+ * 100 ms mesmo com 12 picos/s de +24 dB e não contam; sopro, tosse e fala passam de 150 ms.
+ * Limite: som que ocupa os 2 s inteiros vira o próprio fundo — aí só o nível (`ruidoso`) pega.
+ * Provisórios, medidos com sinal sintético (`adversos.test.ts`); calibrar com sala real.
+ */
+const CONTAM_REF_PCT = 0.2;
+const CONTAM_DB = 10;
+const CONTAM_RUN_MS = 150;
+
+/** Maior trecho contínuo, em ms, com som ≥ CONTAM_DB acima do percentil 20 de cada banda. */
+function contamination(use: Frame[], nb: number): number {
+  const ref: number[] = [];
+  for (let b = 0; b < nb; b++) {
+    const p = use.map((f) => toPow(f.bands[b])).sort((x, y) => x - y);
+    ref.push(toDb(p[Math.floor(p.length * CONTAM_REF_PCT)]));
+  }
+  let best = 0;
+  let start: number | null = null;
+  for (let i = 0; i < use.length; i++) {
+    if (activityDb(use[i], { noiseDb: ref }) >= CONTAM_DB) {
+      start ??= i;
+      // duração do trecho = do primeiro ao último quadro + um intervalo entre quadros
+      const step = i > 0 ? use[i].t - use[i - 1].t : 0;
+      best = Math.max(best, (use[i].t - use[start].t + step) * 1000);
+    } else start = null;
+  }
+  return best;
+}
+
 /** Calibra com ~2 s de silêncio. Precisa de pelo menos 20 quadros. */
 export function calibrate(frames: Frame[]): Calibration | null {
   if (frames.length < 20) return null;
@@ -110,6 +148,8 @@ export function calibrate(frames: Frame[]): Calibration | null {
   const noiseSwingDb = act[Math.floor(act.length * 0.95)];
   const onDb = Math.max(MIN_ON_DB, noiseSwingDb + SWING_MARGIN_DB);
   const noiseLevelDb = toDb(noiseDb.reduce((s, d) => s + toPow(d), 0));
-  const quality = noiseSwingDb > UNSTABLE_SWING_DB ? 'instavel' : noiseLevelDb > NOISY_LEVEL_DB ? 'ruidoso' : 'ok';
-  return { noiseDb, onDb, offDb: onDb - HYSTERESIS_DB, noiseSwingDb, noiseLevelDb, quality };
+  const contaminationMs = Math.round(contamination(use, nb));
+  const quality: Calibration['quality'] =
+    contaminationMs >= CONTAM_RUN_MS ? 'contaminada' : noiseSwingDb > UNSTABLE_SWING_DB ? 'instavel' : noiseLevelDb > NOISY_LEVEL_DB ? 'ruidoso' : 'ok';
+  return { noiseDb, onDb, offDb: onDb - HYSTERESIS_DB, noiseSwingDb, noiseLevelDb, quality, contaminationMs };
 }

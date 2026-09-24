@@ -19,6 +19,7 @@ export type RunPhase =
   | 'error'
   | 'calibrating' // 2 s de silêncio medindo o ruído da sala
   | 'noisy' // ambiente ruim: continuar ou refazer
+  | 'contaminated' // houve som nos 2 s de silêncio: só refazer
   | 'inhale' // contagem de preparo
   | 'running'
   | 'done';
@@ -151,7 +152,11 @@ export function useTreinoRun(ex: RunnableExercise) {
       calRef.current = c;
       setCal(c);
       if (!c) go('error');
-      else if (c.quality !== 'ok') go('noisy');
+      // Contaminada não tem "continuar": o ruído medido está errado e todo número sairia errado.
+      else if (c.quality === 'contaminada') {
+        calRef.current = null;
+        go('contaminated');
+      } else if (c.quality !== 'ok') go('noisy');
       else prepare();
       return false;
     });

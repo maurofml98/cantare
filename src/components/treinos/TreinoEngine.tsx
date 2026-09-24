@@ -303,6 +303,19 @@ function ExecuteStep({ ex, run, goal }: { ex: RunnableExercise; run: TreinoRun; 
       </>
     );
 
+  if (phase === 'contaminated')
+    return (
+      <>
+        <Stage>
+          <p style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 300 }}>Captamos som no silêncio</p>
+          <p style={{ fontSize: 14, color: C.paper2 }}>Fique 2 segundos sem falar nem soprar, e meça de novo.</p>
+        </Stage>
+        <Actions>
+          <Button size="lg" onClick={run.recalibrate}>Medir de novo</Button>
+        </Actions>
+      </>
+    );
+
   if (phase === 'inhale')
     return (
       <Stage>

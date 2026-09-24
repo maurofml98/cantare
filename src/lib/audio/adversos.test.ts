@@ -151,11 +151,6 @@ describe('intensidade: erros conhecidos', () => {
 describe('calibração ruim: erros conhecidos', () => {
   const s6: Seg[] = [floor(1), { kind: 's', dur: 6 }, floor(2)];
 
-  // Etapa 3: sopro durante os 2 s de "silêncio" passa como ambiente ok.
-  test.failing('sopro na calibração é detectado', () => {
-    const { cal } = run(render([floor(0.7), { kind: 's', dur: 0.6, amp: 0.05 }, floor(0.7), ...s6]), ['sustain'], 60);
-    expect(cal!.quality).not.toBe('ok');
-  });
 
   test('fala na calibração é detectada (pelo nível)', () => {
     const { cal } = run(render([floor(0.5), { kind: 'voice', dur: 1, f0: 150, amp: 0.1 }, floor(0.5), ...s6]), ['sustain'], 60);
@@ -180,4 +175,36 @@ describe('calibração ruim: erros conhecidos', () => {
   });
 
   test('calibração precisa de 20 quadros', () => expect(calibrate([])).toBeNull());
+});
+
+/* ---------------- calibração contaminada ---------------- */
+
+describe('calibração contaminada: som nos 2 s de silêncio pede para refazer', () => {
+  const after: Seg[] = [floor(1)];
+  const dirty: Record<string, { segs: Seg[]; adv?: Adversity }> = {
+    'sopro forte': { segs: [floor(0.7), { kind: 's', dur: 0.6, amp: 0.05 }, floor(0.7)] },
+    'sopro fraco (−28 dB)': { segs: [floor(0.7), { kind: 's', dur: 0.6, amp: 0.01 }, floor(0.7)] },
+    tosse: { segs: [floor(1), { kind: 's', dur: 0.15, amp: 0.1 }, floor(0.85)] },
+    'fala por 1 s': { segs: [floor(0.5), { kind: 'voice', dur: 1, f0: 150, amp: 0.1 }, floor(0.5)] },
+    'fala baixa por 1 s': { segs: [floor(0.5), { kind: 'voice', dur: 1, f0: 150, amp: 0.01 }, floor(0.5)] },
+    '"S" começado antes da hora': { segs: [floor(1.7), { kind: 's', dur: 0.3 }] },
+    'sopro com picos de ruído': { segs: [floor(0.7), { kind: 's', dur: 0.6, amp: 0.05 }, floor(0.7)], adv: { spikesPerSec: 6, spikeGain: 4 } },
+  };
+  const clean: Record<string, Adversity> = {
+    silêncio: {},
+    'picos +12 dB': { spikesPerSec: 6, spikeGain: 4 },
+    'picos +18 dB': { spikesPerSec: 6, spikeGain: 8 },
+    'picos +24 dB, 12/s': { spikesPerSec: 12, spikeGain: 16 },
+    'ventilador (fundo +9,5 dB, constante)': { floor: 0.0045 },
+  };
+  for (const fps of FPS) {
+    for (const [n, { segs, adv }] of Object.entries(dirty))
+      test(`${n} · ${fps} q/s → contaminada`, () => expect(run(render([...segs, ...after], adv), ['sustain'], fps).cal!.quality).toBe('contaminada'));
+    for (const [n, adv] of Object.entries(clean))
+      test(`${n} · ${fps} q/s → não contaminada`, () => expect(run(render([CAL, ...after], adv), ['sustain'], fps).cal!.quality).not.toBe('contaminada'));
+  }
+  // Limite conhecido: som que ocupa os 2 s inteiros vira o próprio fundo. Fala alta é pega
+  // pelo nível (ruidoso); fala baixa contínua passa como sala ok.
+  test('fala alta nos 2 s inteiros → ruidoso', () =>
+    expect(run(render([{ kind: 'voice', dur: 2, f0: 150, amp: 0.1 }, ...after]), ['sustain'], 60).cal!.quality).toBe('ruidoso'));
 });
