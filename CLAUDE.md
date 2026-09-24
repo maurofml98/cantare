@@ -403,6 +403,17 @@ A própria Laury teve resultado diferente em dias diferentes.
   de cair abaixo do limiar de saída, só o limiar de entrada retoma a emissão. Afeta
   também S sustentado e "X" (menos, porque a janela é 250 ms e não 600 ms). Efeito
   colateral possível: emissão muito fraca, perto do limiar, quebra mais cedo
+- **Testes adversos** (`src/lib/audio/adversos.test.ts`, 24/09/2026): todos os detectores
+  pelo microfone simulado (`sim.ts`: FFT 2048 como o AnalyserNode), com picos de ruído,
+  quedas de áudio, calibração ruim e 30/60/120 q/s. Erros conhecidos ficam como
+  `test.failing`: quando corrigidos, o teste quebra e vira `test` normal. Em aberto:
+  - **Intensidade:** um quadro de ruído antes da voz vira o início da emissão; crescendo
+    de +12 dB mede +26 a +57 dB, nota plana mede +52 dB. Mesmo defeito do cronômetro
+  - **Ruído que sobe depois da calibração** (+9,5 dB): silêncio vira emissão — "S" de
+    6 s mede 8,4 s, trava-língua de 2,6 s mede 5,0 s
+  - **Sopro na calibração** passa como ambiente ok
+  - **Voz baixa sem altura:** gate fixo `rms < 0.01` em `pitch.ts` ignora voz 13 dB
+    acima do ruído
 
 ### Identidade visual (última definida, não validada)
 
