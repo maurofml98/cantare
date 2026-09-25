@@ -63,7 +63,7 @@ export function SongForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[#0F1114] sm:max-w-2xl">
+      <DialogContent className="border-border bg-popover sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl font-light">{initial ? 'Editar música' : 'Nova música'}</DialogTitle>
           <DialogDescription>O tom é o que mais importa no palco.</DialogDescription>
@@ -86,10 +86,10 @@ export function SongForm({
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Nome da música" htmlFor="sf-title">
-              <Input id="sf-title" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="border-white/10 bg-background" />
+              <Input id="sf-title" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} className="border-input bg-background" />
             </Field>
             <Field label="Artista" htmlFor="sf-artist">
-              <Input id="sf-artist" value={artist} onChange={(e) => setArtist(e.target.value)} className="border-white/10 bg-background" />
+              <Input id="sf-artist" value={artist} onChange={(e) => setArtist(e.target.value)} className="border-input bg-background" />
             </Field>
           </div>
           <Field label={key ? `Tom: ${key}` : 'Tom (ainda não definido)'}>
@@ -97,13 +97,13 @@ export function SongForm({
           </Field>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-[140px_120px_1fr]">
             <Field label="Duração (m:ss)" htmlFor="sf-dur">
-              <Input id="sf-dur" inputMode="numeric" placeholder="3:45" value={duration} onChange={(e) => setDuration(e.target.value)} aria-invalid={durationInvalid} className="border-white/10 bg-background aria-[invalid=true]:border-[#C87F6A]" />
+              <Input id="sf-dur" inputMode="numeric" placeholder="3:45" value={duration} onChange={(e) => setDuration(e.target.value)} aria-invalid={durationInvalid} className="border-input bg-background aria-[invalid=true]:border-destructive" />
             </Field>
             <Field label="BPM (opcional)" htmlFor="sf-bpm">
-              <Input id="sf-bpm" inputMode="numeric" value={bpm} onChange={(e) => setBpm(e.target.value.replace(/\D/g, ''))} className="border-white/10 bg-background" />
+              <Input id="sf-bpm" inputMode="numeric" value={bpm} onChange={(e) => setBpm(e.target.value.replace(/\D/g, ''))} className="border-input bg-background" />
             </Field>
             <Field label="Observação" htmlFor="sf-note">
-              <Textarea id="sf-note" rows={1} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex.: entrada só voz e violão" className="min-h-10 border-white/10 bg-background" />
+              <Textarea id="sf-note" rows={1} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex.: entrada só voz e violão" className="min-h-10 border-input bg-background" />
             </Field>
           </div>
           {/* Letra: só o que o cantor digita ou cola. Nada de busca em API — direito autoral. */}
@@ -115,7 +115,7 @@ export function SongForm({
               value={lyrics}
               onChange={(e) => setLyrics(e.target.value)}
               placeholder="Digite ou cole a letra para conferir no Modo Palco."
-              className="border-white/10 bg-background"
+              className="border-input bg-background"
             />
           </Field>
           <DialogFooter className="gap-2 pt-2 sm:justify-between">
@@ -126,7 +126,7 @@ export function SongForm({
                   <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)}>Manter</Button>
                 </span>
               ) : (
-                <Button type="button" variant="ghost" className="hover:text-[#D9A08C]" onClick={() => setConfirmDelete(true)}><Trash2 /> Remover do projeto</Button>
+                <Button type="button" variant="ghost" className="hover:text-destructive" onClick={() => setConfirmDelete(true)}><Trash2 /> Remover do projeto</Button>
               )
             ) : <span />}
             <span className="flex gap-2">
@@ -143,7 +143,7 @@ export function SongForm({
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-[13px] font-normal text-[rgba(232,228,220,0.72)]">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-[13px] font-normal text-muted-foreground">{label}</Label>
       {children}
     </div>
   );

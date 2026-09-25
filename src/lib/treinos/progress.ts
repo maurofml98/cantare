@@ -142,6 +142,9 @@ function readAll(): Attempt[] {
 
 const metricOf = (exerciseId: string) => TREINO_BY_ID[exerciseId]?.engine?.metric;
 
+/** Todas as tentativas guardadas, em qualquer exercício (inclui as de detector antigo: contam prática). */
+export const loadAllAttempts = (): Attempt[] => readAll();
+
 /** Tentativas válidas de um exercício, mais antiga primeiro. */
 export function loadAttempts(exerciseId: string): Attempt[] {
   const m = metricOf(exerciseId);

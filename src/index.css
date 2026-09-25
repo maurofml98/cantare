@@ -277,12 +277,12 @@
 
 /*
  * Tema claro — nova linguagem visual (redesenho da Home, 25/09/2026; referência:
- * referencias/home-ref.png). Por enquanto vale só onde `.tema-claro` estiver (a Home e a
+ * referencias/home-ref.png). Por enquanto vale só onde `.tema-novo` estiver (a Home e a
  * navegação quando a Home está aberta); as outras telas migram depois. Cada cor tem função:
  * azul = repertório e ação principal, laranja/amarelo = criar música, verde = afinação,
  * roxo = Play, ciano = saúde vocal. Texto sobre cor usa as variantes "-ink" (contraste AA).
  */
-.tema-claro {
+.tema-novo {
   --c-bg: #F5F9FF;
   --c-surface: #FFFFFF;
   --c-surface-blue: #EEF6FF;
@@ -305,25 +305,230 @@
   --c-cyan: #27B8D8;
   --c-cyan-ink: #0B6E86;
   --c-cyan-bg: #E9F7FB;
+  /* criar música (tela de 25/09/2026): branco sobre --c-create passa em texto grande (≥18px bold) */
+  --c-create: #F0154F;
+  --c-create-ink: #C20E3F;
+  --c-create-bg: #FFF0F4;
+  --c-create-line: #FFC2D2;
   --c-border: #E4EBF5;
   --c-shadow: 0 4px 16px rgba(20, 60, 110, 0.06);
   --c-focus: 0 0 0 3px rgba(23, 107, 255, 0.35);
+  /* papéis semânticos (25/09/2026, modo escuro): nada de cor fixa nos componentes */
+  --c-primary-ink: #0F5DE8;       /* azul como texto/ícone (5,1:1 no azul-claro) */
+  --c-create-fill: #D4104A;       /* chip/marca selecionados com texto pequeno branco (5,3:1) */
+  --c-inner: #FFFFFF;             /* caixa dentro de cartão colorido ou do bloco azul */
+  --c-field: #FFFFFF;             /* fundo de campo, chip e select */
+  --c-placeholder: #7A8499;
+  --c-muted-bg: #F2F5FA;          /* painel neutro: indisponível, aviso */
+  --c-track: #E6ECF5;             /* trilho das abas */
+  --c-line-strong: #C9D3E3;
+  --c-off: #D5E3DC;               /* barra apagada do desafio */
+  --c-purple-off: #DCCFFB;
+  --c-orange-line: #FFD9B8;
+  --c-green-fill: #0A7A4C;        /* botão verde com texto branco */
+  --c-soon-bg: #FFE7A8;
+  --c-soon-ink: #6B4A00;
+  --c-hero: linear-gradient(135deg, #2A7BFF 0%, #176BFF 45%, #0B4FD1 100%);
+  --c-hero-shadow: 0 10px 30px rgba(23, 107, 255, 0.22);
+  --c-create-shadow: 0 8px 20px rgba(240, 21, 79, 0.22);
+  --c-lift-shadow: 0 8px 24px rgba(20, 60, 110, 0.10);
+  /* repertório (25/09/2026): tom definido = uma cor só; pendência = âmbar; faixas dos blocos */
+  --c-key-bg: #EAF2FF;
+  --c-key-ink: #0B4FD1;
+  --c-pending-bg: #FFF1CC;
+  --c-pending-ink: #7A5200;
+  --c-pending-line: #F2C94C;
+  --c-block-1: #EEF5FF;
+  --c-block-2: #FFF6DC;
+  --c-block-3: #EAF8F1;
+  --c-block-4: #FFEEEE;
+  --c-reserve-bg: #F3EEFF;
+  --c-reserve-ink: #5B34B8;
+  --c-warn-ink: #9A4A00;
+  --c-warn-bar: #F2994A;
+  /* objetivos da aba Voz: cor só identifica; o nome diz o objetivo */
+  --c-obj-respiracao: #2385F5; --c-obj-respiracao-bg: #EAF3FE; --c-obj-respiracao-ink: #0F5CC2;
+  --c-obj-flexibilidade: #7B61FF; --c-obj-flexibilidade-bg: #F1EEFF; --c-obj-flexibilidade-ink: #5A3FD9;
+  --c-obj-firmeza: #F59E2F; --c-obj-firmeza-bg: #FFF4E3; --c-obj-firmeza-ink: #8F5200;
+  --c-obj-ressonancia: #EA4B92; --c-obj-ressonancia-bg: #FDEEF5; --c-obj-ressonancia-ink: #B51F63;
+  --c-obj-articulacao: #25B97B; --c-obj-articulacao-bg: #E8F8F0; --c-obj-articulacao-ink: #0A7A4C;
+  --c-resume: #176BFF;            /* "Continue de onde parou": branco sobre ele 4,6:1 */
+  color-scheme: light;
   background: var(--c-bg);
   color: var(--c-text);
   font-family: 'DM Sans', system-ui, sans-serif;
 }
 
 /* cartão que responde ao hover — só transform/sombra, barato em Android simples */
-.tema-claro .c-lift { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
+.tema-novo .c-lift { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
 @media (hover: hover) {
-  .tema-claro .c-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20, 60, 110, 0.10); }
+  .tema-novo .c-lift:hover { transform: translateY(-2px); box-shadow: var(--c-lift-shadow); }
 }
-.tema-claro .c-focus:focus-visible { outline: none; box-shadow: var(--c-focus); }
-.tema-claro .c-press { transition: transform 110ms ease, background-color 160ms ease; }
-.tema-claro .c-press:active { transform: scale(0.97); }
+.tema-novo .c-focus:focus-visible { outline: none; box-shadow: var(--c-focus); }
+.tema-novo .c-press { transition: transform 110ms ease, background-color 160ms ease; }
+.tema-novo .c-press:active { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) {
-  .tema-claro .c-lift, .tema-claro .c-press { transition: none; }
-  .tema-claro .c-lift:hover { transform: none; }
+  .tema-novo .c-lift, .tema-novo .c-press { transition: none; }
+  .tema-novo .c-lift:hover { transform: none; }
 }
 /* o base aplica a serifada em h1–h4; a nova linguagem é toda sans */
-.tema-claro h1, .tema-claro h2, .tema-claro h3, .tema-claro h4 { font-family: 'DM Sans', system-ui, sans-serif; }
+.tema-novo h1, .tema-novo h2, .tema-novo h3, .tema-novo h4 { font-family: 'DM Sans', system-ui, sans-serif; }
+
+/*
+ * Modo escuro do tema novo (25/09/2026): azul-marinho quase preto, superfícies em degraus,
+ * bordas branco-neve sutis. O claro continua padrão; a escolha fica em `cantare:tema`.
+ * Cores de função revisadas para contraste no fundo escuro: as de texto (-ink) clareiam, os
+ * preenchimentos perdem saturação para não virar neon.
+ */
+.tema-novo[data-tema='escuro'] {
+  --c-bg: #08111F;
+  --c-surface: #0D1828;
+  --c-surface-blue: #13243D;
+  --c-inner: #122033;
+  --c-field: #0A1524;
+  --c-text: #F7FAFC;
+  --c-text-2: #AAB7C8;
+  --c-placeholder: #7F8EA3;
+  --c-border: rgba(255, 255, 255, 0.12);
+  --c-line-strong: rgba(255, 255, 255, 0.24);
+  --c-muted-bg: #0F1C2E;
+  --c-track: #0A1524;
+
+  --c-primary: #176BFF;
+  --c-primary-hover: #4A8DFF;
+  --c-primary-ink: #7EB0FF;
+
+  --c-green: #2BC98A;
+  --c-green-ink: #5EDCA8;
+  --c-green-fill: #0A7A4C;
+  --c-green-bg: #0D2226;
+  --c-off: rgba(255, 255, 255, 0.16);
+
+  --c-orange: #FF9A4D;
+  --c-orange-ink: #FFB57C;
+  --c-orange-bg: #1F1B1C;
+  --c-orange-line: rgba(255, 154, 77, 0.35);
+  --c-yellow: #F7C84B;
+
+  --c-purple: #9B7BFF;
+  --c-purple-ink: #BBA5FF;
+  --c-purple-bg: #171A36;
+  --c-purple-off: #2E2A55;
+
+  --c-coral: #FF7A7A;
+  --c-cyan: #3CC8E6;
+  --c-cyan-ink: #6ED8EF;
+  --c-cyan-bg: #0C2030;
+
+  --c-create: #E6245A;
+  --c-create-fill: #CC1F50;
+  --c-create-ink: #FF8FAE;
+  --c-create-bg: #221426;
+  --c-create-line: rgba(255, 110, 150, 0.35);
+
+  --c-soon-bg: rgba(247, 200, 75, 0.16);
+  --c-soon-ink: #F7C84B;
+
+  --c-hero: linear-gradient(135deg, #1A56C9 0%, #13439E 55%, #0D3278 100%);
+  --c-hero-shadow: none;
+  --c-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --c-create-shadow: none;
+  --c-lift-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --c-focus: 0 0 0 3px rgba(126, 176, 255, 0.55);
+  --c-key-bg: #16294A;
+  --c-key-ink: #A8C8FF;
+  --c-pending-bg: rgba(247, 200, 75, 0.16);
+  --c-pending-ink: #F7C84B;
+  --c-pending-line: rgba(247, 200, 75, 0.45);
+  --c-block-1: #122540;
+  --c-block-2: #2A2413;
+  --c-block-3: #0F2A24;
+  --c-block-4: #2E1A1D;
+  --c-reserve-bg: #1E1A3A;
+  --c-reserve-ink: #C3B0FF;
+  --c-warn-ink: #FFB57C;
+  --c-warn-bar: #F2994A;
+  --c-obj-respiracao: #4A9BFF; --c-obj-respiracao-bg: #10223B; --c-obj-respiracao-ink: #8CC0FF;
+  --c-obj-flexibilidade: #9B85FF; --c-obj-flexibilidade-bg: #1B1838; --c-obj-flexibilidade-ink: #BFB0FF;
+  --c-obj-firmeza: #F7AE4F; --c-obj-firmeza-bg: #2A2012; --c-obj-firmeza-ink: #FFC47A;
+  --c-obj-ressonancia: #F06BA8; --c-obj-ressonancia-bg: #2C1524; --c-obj-ressonancia-ink: #FF9CC8;
+  --c-obj-articulacao: #3CCB8E; --c-obj-articulacao-bg: #0E2620; --c-obj-articulacao-ink: #6FE0AE;
+  --c-resume: #1452C8;            /* cobalto profundo: branco 6,9:1, domina sem brilhar */
+  color-scheme: dark;
+}
+
+/*
+ * Ponte shadcn → tema novo (25/09/2026). Diálogos, menus e popovers do Radix abrem no <body>;
+ * o layout põe `.tema-novo` no body nas rotas do tema novo, e estes tokens fazem os componentes
+ * shadcn seguirem claro/escuro sem cor fixa. Fora do tema novo, o `:root` escuro antigo vale.
+ */
+.tema-novo {
+  --background: var(--c-field);
+  --foreground: var(--c-text);
+  --card: var(--c-surface);
+  --card-foreground: var(--c-text);
+  --popover: var(--c-surface);
+  --popover-foreground: var(--c-text);
+  --primary: var(--c-primary);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--c-surface-blue);
+  --secondary-foreground: var(--c-text);
+  --accent: var(--c-surface-blue);
+  --accent-foreground: var(--c-text);
+  --muted: var(--c-muted-bg);
+  --muted-foreground: var(--c-text-2);
+  --destructive: #C2372B;
+  --destructive-foreground: #FFFFFF;
+  --border: var(--c-border);
+  --input: var(--c-line-strong);
+  --ring: var(--c-primary-ink);
+  --gold: var(--c-primary-ink);
+}
+.tema-novo[data-tema='escuro'] { --destructive: #FF8A7A; }
+
+/* serifada antiga fora do tema novo */
+.tema-novo .font-serif { font-family: 'DM Sans', system-ui, sans-serif; font-weight: 800; letter-spacing: -0.01em; }
+
+/* Botão (components/ui/button) no tema novo: sem dourado. `data-variant` vem do componente. */
+.tema-novo [data-variant] { border-radius: 12px; }
+.tema-novo [data-variant='primary'], .tema-novo [data-variant='default'] { background: var(--c-primary); color: #FFFFFF; box-shadow: none; font-weight: 700; }
+.tema-novo [data-variant='primary']:hover, .tema-novo [data-variant='default']:hover { background: var(--c-primary-hover); filter: none; }
+.tema-novo [data-variant='secondary'], .tema-novo [data-variant='outline'] { background: var(--c-inner); color: var(--c-text); border: 1px solid var(--c-line-strong); font-weight: 600; }
+.tema-novo [data-variant='secondary']:hover, .tema-novo [data-variant='outline']:hover { background: var(--c-surface-blue); color: var(--c-text); }
+.tema-novo [data-variant='ghost'] { color: var(--c-text-2); font-weight: 600; }
+.tema-novo [data-variant='ghost']:hover { background: var(--c-surface-blue); color: var(--c-text); }
+.tema-novo [data-variant='danger'], .tema-novo [data-variant='destructive'] { background: transparent; color: var(--destructive); border: 1px solid var(--destructive); }
+.tema-novo [data-variant='link'] { color: var(--c-primary-ink); }
+.tema-novo [data-variant]:focus-visible { box-shadow: var(--c-focus); --tw-ring-offset-width: 0; }
+.tema-novo .btn-shine::before { display: none; }
+
+/*
+ * Modo Palco (25/09/2026): SEMPRE escuro, ignora a escolha claro/escuro. Contraste máximo, nada
+ * de superfície branca. Tom em azul-claro (≥ 8:1 no fundo); pendência em âmbar.
+ */
+.palco {
+  --s-bg: #020812;
+  --s-surface: #071322;
+  --s-surface-2: #0C1D33;
+  --s-text: #FFFFFF;
+  --s-muted: #A8B4C8;
+  --s-primary: #1296FF;
+  --s-primary-fill: #0A6FDB;     /* botões com texto branco (4,9:1); #1296FF daria 3,1:1 */
+  --s-primary-strong: #0B5FC2;   /* fundo da música atual na lista: branco sobre ele ≥ 6:1 */
+  --s-key: #6CC4FF;
+  --s-pending: #F7C84B;
+  --s-live: #3DDC97;
+  --s-border: rgba(255, 255, 255, 0.18);
+  --s-focus: 0 0 0 3px rgba(108, 196, 255, 0.7);
+  background: var(--s-bg);
+  color: var(--s-text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color-scheme: dark;
+}
+.palco .s-focus:focus-visible { outline: none; box-shadow: var(--s-focus); }
+.palco .s-press { transition: transform 100ms ease, filter 100ms ease; }
+.palco .s-press:active { transform: scale(0.97); filter: brightness(0.9); }
+.palco .s-in { animation: s-in 140ms ease-out 1; }
+@keyframes s-in { from { opacity: 0.35; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .palco .s-in { animation: none; } .palco .s-press { transition: none; } }
+.palco h1, .palco h2, .palco h3 { font-family: 'DM Sans', system-ui, sans-serif; }

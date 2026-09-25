@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 /**
  * Peças da nova linguagem visual (tema claro, redesenho de 25/09/2026). Usam os tokens
- * `--c-*` de `.tema-claro` em `index.css`. Base para as próximas telas.
+ * `--c-*` de `.tema-novo` em `index.css`. Base para as próximas telas.
  */
 
 /** Cartão base: branco, borda fina, sombra curta. `tint` = fundo claro da cor da função. */
@@ -48,7 +48,7 @@ export function Muted({ children, className = '' }: { children: ReactNode; class
 }
 
 /** Rótulo curto em caixa alta (ex.: PRÓXIMO SHOW). */
-export function Eyebrow({ children, color = 'var(--c-primary)', bg = 'var(--c-surface-blue)' }: { children: ReactNode; color?: string; bg?: string }) {
+export function Eyebrow({ children, color = 'var(--c-primary-ink)', bg = 'var(--c-surface-blue)' }: { children: ReactNode; color?: string; bg?: string }) {
   return (
     <span className="inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.06em]" style={{ color, background: bg }}>
       {children}
@@ -59,7 +59,7 @@ export function Eyebrow({ children, color = 'var(--c-primary)', bg = 'var(--c-su
 /** "Em breve" — o texto diz o estado; a cor só reforça. */
 export function SoonTag() {
   return (
-    <span className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[12px] font-bold" style={{ background: '#FFE7A8', color: '#6B4A00' }}>
+    <span className="inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-[12px] font-bold" style={{ background: 'var(--c-soon-bg)', color: 'var(--c-soon-ink)' }}>
       Em breve
     </span>
   );
@@ -89,7 +89,7 @@ export function LinkButton({
     variant === 'solid'
       ? { background: color, color: '#FFFFFF' }
       : variant === 'white'
-        ? { background: '#FFFFFF', color }
+        ? { background: 'var(--c-inner)', color }
         : { background: 'transparent', color, boxShadow: `inset 0 0 0 1.5px ${color}` };
   return (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -24,7 +24,7 @@ export function PitchChallengeCard({ state }: { state: ChallengeState }) {
         {state.status === 'loading' ? (
           <Skeleton className="h-[72px] w-full" />
         ) : last ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-white px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-[var(--c-inner)] px-4 py-3">
             <div>
               <p className="text-[13px] font-medium" style={{ color: 'var(--c-text-2)' }}>Último resultado</p>
               <p className="text-[20px] font-extrabold" style={{ color: 'var(--c-text)' }}>
@@ -32,11 +32,11 @@ export function PitchChallengeCard({ state }: { state: ChallengeState }) {
               </p>
               <Dots hits={last.hits} total={last.total} />
             </div>
-            <LinkButton to="/desafio" color="var(--c-green-ink)">Jogar de novo</LinkButton>
+            <LinkButton to="/desafio" color="var(--c-green-fill)">Jogar de novo</LinkButton>
           </div>
         ) : (
           <div className="mt-auto">
-            <LinkButton to="/desafio" color="var(--c-green-ink)" className="w-full sm:w-auto">
+            <LinkButton to="/desafio" color="var(--c-green-fill)" className="w-full sm:w-auto">
               Começar desafio <ArrowRight size={18} strokeWidth={2.5} />
             </LinkButton>
           </div>
@@ -51,7 +51,7 @@ function Dots({ hits, total }: { hits: number; total: number }) {
   return (
     <span className="mt-1.5 flex gap-1.5" aria-hidden>
       {Array.from({ length: total }, (_, i) => (
-        <span key={i} className="h-2 w-10 rounded-full" style={{ background: i < hits ? 'var(--c-green)' : '#D5E3DC' }} />
+        <span key={i} className="h-2 w-10 rounded-full" style={{ background: i < hits ? 'var(--c-green)' : 'var(--c-off)' }} />
       ))}
     </span>
   );

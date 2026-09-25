@@ -22,7 +22,7 @@ function RhythmMark() {
   return (
     <svg viewBox="0 0 176 40" className="mt-auto h-10 w-full max-w-[200px]" aria-hidden>
       {cells.map((on, i) => (
-        <rect key={i} x={i * 22} y={on ? 6 : 16} width="16" height={on ? 28 : 18} rx="5" fill={on ? 'var(--c-purple)' : '#DCCFFB'} />
+        <rect key={i} x={i * 22} y={on ? 6 : 16} width="16" height={on ? 28 : 18} rx="5" fill={on ? 'var(--c-purple)' : 'var(--c-purple-off)'} />
       ))}
     </svg>
   );

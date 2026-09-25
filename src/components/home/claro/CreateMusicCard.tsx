@@ -43,9 +43,9 @@ function SongSketch() {
         { y: 86, label: 'Tom', r: 0 },
       ].map((c, i) => (
         <g key={c.label} transform={`rotate(${c.r} 60 ${c.y + 12})`}>
-          <rect x={8 + i * 4} y={c.y} width="104" height="26" rx="8" fill="#FFFFFF" stroke="#FFD9B8" />
+          <rect x={8 + i * 4} y={c.y} width="104" height="26" rx="8" fill="var(--c-inner)" stroke="var(--c-orange-line)" />
           <path d={`M${20 + i * 4} ${c.y + 13} l4 4 l7 -8`} stroke="var(--c-orange)" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          <text x={38 + i * 4} y={c.y + 17.5} fontSize="12" fontWeight="600" fill="#7A4A1E" fontFamily="DM Sans, sans-serif">{c.label}</text>
+          <text x={38 + i * 4} y={c.y + 17.5} fontSize="12" fontWeight="600" fill="var(--c-orange-ink)" fontFamily="DM Sans, sans-serif">{c.label}</text>
         </g>
       ))}
       {bars.map((h, i) => (

@@ -18,11 +18,11 @@ export function VocalHealthCard() {
 
         <div className="grid grid-cols-1 gap-2.5 xl:grid-cols-2">
           <Shortcut to="geral" title="Aquecimento" text="Antes de cantar" icon={<Sun size={22} strokeWidth={2.2} style={{ color: 'var(--c-orange)' }} />} />
-          <Shortcut to="desaquecimento" title="Desaquecimento" text="Depois do show" icon={<Moon size={22} strokeWidth={2.2} style={{ color: 'var(--c-primary)' }} />} />
+          <Shortcut to="desaquecimento" title="Desaquecimento" text="Depois do show" icon={<Moon size={22} strokeWidth={2.2} style={{ color: 'var(--c-primary-ink)' }} />} />
         </div>
 
         {/* TODO(Laury): texto provisório — o texto final e a rotação de dicas vêm dela. */}
-        <figure className="mt-auto rounded-[14px] bg-white px-4 py-3">
+        <figure className="mt-auto rounded-[14px] bg-[var(--c-inner)] px-4 py-3">
           <blockquote className="text-[15px] font-semibold" style={{ color: 'var(--c-text)', lineHeight: 1.4 }}>
             <span aria-hidden className="mr-1 text-[22px] font-extrabold leading-none" style={{ color: 'var(--c-cyan-ink)' }}>“</span>
             {LAURY_TIP}
@@ -40,7 +40,7 @@ function Shortcut({ to, title, text, icon }: { to: string; title: string; text: 
     <Link
       to="/saude/$warmupId"
       params={{ warmupId: to }}
-      className="c-lift c-focus flex min-h-[64px] items-center gap-3 rounded-[14px] bg-white px-3.5 py-3"
+      className="c-lift c-focus flex min-h-[64px] items-center gap-3 rounded-[14px] bg-[var(--c-inner)] px-3.5 py-3"
     >
       <span aria-hidden className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">

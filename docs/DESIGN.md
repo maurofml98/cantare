@@ -27,8 +27,8 @@ foi refeita nela e é a base visual das próximas telas — ver "Linguagem clara
 
 ### Linguagem clara — a nova direção
 
-Implementada na Home (`components/home/claro/`, tokens `--c-*` em `.tema-claro` no
-`src/index.css`). **Vale só na Home por enquanto:** as outras telas são escuras e têm cor
+Implementada na Home (`components/home/claro/`, tokens `--c-*` em `.tema-novo` no
+`src/index.css`). **Vale na Home, em Criar música, no Repertório e na aba Voz (`/treinos`); o Modo Palco tem tema próprio, sempre escuro:** as outras telas são escuras e têm cor
 fixa no código; migram uma a uma, e até lá o layout (`_app.tsx`) escolhe o tema pela rota —
 sidebar e barra inferior mudam junto.
 
@@ -48,6 +48,37 @@ sidebar e barra inferior mudam junto.
 - Foto de palco (`cantare-home-palco`) clareada por filtro: as fotos existentes são noturnas.
   Fotos claras novas ficam para quando houver asset aprovado. Retrato da Laury: não há foto
   real — não usar o gerado
+
+**Modo escuro (25/09/2026).** Variação do mesmo sistema, não outro: `.tema-novo[data-tema="escuro"]`
+em `index.css` redefine os mesmos tokens `--c-*` — azul-marinho quase preto (`#08111F`),
+superfícies em degraus (`#0D1828` cartão, `#122033` caixa interna, `#0A1524` campo), bordas
+branco-neve a 12–24%. Claro é o padrão; o escuro só por escolha (`ThemeToggle`: sidebar no
+desktop, topo da tela no celular), salvo em `cantare:tema`, sem seguir o sistema. **Regra:**
+componente do tema novo não usa cor fixa — só papéis (`--c-inner`, `--c-field`, `--c-primary-ink`
+para azul como texto, `--c-create-fill` para rosa com texto pequeno branco, etc.). Contraste
+conferido par a par (WCAG AA; branco sobre rosa do "Criar guia" é texto grande, ≥3:1). O chip
+rosa selecionado falhava também no claro (4,26:1) — corrigido nos dois.
+
+**Criar música (`/criar`, referência `referencias/criar-ref.png`).** Cor da área: rosa-avermelhado
+(`--c-create`). O card de Criar música da Home ainda usa laranja — alinhar quando a Laury
+validar a paleta.
+
+**Repertório (`referencias/repertorio-ref.png`).** Ferramenta de trabalho, não streaming: linhas de
+~44 px (45+ músicas escaneáveis), tom sempre visível numa cor só (`--c-key-*`), sem tom = pendência
+âmbar "Definir tom" (`--c-pending-*`), faixa suave por bloco (`--c-block-1..4`), reserva em roxo
+suave. A duração contra a meta ("2h10 de 3h00 · faltam 50 min") é o maior número da tela.
+Diálogos/menus do shadcn seguem o tema pela ponte de tokens (`.tema-novo` no body) e o `Button`
+recebe `data-variant` — as telas antigas continuam com o dourado.
+
+**Modo Palco — sempre escuro (`.palco`, tokens `--s-*`).** Ignora claro/escuro. Três modos com um
+toque (Foco, Lista, Letra), botões ≥ 76 px, "Próxima" em `#0A6FDB` (branco 4,9:1; o `#1296FF` da
+especificação daria 3,1:1), tom em `#6CC4FF` (10:1), "sem tom" em âmbar.
+
+**Aba Voz (`referencias/voz-ref.png`).** A próxima ação primeiro: usuário novo vê "Comece pelo
+aquecimento"; usuário ativo vê "Continue de onde parou" dominando (`--c-resume`). Objetivos com
+cor de identificação (`--c-obj-*`), sem porcentagem — "Último treino: ontem". Perfil vocal vira
+atalho discreto. Dentro do objetivo: abas Exercícios/Sobre/Dicas, categorias recolhíveis, linha
+compacta (nome + uma linha + estado).
 
 **Proibições que caíram com a nova direção:** fundo preto/dourado, serifada editorial, "pill
 no item ativo" (agora é fundo azul-claro + traço lateral), "gradiente colorido" (o bloco do

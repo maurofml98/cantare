@@ -724,6 +724,11 @@ de afinação (`/desafio`, `lib/desafio/afinacao.ts`: 3 notas, vale qualquer oit
 painel "Sua voz" fica em `/treinos` e o treino trava em aquecimento → teste vocal (só se
 não houver perfil) → exercício. Refazer continua livre: a trava de 30 dias espera a
 Laury (contradição 2). Nada disso testado com voz real.
+**Redesenho no tema novo (25/09/2026):** Home, Criar música, Repertório (duração contra a meta em
+destaque, tom sempre visível), Modo Palco (Foco/Lista/Letra, sempre escuro, posição salva em
+`lib/palco/position.ts`) e aba Voz (continuar de onde parou, objetivos sem porcentagem, categorias
+recolhíveis). Ainda no visual antigo: Evolução, Saúde vocal completa (`/saude`), teste vocal e a
+tela do exercício (`/treino/$id`, motor dos 8 passos). Ver `docs/DESIGN.md`.
 
 ### Navegação inferior (ordem definida pela Laury)
 
@@ -735,7 +740,11 @@ Home · Criar música · Repertório · Voz · Evolução
 - **Saúde vocal sai da navegação** e vive no card da Home
 - **Play fica fora da barra** (decisão do Mauro, 25/09/2026): card na Home com tag
   "em breve" (jogos de ritmo e ear training, `ROADMAP.md` Fase 7)
-- "Criar música" é a rota `/criar`, com estado "em breve" até a função existir
+- "Criar música" é a rota `/criar` (tela completa em 25/09/2026, `components/criar/`): "No meu
+  tom" (usa o teste vocal; sem teste vira convite) × "Personalizada", modos Simples/Avançado e
+  biblioteca das criações (`lib/criar/library.ts`, hoje vazia de verdade). "Criar guia" só avisa
+  que chega em breve — nenhuma geração, API ou carregamento falso. Sugestão de tom para música
+  nova **não existe** (`recommendKey` só transpõe música pronta): a tela diz "no lançamento"
 - **Aba "Voz"** (era "Treino"; rota continua `/treinos`), 25/09/2026. **TODO(Laury):** confirmar
   o nome — ela chamou treino de "a parte mais chata", e "Voz" cobre treino e saúde vocal sem o
   peso. Estrutura: no topo, aquecimento e desaquecimento em destaque (quem só quer aquecer antes

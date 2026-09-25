@@ -1,63 +1,135 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { C, SANS, SERIF, focusRing } from '@/components/home/primitives';
-import { PageTitle, useClientValue } from '@/components/treinos/TabParts';
-import { CareSection } from '@/components/treinos/CareSection';
+import { createFileRoute } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { ObjectivesGrid, ResumeHero, SectionTitle, VocalProfileShortcut, VocalTestEntry, WarmupFirst, WarmupToday, type ObjectiveItem } from '@/components/voz/VoicePieces';
+import { exercisesOf, isRunnable, OBJECTIVE_BY_ID, OBJECTIVES, TREINO_BY_ID, type RunnableExercise } from '@/lib/treinos/exercises';
+import { goalFor, isValidAttempt, loadAllAttempts, type Attempt } from '@/lib/treinos/progress';
+import { lastAttempt, lastByObjective, relativeDay } from '@/lib/treinos/activity';
+import { fmtGoal, fmtU } from '@/lib/treinos/format';
 import { warmedUpToday } from '@/lib/treinos/warmup';
-import { exercisesOf, isRunnable, OBJECTIVES } from '@/lib/treinos/exercises';
-import { loadAttempts } from '@/lib/treinos/progress';
-import { loadVocalProfile } from '@/lib/vocal/profile';
-import { VoicePanel } from '@/components/treinos/VoicePanel';
+import { loadVocalProfile, type VocalProfile } from '@/lib/vocal/profile';
 
 export const Route = createFileRoute('/_app/treinos/')({
-  head: () => ({ meta: [{ title: 'Treinos — Cantare' }] }),
-  component: TreinosPage,
+  head: () => ({ meta: [{ title: 'Voz — Cantare' }] }),
+  component: VozPage,
 });
 
-/**
- * Aba Treinos (PDF da Laury, seção 01): o cantor escolhe o objetivo, como numa academia.
- * Sem ícones nem emoji nos cards (CLAUDE.md, seção 9 — contradição 3 da seção 13 em aberto).
- */
-function TreinosPage() {
-  // tentativas por objetivo: o card mostra se a pessoa já treinou ali
-  const attempts = useClientValue(
-    () => Object.fromEntries(OBJECTIVES.map((o) => [o.id, exercisesOf(o.id).reduce((s, e) => s + loadAttempts(e.id).length, 0)])),
-    {} as Record<string, number>,
-  );
-  // O teste vocal vive aqui desde 25/09/2026 (CLAUDE.md, seção 14): feito uma vez, antes do primeiro treino.
-  const profile = useClientValue(() => loadVocalProfile(), null);
-  const warmedUp = useClientValue(warmedUpToday, false);
+interface VozData {
+  warmedUp: boolean;
+  attempts: Attempt[];
+  profile: VocalProfile | null;
+}
 
+function readData(): VozData {
+  let attempts: Attempt[] = [];
+  try {
+    attempts = loadAllAttempts();
+  } catch {
+    /* histórico ilegível: a tela segue como usuário novo */
+  }
+  return { warmedUp: warmedUpToday(), attempts, profile: loadVocalProfile() };
+}
+
+/** Uma linha verdadeira sobre a meta — detalhe completo fica no exercício. */
+function goalLine(ex: RunnableExercise, attempts: Attempt[]): string {
+  const hist = attempts.filter((a) => a.exerciseId === ex.id && isValidAttempt(a, ex.engine.metric));
+  const g = goalFor(ex, hist);
+  if (g.kind === 'target') return g.top ? `Meta máxima batida: ${fmtGoal(g.value, ex.engine.metric)}.` : `Meta atual: ${fmtGoal(g.value, ex.engine.metric)}.`;
+  return g.value === null ? '' : `Seu recorde: ${fmtU(g.value, ex.engine.metric)}.`;
+}
+
+/**
+ * Aba Voz (redesenho de 25/09/2026, referência `referencias/voz-ref.png`). Uma arquitetura, vários
+ * estados: usuário novo (aquecer primeiro), usuário ativo (continuar de onde parou domina),
+ * aquecimento feito ou não, com ou sem teste vocal. A regra clínica continua: treino só depois do
+ * aquecimento do dia (CLAUDE.md, seção 10).
+ */
+function VozPage() {
+  const [data, setData] = useState<VozData | null>(null);
+  useEffect(() => {
+    const read = () => setData(readData());
+    read();
+    const on = () => document.visibilityState === 'visible' && read();
+    document.addEventListener('visibilitychange', on);
+    return () => document.removeEventListener('visibilitychange', on);
+  }, []);
+
+  const header = (
+    <header className="flex items-start justify-between gap-3 px-1">
+      <div>
+        <h1 className="text-[28px] font-extrabold tracking-[-0.02em] sm:text-[36px]" style={{ color: 'var(--c-text)', lineHeight: 1.05 }}>
+          Cuide da sua <span style={{ color: 'var(--c-primary-ink)' }}>voz</span>
+        </h1>
+        <p className="mt-1 text-[15px] sm:text-[16px]" style={{ color: 'var(--c-text-2)' }}>Aqueça, treine e acompanhe sua evolução.</p>
+      </div>
+      <ThemeToggle className="shrink-0 lg:hidden" />
+    </header>
+  );
+
+  if (!data) {
+    return (
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-5" role="status" aria-label="Carregando">
+        {header}
+        <div className="h-[220px] rounded-[24px]" style={{ background: 'var(--c-surface-blue)' }} />
+        <div className="h-[132px] rounded-[16px]" style={{ background: 'var(--c-surface-blue)' }} />
+      </div>
+    );
+  }
+
+  const last = lastAttempt(data.attempts);
+  const resume = last ? (TREINO_BY_ID[last.exerciseId] as RunnableExercise) : null;
+  const byObjective = lastByObjective(data.attempts);
+  const objectives: ObjectiveItem[] = OBJECTIVES.map((o) => {
+    const ready = exercisesOf(o.id).some(isRunnable);
+    const when = byObjective[o.id];
+    return { id: o.id, name: o.name, desc: o.desc, ready, line: !ready ? 'Em preparação' : when ? `Último treino: ${relativeDay(when)}` : 'Ainda não iniciado' };
+  });
+
+  // Usuário ativo = já treinou e há exercício para retomar.
+  if (resume && last) {
+    return (
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-5 sm:gap-6">
+        {header}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-5">
+          <ResumeHero
+            exercise={resume}
+            objectiveName={OBJECTIVE_BY_ID[resume.objective].name}
+            when={relativeDay(last.at)}
+            goal={goalLine(resume, data.attempts)}
+            warmedUp={data.warmedUp}
+          />
+          <WarmupToday warmedUp={data.warmedUp} />
+        </div>
+        <section aria-labelledby="objetivos" className="flex flex-col gap-3">
+          <span id="objetivos"><SectionTitle>Escolha um objetivo</SectionTitle></span>
+          <ObjectivesGrid items={objectives} />
+        </section>
+        <VocalProfileShortcut profile={data.profile} />
+      </div>
+    );
+  }
+
+  // Usuário novo: primeiro aquecer, depois escolher o objetivo, por fim conhecer a voz.
   return (
-    <div className="flex flex-col gap-6">
-      <PageTitle title={<>Cuide da sua <em style={{ color: C.gold }}>voz</em></>} text="Aqueça, treine e desaqueça." />
-      <CareSection warmedUp={warmedUp} />
-      <h2 className="px-1" style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 28, color: C.paper, lineHeight: 1.1 }}>Treinar</h2>
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {OBJECTIVES.map((o) => {
-          const list = exercisesOf(o.id);
-          const ready = list.filter(isRunnable).length;
-          const n = attempts[o.id] ?? 0;
-          return (
-            <li key={o.id}>
-              <Link
-                to="/treinos/$objectiveId"
-                params={{ objectiveId: o.id }}
-                className={`group flex h-full flex-col gap-3 rounded-[8px] px-5 py-5 transition-[border-color,background-color] duration-[var(--dur-hover)] hover:border-[rgba(184,149,90,0.45)] ${focusRing}`}
-                style={{ border: `1px solid ${C.rule}`, background: 'linear-gradient(180deg, #0F1114 0%, #0B0C0F 100%)', opacity: ready ? 1 : 0.62 }}
-              >
-                <h2 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 28, color: C.paper, lineHeight: 1.1 }}>{o.name}</h2>
-                <p className="flex-1" style={{ fontFamily: SANS, fontSize: 15, color: C.paper2 }}>{o.desc}</p>
-                <p style={{ fontFamily: SANS, fontSize: 13, color: ready ? C.gold : C.paper3 }}>
-                  {!ready
-                    ? 'Em preparação'
-                    : `${list.length} ${list.length === 1 ? 'exercício' : 'exercícios'}${n ? ` · ${n} ${n === 1 ? 'tentativa' : 'tentativas'}` : ''}`}
-                </p>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      <VoicePanel profile={profile} />
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-5 sm:gap-6">
+      {header}
+      {data.warmedUp ? (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <section className="flex flex-col justify-center gap-2 rounded-[24px] p-5 text-white sm:p-7" style={{ background: 'var(--c-resume)' }}>
+            <p className="text-[13px] font-extrabold uppercase tracking-[0.08em]">Voz aquecida</p>
+            <p className="text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]" style={{ lineHeight: 1.1 }}>Agora escolha o que treinar.</p>
+            <p className="text-[15px]">Os objetivos estão logo abaixo.</p>
+          </section>
+          <WarmupToday warmedUp />
+        </div>
+      ) : (
+        <WarmupFirst n={1} />
+      )}
+      <section aria-labelledby="objetivos-novo" className="flex flex-col gap-3">
+        <span id="objetivos-novo"><SectionTitle n={2}>Escolha um objetivo</SectionTitle></span>
+        <ObjectivesGrid items={objectives} />
+      </section>
+      {data.profile ? <VocalProfileShortcut profile={data.profile} /> : <VocalTestEntry n={3} />}
     </div>
   );
 }

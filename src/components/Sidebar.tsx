@@ -1,6 +1,7 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
 import { ChartNoAxesColumn, House, ListMusic, LogOut, Mic, Music } from 'lucide-react';
 import { store } from '../lib/store';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Sidebar({ claro = false }: { claro?: boolean }) {
   const routerState = useRouterState();
@@ -188,19 +189,20 @@ function SidebarClaro({
               className="c-focus relative flex min-h-[48px] items-center gap-3.5 rounded-[12px] px-3.5 text-[16px] transition-colors duration-150"
               style={{
                 background: active ? 'var(--c-surface-blue)' : undefined,
-                color: active ? 'var(--c-primary)' : 'var(--c-text)',
+                color: active ? 'var(--c-primary-ink)' : 'var(--c-text)',
                 fontWeight: active ? 700 : 500,
               }}
             >
-              {active && <span aria-hidden className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-full" style={{ background: 'var(--c-primary)' }} />}
-              <Icon size={22} strokeWidth={active ? 2.3 : 1.9} style={{ color: active ? 'var(--c-primary)' : 'var(--c-text-2)' }} />
+              {active && <span aria-hidden className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-full" style={{ background: 'var(--c-primary-ink)' }} />}
+              <Icon size={22} strokeWidth={active ? 2.3 : 1.9} style={{ color: active ? 'var(--c-primary-ink)' : 'var(--c-text-2)' }} />
               {label}
             </Link>
           );
         })}
       </nav>
+      <ThemeToggle withLabel className="mx-2 mb-3 justify-start" />
       <div className="flex items-center gap-3 border-t px-2 pt-4" style={{ borderColor: 'var(--c-border)' }}>
-        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold" style={{ background: 'var(--c-surface-blue)', color: 'var(--c-primary)' }}>
+        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold" style={{ background: 'var(--c-surface-blue)', color: 'var(--c-primary-ink)' }}>
           {initial}
         </span>
         <span className="min-w-0 flex-1 truncate text-[14px] font-semibold" style={{ color: 'var(--c-text)' }}>{name || 'Cantor(a)'}</span>

@@ -19,7 +19,7 @@ export function NextShowCard({ state }: { state: ShowsState }) {
     <section
       aria-labelledby="repertorio-titulo"
       className="relative overflow-hidden rounded-[24px] p-4 sm:p-6 lg:p-8"
-      style={{ background: 'linear-gradient(135deg, #2A7BFF 0%, #176BFF 45%, #0B4FD1 100%)', boxShadow: '0 10px 30px rgba(23, 107, 255, 0.22)' }}
+      style={{ background: 'var(--c-hero)', boxShadow: 'var(--c-hero-shadow)' }}
     >
       <header className="flex flex-wrap items-start justify-between gap-3 px-1 pb-4 sm:pb-5">
         <div className="min-w-0">
@@ -70,7 +70,7 @@ function LoadedBody({ pick }: { pick: ShowPick }) {
   const date = showDateLabel(main.date);
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)] lg:gap-5">
-      <article className="grid grid-cols-1 gap-4 rounded-[20px] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] sm:p-6">
+      <article className="grid grid-cols-1 gap-4 rounded-[20px] bg-[var(--c-inner)] p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] sm:p-6">
         <div className="h-[120px] sm:order-2 sm:h-auto sm:min-h-[220px]">
           <StageImage />
         </div>
@@ -163,7 +163,7 @@ function OtherShow({ p, stripe }: { p: RepertoireProject; stripe: string }) {
     <Link
       to="/repertorio/$projectId"
       params={{ projectId: p.id }}
-      className="c-lift flex min-h-[88px] items-center gap-3 rounded-[16px] bg-white py-3 pl-3 pr-3 outline-none focus-visible:ring-4 focus-visible:ring-white/70"
+      className="c-lift flex min-h-[88px] items-center gap-3 rounded-[16px] bg-[var(--c-inner)] py-3 pl-3 pr-3 outline-none focus-visible:ring-4 focus-visible:ring-white/70"
     >
       <span aria-hidden className="w-1 self-stretch rounded-full" style={{ background: stripe }} />
       <span className="min-w-0 flex-1">
@@ -184,7 +184,7 @@ function OtherShow({ p, stripe }: { p: RepertoireProject; stripe: string }) {
 
 function EmptyBody() {
   return (
-    <div className="grid grid-cols-1 gap-4 rounded-[20px] bg-white p-5 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] sm:p-8">
+    <div className="grid grid-cols-1 gap-4 rounded-[20px] bg-[var(--c-inner)] p-5 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] sm:p-8">
       <div className="flex flex-col justify-center gap-3">
         <Eyebrow>Primeiro passo</Eyebrow>
         <h3 className="text-[26px] font-extrabold tracking-[-0.02em] sm:text-[34px]" style={{ color: 'var(--c-text)', lineHeight: 1.08 }}>
@@ -207,7 +207,7 @@ function EmptyBody() {
 function LoadingBody() {
   return (
     <div role="status" aria-label="Carregando seus shows" className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
-      <div className="flex flex-col gap-3 rounded-[20px] bg-white p-6">
+      <div className="flex flex-col gap-3 rounded-[20px] bg-[var(--c-inner)] p-6">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-10 w-2/3" />
         <Skeleton className="h-5 w-1/2" />
@@ -223,7 +223,7 @@ function LoadingBody() {
 
 function ErrorBody() {
   return (
-    <div role="alert" className="flex flex-col gap-3 rounded-[20px] bg-white p-6">
+    <div role="alert" className="flex flex-col gap-3 rounded-[20px] bg-[var(--c-inner)] p-6">
       <h3 className="text-[22px] font-extrabold" style={{ color: 'var(--c-text)' }}>Não conseguimos ler seus shows</h3>
       <p className="text-[15px]" style={{ color: 'var(--c-text-2)' }}>Os dados ficam neste aparelho. Abra o repertório para conferir.</p>
       <div>

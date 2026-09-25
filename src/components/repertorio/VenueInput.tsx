@@ -87,11 +87,11 @@ export function VenueInput({
           if (e.key === 'Escape') { e.preventDefault(); setOpen(false); }
         }}
         placeholder="Ex.: Bar do Zé, Goiânia"
-        className="border-white/10 bg-background"
+        className="border-foreground/10 bg-background"
       />
 
       {showList && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-white/10 bg-[#111318] shadow-2xl">
+        <div className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-[8px] border border-foreground/10 bg-popover shadow-2xl">
           <ul id={listId} role="listbox" aria-label="Locais sugeridos" className="max-h-64 overflow-y-auto py-1">
             {results.map((p, i) => (
               <li
@@ -101,20 +101,20 @@ export function VenueInput({
                 aria-selected={i === active}
                 // mousedown: escolhe antes do blur fechar a lista
                 onMouseDown={(e) => { e.preventDefault(); choose(p); }}
-                className={`cursor-pointer px-3 py-2 ${i === active ? 'bg-[rgba(184,149,90,0.12)]' : 'hover:bg-white/[0.04]'}`}
+                className={`cursor-pointer px-3 py-2 ${i === active ? 'bg-accent' : 'hover:bg-foreground/[0.04]'}`}
               >
-                <span className="block truncate text-[14px] text-[#E8E4DC]">{p.name}</span>
-                <span className="block truncate text-[12px] text-[rgba(232,228,220,0.5)]">
+                <span className="block truncate text-[14px] text-foreground">{p.name}</span>
+                <span className="block truncate text-[12px] text-muted-foreground">
                   {[p.address, p.district, [p.city, p.state].filter(Boolean).join(' - ')].filter(Boolean).join(' · ')}
                 </span>
               </li>
             ))}
           </ul>
-          <p className="border-t border-white/5 px-3 py-1.5 text-[11px] text-[rgba(232,228,220,0.4)]">{OSM_ATTRIBUTION}</p>
+          <p className="border-t border-foreground/5 px-3 py-1.5 text-[11px] text-muted-foreground">{OSM_ATTRIBUTION}</p>
         </div>
       )}
 
-      <p className="mt-1 min-h-[16px] text-[12px] text-[rgba(232,228,220,0.45)]" aria-live="polite">
+      <p className="mt-1 min-h-[16px] text-[12px] text-muted-foreground" aria-live="polite">
         {place ? 'Local do mapa salvo.' : loading ? 'Procurando…' : ''}
       </p>
     </div>

@@ -4,6 +4,7 @@ import { store } from '../lib/store';
 import { BottomNav } from '../components/BottomNav';
 import { Sidebar } from '../components/Sidebar';
 import { PortalProvider } from '../components/PortalTransition';
+import { loadTema, saveTema, TemaContext, type Tema } from '../lib/tema';
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
@@ -14,6 +15,12 @@ function AppLayout() {
   const [ready, setReady] = useState(false);
   const [hasUser, setHasUser] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // tema do design system novo; o layout só renderiza no navegador (ready), então não pisca
+  const [tema, setTema] = useState<Tema>(() => (typeof window === 'undefined' ? 'claro' : loadTema()));
+  const escolherTema = (t: Tema) => {
+    setTema(t);
+    saveTema(t);
+  };
 
   useEffect(() => {
     const user = store.getUser();
@@ -25,16 +32,31 @@ function AppLayout() {
     setReady(true);
   }, [navigate]);
 
+  /*
+   * Nova linguagem visual (tema novo, 25/09/2026, claro ou escuro): Home, Criar música, Voz e
+   * Repertório. As outras telas ainda são escuras e têm cores fixas no código: migram uma a uma,
+   * e até lá o tema segue a rota.
+   */
+  const temaNovo = pathname === '/home' || ['/criar', '/repertorio', '/treinos'].some((p) => pathname.startsWith(p));
+
+  // Diálogos, menus e avisos do Radix/sonner abrem no <body>: ele carrega o tema também.
+  useEffect(() => {
+    if (!temaNovo) return;
+    const b = document.body;
+    b.classList.add('tema-novo');
+    b.dataset.tema = tema;
+    return () => {
+      b.classList.remove('tema-novo');
+      delete b.dataset.tema;
+    };
+  }, [temaNovo, tema]);
+
   if (!ready || !hasUser) return null;
 
-  /*
-   * Nova linguagem visual (tema claro, 25/09/2026) começa pela Home. As outras telas ainda são
-   * escuras e têm cores fixas no código: migram uma a uma, e até lá o tema segue a rota.
-   */
-  const claro = pathname === '/home';
-  if (claro) {
+  if (temaNovo) {
     return (
-      <div className="tema-claro relative flex min-h-screen">
+      <TemaContext.Provider value={{ tema, setTema: escolherTema }}>
+      <div className="tema-novo relative flex min-h-screen" data-tema={tema}>
         <div className="relative z-10 hidden lg:block">
           <Sidebar claro />
         </div>
@@ -49,6 +71,7 @@ function AppLayout() {
           </div>
         </div>
       </div>
+      </TemaContext.Provider>
     );
   }
 

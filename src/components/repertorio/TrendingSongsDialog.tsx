@@ -312,8 +312,8 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
 
       <DialogContent hideClose className="max-w-none w-full h-[100dvh] flex flex-col p-0 bg-background border-none rounded-none outline-none">
         {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 sticky top-0 z-50 bg-background">
-          <DialogTitle className="font-serif text-3xl text-white font-normal">Buscar músicas</DialogTitle>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-foreground/5 sticky top-0 z-50 bg-background">
+          <DialogTitle className="font-serif text-3xl text-foreground font-normal">Buscar músicas</DialogTitle>
           <div className="flex items-center gap-4">
             <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify" className="h-6 w-6" />
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} aria-label="Fechar busca">
@@ -331,14 +331,14 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
           </div>
         )}
 
-        <div className="px-6 py-4 bg-background border-b border-white/5">
+        <div className="px-6 py-4 bg-background border-b border-foreground/5">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 w-4 h-4" />
             <Input
               value={searchQuery}
               onChange={onSearchChange}
               placeholder="Pesquisar música ou artista no Spotify..."
-              className="bg-white/5 border-white/10 pl-10 h-12 rounded-xl text-white placeholder:text-white/20 focus:border-[#B8955A]/50 transition-all"
+              className="bg-foreground/5 border-foreground/10 pl-10 h-12 rounded-xl text-foreground placeholder:text-foreground/20 focus:border-primary/50 transition-all"
             />
           </div>
         </div>
@@ -357,7 +357,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                     <button
                       key={i}
                       onClick={() => handleRecentClick(s)}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 text-[10px] text-muted hover:bg-white/10 hover:text-foreground transition-all border border-white/5 flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg bg-foreground/5 text-[10px] text-muted hover:bg-foreground/10 hover:text-foreground transition-all border border-foreground/5 flex items-center gap-1.5"
                     >
                       {s.categoryName} · {s.subName}
                     </button>
@@ -369,7 +369,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
             {/* CATEGORIAS */}
             {!searchQuery && (
               <div className="space-y-4">
-                <h3 className="font-serif text-lg text-white/90">Selecione uma categoria</h3>
+                <h3 className="font-serif text-lg text-foreground/90">Selecione uma categoria</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
@@ -379,12 +379,12 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                         key={cat.id}
                         onClick={() => handleCategorySelect(cat.id)}
                         className={cn(
-                          "flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-[#1A1A1F] border border-white/5 transition-all duration-300",
-                          isActive ? "border-[#B8955A] bg-[#B8955A]/5 shadow-[0_0_15px_rgba(201,168,76,0.1)]" : "hover:border-white/10"
+                          "flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-popover border border-foreground/5 transition-all duration-300",
+                          isActive ? "border-primary bg-primary/5 shadow-[0_0_15px_color-mix(in_srgb,var(--primary)_10%,transparent)]" : "hover:border-foreground/10"
                         )}
                       >
-                        <Icon className={cn("w-6 h-6", isActive ? "text-[#B8955A]" : "text-white/40")} />
-                        <span className={cn("text-[11px] font-medium text-center", isActive ? "text-white" : "text-white/60")}>
+                        <Icon className={cn("w-6 h-6", isActive ? "text-primary" : "text-foreground/40")} />
+                        <span className={cn("text-[11px] font-medium text-center", isActive ? "text-foreground" : "text-foreground/60")}>
                           {cat.name}
                         </span>
                       </button>
@@ -397,8 +397,8 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
             {/* SUBCATEGORIAS */}
             {!searchQuery && selectedCategory && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="h-px bg-white/5" />
-                <h3 className="font-serif text-lg text-white/90">Refine seu estilo</h3>
+                <div className="h-px bg-foreground/5" />
+                <h3 className="font-serif text-lg text-foreground/90">Refine seu estilo</h3>
                 <ScrollArea className="w-full whitespace-nowrap">
                   <div className="flex gap-2 pb-2">
                     {SEARCH_QUERIES[selectedCategory]?.map((sub) => {
@@ -410,8 +410,8 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                           className={cn(
                             "px-5 py-2.5 rounded-full text-[12px] font-medium transition-all duration-300 border",
                             isActive
-                              ? "bg-[#B8955A]/10 text-[#B8955A] border-[#B8955A]"
-                              : "bg-[#1E1E22] text-white/60 border-white/10 hover:border-white/20"
+                              ? "bg-primary/10 text-primary border-primary"
+                              : "bg-popover text-foreground/60 border-foreground/10 hover:border-foreground/20"
                           )}
                         >
                           {sub.name}
@@ -427,21 +427,21 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
             {/* MÚSICAS */}
             {showTracks && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="h-px bg-white/5" />
+                <div className="h-px bg-foreground/5" />
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-serif text-base text-white/90">
+                    <h3 className="font-serif text-base text-foreground/90">
                       {searchQuery ? `Resultados para "${searchQuery}"` : selectedSub?.name}
                     </h3>
                     {!loadingTracks && (
-                      <p className="text-[9px] text-white/40 uppercase tracking-widest">{tracks.length} músicas encontradas</p>
+                      <p className="text-[9px] text-foreground/40 uppercase tracking-widest">{tracks.length} músicas encontradas</p>
                     )}
                   </div>
                   {tracks.length > 0 && !loadingTracks && (
                     <Button
                       variant="ghost"
                       onClick={toggleAll}
-                      className="text-[#B8955A] hover:text-[#B8955A] hover:bg-[#B8955A]/10 gap-2 h-9 text-[11px] font-bold"
+                      className="text-primary hover:text-primary hover:bg-primary/10 gap-2 h-9 text-[11px] font-bold"
                     >
                       <ListPlus size={16} />
                       {selectedTracks.size === tracks.length ? 'Desmarcar tudo' : 'Selecionar todas'}
@@ -453,11 +453,11 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                   {loadingTracks ? (
                     <div className="space-y-3">
                       {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="flex items-center gap-3 p-2 rounded-xl border border-white/5 animate-pulse bg-white/[0.02]">
-                          <div className="w-10 h-10 bg-white/5 rounded-lg shrink-0" />
+                        <div key={i} className="flex items-center gap-3 p-2 rounded-xl border border-foreground/5 animate-pulse bg-foreground/[0.02]">
+                          <div className="w-10 h-10 bg-foreground/5 rounded-lg shrink-0" />
                           <div className="flex-1 space-y-2">
-                            <div className="h-2.5 bg-white/5 rounded w-3/4" />
-                            <div className="h-2 bg-white/5 rounded w-1/2" />
+                            <div className="h-2.5 bg-foreground/5 rounded w-3/4" />
+                            <div className="h-2 bg-foreground/5 rounded w-1/2" />
                           </div>
                         </div>
                       ))}
@@ -468,8 +468,8 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                         key={track.id}
                         onClick={() => toggleTrack(track.id)}
                         className={cn(
-                          "flex items-center gap-3 p-2 rounded-lg bg-[#1E1E22] border transition-all cursor-pointer group",
-                          selectedTracks.has(track.id) ? "border-[#B8955A]/50 bg-[#B8955A]/5" : "border-white/5"
+                          "flex items-center gap-3 p-2 rounded-lg bg-popover border transition-all cursor-pointer group",
+                          selectedTracks.has(track.id) ? "border-primary/50 bg-primary/5" : "border-foreground/5"
                         )}
                       >
                         <Checkbox
@@ -477,7 +477,7 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                           onClick={(e) => e.stopPropagation()}
                           onCheckedChange={() => toggleTrack(track.id)}
                           className={cn(
-                            "w-4 h-4 border-white/20 data-[state=checked]:bg-[#B8955A] data-[state=checked]:border-[#B8955A]",
+                            "w-4 h-4 border-foreground/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary",
                             selectedTracks.has(track.id) ? "opacity-100" : "opacity-40"
                           )}
                         />
@@ -488,21 +488,21 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
                             className="w-10 h-10 rounded-md object-cover shadow-lg"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-md bg-white/5 shrink-0" />
+                          <div className="w-10 h-10 rounded-md bg-foreground/5 shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-medium text-white truncate">{track.name}</h4>
-                          <p className="text-[11px] text-white/40 truncate">{track.artist}</p>
+                          <h4 className="text-xs font-medium text-foreground truncate">{track.name}</h4>
+                          <p className="text-[11px] text-foreground/40 truncate">{track.artist}</p>
                         </div>
-                        <span className="text-[10px] text-white/20 font-mono">
+                        <span className="text-[10px] text-foreground/20 font-mono">
                           {formatDuration(track.duration_ms)}
                         </span>
                       </div>
                     ))
                   ) : !error ? (
                     <div className="py-20 text-center">
-                      <Search className="w-12 h-12 text-white/5 mx-auto mb-4" />
-                      <p className="text-white/40 text-sm font-serif italic">
+                      <Search className="w-12 h-12 text-foreground/5 mx-auto mb-4" />
+                      <p className="text-foreground/40 text-sm font-serif italic">
                         Nenhuma música encontrada. Tente outra busca.
                       </p>
                     </div>
@@ -514,15 +514,15 @@ export function TrendingSongsDialog({ project, onSongsAdded, trigger, target, ta
         </ScrollArea>
 
         {/* FOOTER FIXO */}
-        <div className="p-6 pt-4 border-t border-white/5 bg-background absolute bottom-0 left-0 right-0 z-[60] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+        <div className="p-6 pt-4 border-t border-foreground/5 bg-background absolute bottom-0 left-0 right-0 z-[60] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
           <Button
             disabled={selectedTracks.size === 0 || loadingTracks}
             onClick={addSelectedSongs}
             className={cn(
               "w-full h-14 rounded-2xl font-bold transition-all active:scale-[0.98]",
               selectedTracks.size > 0
-                ? "bg-[#B8955A] text-[#07080A] hover:bg-[#B8955A]/90 shadow-xl shadow-[#B8955A]/10"
-                : "bg-white/5 text-white/20 border border-white/5"
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/10"
+                : "bg-foreground/5 text-foreground/20 border border-foreground/5"
             )}
           >
             {selectedTracks.size === 0

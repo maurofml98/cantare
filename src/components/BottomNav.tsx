@@ -66,7 +66,7 @@ function BottomNavClaro({ pathname }: { pathname: string }) {
             to={to}
             aria-current={active ? 'page' : undefined}
             className="c-focus c-press flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-[12px] px-0.5"
-            style={{ color: active ? 'var(--c-primary)' : 'var(--c-text-2)' }}
+            style={{ color: active ? 'var(--c-primary-ink)' : 'var(--c-text-2)' }}
           >
             <span className="flex h-7 w-12 items-center justify-center rounded-full" style={{ background: active ? 'var(--c-surface-blue)' : undefined }}>
               <Icon size={21} strokeWidth={active ? 2.3 : 1.9} />

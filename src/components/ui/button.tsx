@@ -84,6 +84,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         ref={ref}
         className={cn(buttonVariants({ variant, size }), className)}
+        // o tema novo (`.tema-novo` em index.css) restiliza por variante sem tocar as telas antigas
+        data-variant={variant ?? "primary"}
         disabled={asChild ? undefined : disabled || loading}
         aria-busy={loading || undefined}
         aria-disabled={asChild && (disabled || loading) ? true : undefined}

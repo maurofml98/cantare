@@ -65,26 +65,26 @@ export function ProjectFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="border-white/10 bg-[#0F1114] sm:max-w-lg">
+      <DialogContent className="border-border bg-popover sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl font-light">{initial ? 'Editar projeto' : 'Novo projeto'}</DialogTitle>
           <DialogDescription>{initial ? 'Ajuste os dados do show.' : 'Um projeto por show: “Bar do Zé, sexta”, “Casamento da Ana”.'}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <Field label="Nome do projeto" htmlFor="pf-name">
-            <Input id="pf-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Bar do Zé, sexta" className="border-white/10 bg-background" />
+            <Input id="pf-name" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Bar do Zé, sexta" className="border-input bg-background" />
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Tipo de evento">
               <Select value={type} onValueChange={(v) => setType(v as RepertoireProjectType)}>
-                <SelectTrigger className="border-white/10 bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent className="border-white/10 bg-[#111318]">
+                <SelectTrigger className="border-input bg-background"><SelectValue /></SelectTrigger>
+                <SelectContent className="border-input bg-popover">
                   {PROJECT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label="Data do show" htmlFor="pf-date">
-              <Input id="pf-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border-white/10 bg-background [color-scheme:dark]" />
+              <Input id="pf-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border-input bg-background [color-scheme:dark]" />
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_140px]">
@@ -92,7 +92,7 @@ export function ProjectFormDialog({
               <VenueInput id="pf-venue" value={venue} place={place} onChange={(t, p) => { setVenue(t); setPlace(p); }} />
             </Field>
             <Field label="Duração (horas)" htmlFor="pf-hours">
-              <Input id="pf-hours" inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="Ex.: 3" className="border-white/10 bg-background" />
+              <Input id="pf-hours" inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="Ex.: 3" className="border-input bg-background" />
             </Field>
           </div>
           <DialogFooter className="gap-2 pt-2 sm:justify-end">
@@ -110,7 +110,7 @@ export function ProjectFormDialog({
 function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className="text-[13px] font-normal text-[rgba(232,228,220,0.72)]">{label}</Label>
+      <Label htmlFor={htmlFor} className="text-[13px] font-normal text-muted-foreground">{label}</Label>
       {children}
     </div>
   );
