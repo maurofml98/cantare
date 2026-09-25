@@ -710,7 +710,9 @@ pontuação ou acerto/erro:
 ## 14. Reunião de 25/09/2026 — ecossistema, navegação, Home e funil
 
 Reposicionamento descrito no topo do arquivo. Aqui, o que muda na interface.
-**Ainda não implementado** — só documentado.
+**Implementado em 25/09/2026:** navegação, rota `/criar` ("em breve"), Home nova e desafio
+de afinação (`/desafio`, `lib/desafio/afinacao.ts`: 3 notas, vale qualquer oitava, faixas
+±25/±60 cents provisórias, texto com `TODO(Laury)`). Nada disso testado com voz real.
 
 ### Navegação inferior (ordem definida pela Laury)
 

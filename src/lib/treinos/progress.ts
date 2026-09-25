@@ -160,6 +160,11 @@ export function attemptsToday(now = new Date()): number {
   return readAll().filter((a) => new Date(a.at).toDateString() === day).length;
 }
 
+/** Tentativas desde `since`, em qualquer exercício. Conta prática: inclui as inválidas. */
+export function attemptsSince(since: Date): number {
+  return readAll().filter((a) => new Date(a.at) >= since).length;
+}
+
 export function saveAttempt(exerciseId: string, value: number) {
   try {
     const all = [...readAll(), { exerciseId, at: new Date().toISOString(), value, detector: DETECTOR_VERSION }];

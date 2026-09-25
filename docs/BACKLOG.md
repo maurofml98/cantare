@@ -305,3 +305,4 @@ O diferencial. Nenhum concorrente faz.
 | Design nunca validado | todo o app | média |
 | 5 vídeos do Vocal Coach não analisados | — | baixa |
 | Nenhum cantor real validou o produto | — | alta (produto) |
+| **Lint quebrado:** `bun run lint` dá ~17 mil erros (25/09/2026), quase todos de formatação do prettier; o código nunca foi formatado por ele. Sem lint confiável, erro real (hook com dependência faltando, variável morta) passa despercebido. Decidir: formatar o projeto inteiro de uma vez ou tirar o prettier do eslint, e conferir se `.output/` entra na varredura | `eslint.config`, todo o `src` | média (rede de segurança perdida) |

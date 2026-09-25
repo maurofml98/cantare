@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { RepertoireProject } from '@/lib/types';
-import type { WeekSummary } from '@/lib/home/today';
-import { C, Panel, SANS, SecondaryButton, SERIF, TextLink, focusRing } from './primitives';
+import type { Usage } from '@/lib/home/usage';
+import { C, Panel, PrimaryButton, SANS, SecondaryButton, SERIF, TextLink, focusRing } from './primitives';
 import { CinematicImage } from '@/components/media/CinematicImage';
 
 /* ============ Repertório ============ */
@@ -95,149 +95,99 @@ function StaffLines() {
   );
 }
 
-/* ============ Dica da Laury ============ */
+/* ============ Em breve ============ */
+
+function SoonTag() {
+  return (
+    <span className="shrink-0 rounded-full px-2.5 py-0.5" style={{ fontFamily: SANS, fontSize: 11, color: C.gold, border: '1px solid rgba(184,149,90,0.4)' }}>
+      Em breve
+    </span>
+  );
+}
+
+/** Primeira perna da tríade (CLAUDE.md, topo). A função não existe: o card mostra o plano, sem prometer data. */
+export function CreateMusicCard() {
+  return (
+    <Panel title="Criar sua música" subtitle="Da ideia à canção, junto do seu repertório." labelledBy="criar" className="h-full">
+      <div className="flex flex-1 flex-col justify-between gap-4">
+        <StaffLines />
+        <div className="flex items-center justify-between gap-3">
+          <SoonTag />
+          <TextLink to="/criar">Conhecer</TextLink>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+/** Jogos de ritmo e de ouvido (ROADMAP, Fase 7). Fora da barra inferior por decisão de 25/09/2026. */
+export function PlayCard() {
+  return (
+    <Panel title="Play" subtitle="Jogos de ritmo e de ouvido." labelledBy="play" className="h-full">
+      <div className="flex flex-1 items-end">
+        <SoonTag />
+      </div>
+    </Panel>
+  );
+}
+
+/* ============ Desafio de afinação ============ */
+
+/** A isca do funil (CLAUDE.md, seção 14): brincar primeiro, treinar depois. */
+export function TuningChallengeCard() {
+  return (
+    <Panel title="Descubra se você é afinado" subtitle="Ouça uma nota e cante de volta. Menos de um minuto." labelledBy="desafio" glow className="h-full">
+      <div className="flex flex-1 flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <TuningMark />
+        <PrimaryButton to="/desafio">Jogar agora</PrimaryButton>
+      </div>
+    </Panel>
+  );
+}
+
+/** Nota-alvo e a voz chegando nela — a mesma linguagem da tela do desafio. */
+function TuningMark() {
+  return (
+    <svg width="220" height="56" viewBox="0 0 220 56" fill="none" aria-hidden>
+      <line x1="0" x2="220" y1="28" y2="28" stroke="rgba(184,149,90,0.35)" strokeWidth="1" />
+      <path d="M4 48C40 46 60 20 96 34s50-6 76-6h44" stroke={C.gold} strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.8" />
+      <circle cx="210" cy="28" r="5" fill={C.gold} />
+    </svg>
+  );
+}
+
+/* ============ Evolução — uso do app ============ */
+
+export function UsagePanel({ usage, days }: { usage: Usage; days: number }) {
+  return (
+    <Panel title="Sua evolução" subtitle={`Últimos ${days} dias no app.`} labelledBy="evolucao" className="h-full">
+      <div className="grid flex-1 grid-cols-3 gap-3">
+        <Stat value={usage.songsCreated} unit="músicas criadas" />
+        <Stat value={usage.repertoires} unit={usage.repertoires === 1 ? 'repertório montado' : 'repertórios montados'} />
+        <Stat value={usage.trainings} unit={usage.trainings === 1 ? 'treino feito' : 'treinos feitos'} />
+      </div>
+    </Panel>
+  );
+}
+
+function Stat({ value, unit }: { value: number | null; unit: string }) {
+  return (
+    <div className="flex flex-col justify-center pl-3" style={{ borderLeft: `1px solid ${C.rule}` }}>
+      <span style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 44, color: value === null ? C.paper3 : C.paper, lineHeight: 0.95 }}>
+        {value ?? '—'}
+      </span>
+      <span className="mt-1" style={{ fontFamily: SANS, fontSize: 13, color: C.paper2, lineHeight: 1.3 }}>{unit}</span>
+      {value === null && <span className="mt-0.5" style={{ fontFamily: SANS, fontSize: 11, color: C.paper3 }}>em breve</span>}
+    </div>
+  );
+}
+
+/* ============ Saúde vocal + dica da Laury ============ */
 
 // TODO(Laury): texto provisório, reaproveitado da dica do aquecimento
 // (hoje em src/lib/diario/sessions.ts). O texto final e a rotação de
 // dicas vêm dela — não inventar conteúdo clínico.
 export const LAURY_TIP = 'Inspire pelo nariz, expire com controle. Sinta o ar sustentando o som.';
-const TIP = LAURY_TIP;
-
-// TODO(asset): foto REAL da Laury (retrato, fundo escuro, mín. 320×320).
-// TEMPORARY_ASSET: public/outros/cantare-laury-retrato.webp é uma pessoa gerada, NÃO é a Laury.
-// Não é exibida de propósito: ao lado do nome "Laury" pareceria ser ela. Enquanto não houver
-// foto real, o retrato mostra a inicial.
-const LAURY_PHOTO: string | null = null;
-
-export function LauryTip() {
-  return (
-    <Panel title="Dica da Laury" subtitle="Cuidado real para a sua voz." labelledBy="dica-laury" className="h-full">
-      <div className="flex flex-1 gap-5">
-        <div className="min-w-0 flex-1">
-          <blockquote style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 300, fontSize: 22, color: C.paper, lineHeight: 1.35 }}>
-            “{TIP}”
-          </blockquote>
-          <p className="mt-3" style={{ fontFamily: SERIF, fontSize: 17, color: C.paper }}>Laury</p>
-          <p style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>Fonoaudióloga · voz artística</p>
-        </div>
-        <Portrait />
-      </div>
-      <p
-        className="mt-3 rounded-[6px] px-4 py-2.5"
-        style={{ background: 'rgba(184,149,90,0.06)', border: `1px solid rgba(184,149,90,0.16)`, fontFamily: SANS, fontSize: 12, color: C.paper2, lineHeight: 1.45 }}
-      >
-        Sentiu dor, rouquidão ou desconforto? Pare e procure um profissional.
-      </p>
-    </Panel>
-  );
-}
-
-function Portrait() {
-  return (
-    <div
-      className="hidden h-[96px] w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-full sm:flex"
-      style={{
-        border: `1px solid ${C.gold}`,
-        boxShadow: '0 0 0 5px rgba(184,149,90,0.08)',
-        background: 'radial-gradient(circle at 40% 30%, #1B1C20 0%, #0B0C0F 100%)',
-      }}
-    >
-      {LAURY_PHOTO ? (
-        <img src={LAURY_PHOTO} alt="Laury, fonoaudióloga" className="h-full w-full object-cover" />
-      ) : (
-        <span style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 300, fontSize: 42, color: C.gold }}>L</span>
-      )}
-    </div>
-  );
-}
-
-/* ============ Evolução ============ */
-
-export function EvolutionPanel({ streak, week }: { streak: number; week: WeekSummary }) {
-  return (
-    <Panel
-      title="Evolução"
-      subtitle="Sua constância gera resultado."
-      action={{ to: '/diario/evolucao', label: 'Ver evolução' }}
-      labelledBy="evolucao"
-      className="h-full"
-    >
-      <div className="grid flex-1 grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <WeekChart week={week} />
-        <Stat
-          value={streak > 0 ? String(streak) : '0'}
-          unit={streak === 1 ? 'dia seguido' : 'dias seguidos'}
-          note={streak > 0 ? 'Não quebre a sequência hoje.' : 'Complete o treino de hoje para começar.'}
-        />
-        <Stat
-          value={week.accuracy !== null ? `${week.accuracy}` : '—'}
-          suffix={week.accuracy !== null ? '%' : undefined}
-          unit="precisão média"
-          note={
-            week.exercises > 0
-              ? `${week.exercises} ${week.exercises === 1 ? 'exercício' : 'exercícios'} nesta semana`
-              : 'Aparece após o primeiro exercício cantado.'
-          }
-          divider
-        />
-      </div>
-    </Panel>
-  );
-}
-
-function WeekChart({ week }: { week: WeekSummary }) {
-  const W = 300;
-  const H = 90;
-  const x = (i: number) => 10 + (i * (W - 20)) / 6;
-  const y = (acc: number) => H - 8 - (acc / 100) * (H - 20);
-  const pts = week.days.map((d, i) => (d.accuracy !== null ? `${x(i)},${y(d.accuracy)}` : null)).filter(Boolean);
-  const hasData = pts.length > 0;
-
-  return (
-    <div className="flex min-w-0 flex-col">
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-[80px] w-full 2xl:h-full 2xl:max-h-[110px]" preserveAspectRatio="none" aria-hidden>
-        {[0.25, 0.5, 0.75].map((f) => (
-          <line key={f} x1="0" x2={W} y1={H * f} y2={H * f} stroke="rgba(232,228,220,0.05)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-        ))}
-        {pts.length > 1 && (
-          <polyline points={pts.join(' ')} fill="none" stroke={C.gold} strokeWidth="1.6" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-        )}
-        {week.days.map((d, i) =>
-          d.accuracy !== null ? (
-            <circle key={i} cx={x(i)} cy={y(d.accuracy)} r="3.2" fill={C.gold} vectorEffect="non-scaling-stroke" />
-          ) : (
-            <line key={i} x1={x(i) - 4} x2={x(i) + 4} y1={H - 8} y2={H - 8} stroke={d.isFuture ? 'rgba(232,228,220,0.08)' : 'rgba(232,228,220,0.22)'} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-          ),
-        )}
-      </svg>
-      <div className="mt-1 flex justify-between px-[2px]">
-        {week.days.map((d) => (
-          <span key={d.label} style={{ fontFamily: SANS, fontSize: 11, color: d.isToday ? C.gold : C.paper3 }}>{d.label}</span>
-        ))}
-      </div>
-      {!hasData && (
-        <p className="mt-1" style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>Sua semana começa no primeiro exercício.</p>
-      )}
-    </div>
-  );
-}
-
-function Stat({ value, suffix, unit, note, divider = false }: { value: string; suffix?: string; unit: string; note: string; divider?: boolean }) {
-  return (
-    <div className={`flex flex-col justify-center sm:pl-5 ${divider ? '' : ''}`} style={{ borderLeft: `1px solid ${C.rule}` }}>
-      <p className="flex items-baseline gap-2">
-        <span style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 52, color: C.paper, lineHeight: 0.95 }}>
-          {value}
-          {suffix && <span style={{ fontSize: 30, color: C.paper2 }}>{suffix}</span>}
-        </span>
-      </p>
-      <p className="mt-1" style={{ fontFamily: SANS, fontSize: 14, color: C.paper2 }}>{unit}</p>
-      <p className="mt-1" style={{ fontFamily: SANS, fontSize: 12, color: C.paper3, lineHeight: 1.4 }}>{note}</p>
-    </div>
-  );
-}
-
-/* ============ Saúde vocal ============ */
 
 // Mesmos ids de src/routes/_app.saude.index.tsx (lá não são exportados).
 const HEALTH = [
@@ -257,13 +207,13 @@ export function HealthShortcuts() {
       labelledBy="saude"
       className="h-full"
     >
-      <ul className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-5">
+      <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-5">
         {HEALTH.map((h) => (
           <li key={h.id} className="min-h-0">
             <Link
               to="/saude/$warmupId"
               params={{ warmupId: h.id }}
-              className={`group flex h-full flex-col justify-start gap-3 rounded-[6px] p-3.5 2xl:justify-center transition-colors hover:border-[rgba(184,149,90,0.4)] hover:bg-[rgba(184,149,90,0.05)] ${focusRing}`}
+              className={`group flex h-full flex-col justify-start gap-3 rounded-[6px] p-3.5 transition-colors hover:border-[rgba(184,149,90,0.4)] hover:bg-[rgba(184,149,90,0.05)] ${focusRing}`}
               style={{ border: `1px solid ${C.rule}`, background: 'rgba(255,255,255,0.015)' }}
             >
               <Glyph kind={h.glyph} />
@@ -275,6 +225,19 @@ export function HealthShortcuts() {
           </li>
         ))}
       </ul>
+
+      {/* Dica da Laury dentro do card (reunião de 25/09/2026). Sem foto: não há foto real dela. */}
+      <figure className="mt-4 pt-4" style={{ borderTop: `1px solid ${C.rule}` }}>
+        <blockquote style={{ fontFamily: SERIF, fontStyle: 'italic', fontWeight: 300, fontSize: 19, color: C.paper, lineHeight: 1.35 }}>
+          “{LAURY_TIP}”
+        </blockquote>
+        <figcaption className="mt-1.5" style={{ fontFamily: SANS, fontSize: 12, color: C.paper3 }}>
+          Laury · fonoaudióloga, voz artística
+        </figcaption>
+      </figure>
+      <p className="mt-3" style={{ fontFamily: SANS, fontSize: 12, color: C.paper2, lineHeight: 1.45 }}>
+        Sentiu dor, rouquidão ou desconforto? Pare e procure um profissional.
+      </p>
     </Panel>
   );
 }

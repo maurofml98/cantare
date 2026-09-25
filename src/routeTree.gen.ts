@@ -18,6 +18,7 @@ import { Route as PalcoProjectIdRouteImport } from './routes/palco.$projectId'
 import { Route as LabMicrofoneRouteImport } from './routes/lab.microfone'
 import { Route as DiarioConcluidoRouteImport } from './routes/diario.concluido'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppDesafioRouteImport } from './routes/_app.desafio'
 import { Route as AppCriarRouteImport } from './routes/_app.criar'
 import { Route as AppTreinosIndexRouteImport } from './routes/_app.treinos.index'
 import { Route as AppTesteVocalIndexRouteImport } from './routes/_app.teste-vocal.index'
@@ -74,6 +75,11 @@ const DiarioConcluidoRoute = DiarioConcluidoRouteImport.update({
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDesafioRoute = AppDesafioRouteImport.update({
+  id: '/desafio',
+  path: '/desafio',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCriarRoute = AppCriarRouteImport.update({
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/criar': typeof AppCriarRoute
+  '/desafio': typeof AppDesafioRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/criar': typeof AppCriarRoute
+  '/desafio': typeof AppDesafioRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/_app/criar': typeof AppCriarRoute
+  '/_app/desafio': typeof AppDesafioRoute
   '/_app/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -221,6 +230,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/criar'
+    | '/desafio'
     | '/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/criar'
+    | '/desafio'
     | '/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/auth'
     | '/_app/criar'
+    | '/_app/desafio'
     | '/_app/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -366,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/desafio': {
+      id: '/_app/desafio'
+      path: '/desafio'
+      fullPath: '/desafio'
+      preLoaderRoute: typeof AppDesafioRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/criar': {
       id: '/_app/criar'
       path: '/criar'
@@ -462,6 +481,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppCriarRoute: typeof AppCriarRoute
+  AppDesafioRoute: typeof AppDesafioRoute
   AppHomeRoute: typeof AppHomeRoute
   AppDiarioEvolucaoRoute: typeof AppDiarioEvolucaoRoute
   AppRepertorioProjectIdRoute: typeof AppRepertorioProjectIdRoute
@@ -477,6 +497,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCriarRoute: AppCriarRoute,
+  AppDesafioRoute: AppDesafioRoute,
   AppHomeRoute: AppHomeRoute,
   AppDiarioEvolucaoRoute: AppDiarioEvolucaoRoute,
   AppRepertorioProjectIdRoute: AppRepertorioProjectIdRoute,
