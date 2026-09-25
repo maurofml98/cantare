@@ -156,7 +156,7 @@ export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
     if (typeof input === 'string') return;
     if (projectDialog.editing) {
       const id = projectDialog.editing.id;
-      if (act(() => updateProject(id, { name: input.name, type: input.type, date: input.date, venue: input.venue, targetMinutes: input.targetMinutes }), 'Projeto atualizado')) {
+      if (act(() => updateProject(id, { name: input.name, type: input.type, date: input.date, venue: input.venue, place: input.place, targetMinutes: input.targetMinutes }), 'Projeto atualizado')) {
         setProjectDialog({ open: false, editing: null });
       }
     } else {

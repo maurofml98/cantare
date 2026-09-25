@@ -5,6 +5,7 @@ import type {
   RepertoireSong,
   SongDifficulty,
   SongStatus,
+  VenuePlace,
 } from '@/lib/types';
 import type { VocalProfile } from '@/lib/vocal/profile';
 import { computeRecommendation } from '@/lib/repertoire/keys';
@@ -73,6 +74,7 @@ function toV3(p: any): RepertoireProject {
     songs,
     date: p.date || undefined,
     venue: p.venue || undefined,
+    place: p.place && typeof p.place.osmId === 'number' ? p.place : undefined,
     targetMinutes: typeof p.targetMinutes === 'number' ? p.targetMinutes : undefined,
     notes: p.notes || undefined,
     blocks,
@@ -154,6 +156,7 @@ export interface ProjectInput {
   type: RepertoireProjectType;
   date?: string;
   venue?: string;
+  place?: VenuePlace;
   targetMinutes?: number;
 }
 
@@ -165,6 +168,7 @@ export function createProject(nameOrInput: string | ProjectInput, type?: Reperto
     type: input.type,
     date: input.date,
     venue: input.venue?.trim(),
+    place: input.place,
     targetMinutes: input.targetMinutes,
     createdAt: now(),
     updatedAt: now(),

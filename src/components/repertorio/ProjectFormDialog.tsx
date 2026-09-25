@@ -4,8 +4,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { RepertoireProject, RepertoireProjectType } from '@/lib/types';
+import type { RepertoireProject, RepertoireProjectType, VenuePlace } from '@/lib/types';
 import type { ProjectInput } from '@/lib/repertoire/store';
+import { VenueInput } from './VenueInput';
 
 export const PROJECT_TYPES: RepertoireProjectType[] = ['Show Barzinho', 'Casamento', 'Culto', 'Gravação', 'Ensaio', 'Aula de Canto', 'Outro'];
 
@@ -25,6 +26,7 @@ export function ProjectFormDialog({
   const [type, setType] = useState<RepertoireProjectType>('Show Barzinho');
   const [date, setDate] = useState('');
   const [venue, setVenue] = useState('');
+  const [place, setPlace] = useState<VenuePlace | undefined>(undefined);
   const [hours, setHours] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +36,7 @@ export function ProjectFormDialog({
     setType(initial?.type ?? 'Show Barzinho');
     setDate(initial?.date ?? '');
     setVenue(initial?.venue ?? '');
+    setPlace(initial?.place);
     setHours(initial?.targetMinutes ? String(+(initial.targetMinutes / 60).toFixed(2)).replace('.', ',') : '');
     setSaving(false);
   }, [open, initial]);
@@ -51,6 +54,8 @@ export function ProjectFormDialog({
         type,
         date: date || undefined,
         venue: venue.trim() || undefined,
+        // local do mapa só vale enquanto o texto é o que veio da sugestão
+        place: venue.trim() ? place : undefined,
         targetMinutes: Number.isFinite(h) && h > 0 ? Math.round(h * 60) : undefined,
       });
     } finally {
@@ -84,7 +89,7 @@ export function ProjectFormDialog({
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_140px]">
             <Field label="Local (opcional)" htmlFor="pf-venue">
-              <Input id="pf-venue" value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Ex.: São Paulo, SP" className="border-white/10 bg-background" />
+              <VenueInput id="pf-venue" value={venue} place={place} onChange={(t, p) => { setVenue(t); setPlace(p); }} />
             </Field>
             <Field label="Duração (horas)" htmlFor="pf-hours">
               <Input id="pf-hours" inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} placeholder="Ex.: 3" className="border-white/10 bg-background" />

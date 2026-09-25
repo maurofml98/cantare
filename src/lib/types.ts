@@ -41,6 +41,28 @@ export interface RepertoireBlock {
   songIds: string[];
 }
 
+/**
+ * Local do show vindo do OpenStreetMap (via Photon, `lib/repertoire/places.ts`). Dados ODbL:
+ * podem ser guardados, com atribuição. Hoje ficam só no aparelho — a base de locais precisa de
+ * servidor (BACKLOG).
+ */
+export interface VenuePlace {
+  source: 'osm';
+  /** N, W ou R (nó, via, relação) + id: identifica o lugar no OSM */
+  osmType: string;
+  osmId: number;
+  name: string;
+  /** tipo no OSM: bar, pub, restaurant, nightclub… */
+  kind?: string;
+  address?: string;
+  district?: string;
+  city?: string;
+  /** UF */
+  state?: string;
+  lat: number;
+  lon: number;
+}
+
 export interface RepertoireProject {
   id: string;
   name: string;
@@ -51,7 +73,10 @@ export interface RepertoireProject {
   songs: RepertoireSong[];
   /** v3 */
   date?: string;
+  /** texto do local, sempre o que a pessoa vê e editou */
   venue?: string;
+  /** local escolhido da sugestão do OpenStreetMap; ausente = texto livre */
+  place?: VenuePlace;
   targetMinutes?: number;
   notes?: string;
   blocks: RepertoireBlock[];
