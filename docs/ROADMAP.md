@@ -20,6 +20,14 @@ O documento original propunha 7 fases em 36 meses. Este roadmap é mais enxuto.
 
 ---
 
+**Reposicionado em 25/09/2026** (`CLAUDE.md`, topo e seção 14): o produto é um
+ecossistema de música — criar música, repertório e treino, nessa ordem de evidência.
+As fases abaixo ainda seguem a ordem antiga, centrada em treino. **Falta reordenar**
+e criar as fases de Home/navegação nova, desafio de afinação e "criar música" —
+depois de resolver as contradições da seção 14.
+
+---
+
 ## Fase 0 — Fundação
 
 Nada de feature nova aqui.
@@ -64,7 +72,7 @@ voz real, em Android simples.
 Os exercícios que o app consegue medir sem saber a faixa vocal do cantor.
 
 - [ ] Aba Treinos com os 5 cards de objetivo (os outros 3 aparecem como "em breve")
-- [ ] **Respiração** — S sustentado (meta 8/10/12/15s), S pulsado, controle com "X"
+- [ ] **Respiração** — S sustentado (meta 8/10/12/15s e além — degraus acima de 15s pendentes; Laury chegou a 21s), S pulsado, controle com "X". Duração e pulsos validados com voz pela Laury em 25/09/2026
 - [ ] **Articulação e Dicção** — 6 trava-línguas cronometrados, recorde de tempo
 - [ ] Ilustração da inspiração, lembretes visuais ("relaxe os ombros", "abra mais
       a boca") — instrução, nunca feedback
@@ -84,7 +92,8 @@ Pré-requisito do lote B: escala sem faixa vocal pode forçar a voz.
 - [x] Portar o teste de extensão
 - [ ] Integrar no fluxo de cadastro, com validação de ambiente
 - [ ] Persistir perfil com histórico — a extensão muda com treino e com o dia
-- [ ] Refazer a qualquer momento — nunca tratar como definitivo
+- [ ] Refazer — **em disputa:** a Laury pediu refazer só após 30 dias (25/09/2026); a regra anterior era refazer sempre. Ver `CLAUDE.md` seção 14, contradição 2
+- [ ] Teste vocal dentro de Treino, feito uma vez antes do primeiro treino (sai da navegação)
 
 **Risco:** ruído ambiente pode dar resultado errado. A própria Laury teve soprano num
 dia e contralto no outro. O produto precisa assumir isso na comunicação.
@@ -97,7 +106,7 @@ dia e contralto no outro. O produto precisa assumir isso na comunicação.
       com pista visual (trilha), pista auditiva (modelo) e acerto/erro
 - [ ] **Firmeza Vocal** — Espaguete + VU, Finger kazoo, Som de sapo
 - [ ] **Ressonância** — mastigação + HUMMM, messa di voce, humming
-- [ ] Notas-alvo relativas ao perfil vocal, nunca absolutas
+- [ ] Notas-alvo relativas ao perfil vocal, nunca absolutas — **em xeque**: a Laury disse que o teste "não muda o treino" (`CLAUDE.md` seção 14, contradição 1)
 - [ ] Animações demonstrativas (bochechas, cara de nojo, mastigação)
 
 **Bloqueado por respostas da Laury:** desenho das escalas, se muda por tipo vocal,

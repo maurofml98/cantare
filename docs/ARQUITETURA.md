@@ -83,6 +83,12 @@ type Exercicio = {
 
 ## Notas-alvo relativas — o ponto crítico
 
+> **Em xeque (reunião de 25/09/2026).** A Laury disse que o teste vocal "não vai mudar
+> o treino, é para dar sensação de segurança e respaldo". Se valer, esta seção cai e as
+> escalas saem em notas absolutas — com o risco de forçar a voz descrito abaixo.
+> **Não implementar nenhum dos dois caminhos até confirmar com ela** (`CLAUDE.md`,
+> seção 14, contradição 1).
+
 Este é o detalhe que faz "personalizado por tipo vocal" funcionar de verdade em vez
 de ser só marketing.
 

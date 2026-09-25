@@ -17,6 +17,26 @@ Sem isso, é desperdício de tempo.
 
 ---
 
+## Direção escolhida — colorida (25/09/2026)
+
+A Laury viu as duas propostas e **prefere a colorida**. É a primeira escolha concreta
+de direção desde o início do projeto.
+
+**Falta registrar:** as duas propostas não estão no repositório. Salvar as imagens em
+`docs/referencias/` (a colorida e a descartada), com data, antes da próxima rodada —
+senão a escolha volta a ser descrição em palavras.
+
+**Conflitos a resolver antes de codar:**
+- Os tokens abaixo (dark + dourado envelhecido) e a identidade da seção 9 do
+  `CLAUDE.md` deixam de ser a direção. Não trocar tokens sem a referência salva
+- "Gradientes coloridos óbvios" e "roxo, lilás, neon" estão nas proibições. Se a
+  proposta colorida usa algum deles, a Laury precisa saber que está revertendo uma
+  rejeição anterior — ou a proibição cai, ou a paleta muda
+- Combina com o reposicionamento (ecossistema de música, não treino clínico) e com o
+  pedido dela de identidade "mais divertida" (`CLAUDE.md`, seção 13, contradição 2)
+
+---
+
 ## O que já foi tentado e rejeitado
 
 | Tentativa | O que era | Por que caiu |

@@ -1,7 +1,22 @@
-# Cantare
+# Cantare (nome provisório — vai mudar)
 
-Plataforma para cantores brasileiros. Une treino vocal com análise de áudio, saúde
-vocal com curadoria clínica, e gestão de repertório para shows.
+**Ecossistema de música para o cantor brasileiro.** Não é um app de treino vocal com
+repertório dentro. Palavras da Laury (reunião de 25/09/2026): "a cara do negócio não
+pode ser treino, senão queima a ideia" e "a pessoa tem que conseguir fazer tudo ali,
+um Shopify da música".
+
+A tríade, **nesta ordem de evidência**:
+
+1. **Criar música** — ainda não existe; entra como card planejado
+2. **Repertório** — projetos, blocos de show, busca de faixas
+3. **Treino** — análise de áudio com curadoria clínica. É uma perna, não o corpo. Ela
+   mesma chama de "a parte mais chata". **O marketing não será de treino vocal**
+
+Saúde vocal e jogos orbitam a tríade. Navegação, Home e funil: seção 14.
+
+**Nome — pendente.** "Cantare" vai ser trocado. Critério da Laury: funcionar em rede
+social e não colidir com empresa do mesmo nicho. Até decidir, o código segue com
+Cantare.
 
 Este arquivo é o contexto permanente do projeto. Leia antes de qualquer alteração.
 
@@ -175,6 +190,10 @@ O espaço vago: cantor + saúde vocal + Brasil.
 
 ### Para quem (definido em 24/09/2026)
 
+> **Atualização 25/09/2026:** o público continua o amador em massa, mas a porta de
+> entrada deixou de ser o treino — é criar música e repertório (topo do arquivo e
+> seção 14). A gamificação abaixo vale dentro de Treino; a métrica da Home é uso.
+
 **O Cantare é gamificado para amador em massa, não sofisticado para profissional.** O
 amador é o faturamento. O profissional chega depois, por descoberta. Isso reordena a
 prioridade: **mecânica de engajamento vale mais que refinamento técnico.**
@@ -322,7 +341,7 @@ ela pode produzir e assinar.
 **Pendente com ela:**
 - Exercícios de aquecimento por estilo (agudo, grave, gravação, dicção, pós-show)
   — e onde o aquecimento entra no modelo de academia (seção 13, contradição 1)
-- Metas numéricas de cada exercício (só o S sustentado tem: 8/10/12/15s)
+- Metas numéricas de cada exercício (só o S sustentado tem: 8/10/12/15s, e faltam os degraus acima de 15s)
 - Desenho das escalas (quantas notas, quais intervalos)
 - O que muda entre um tipo vocal e outro na prática
 
@@ -429,8 +448,8 @@ Mesmo caminho de altura dos treinos (`mic.ts` → `PitchTracker`), `lib/vocal/ca
   agora só aceita um vale que dure ≥50 ms (`minValleyMs`, provisório); testes em
   `detectors.test.ts`. **Risco que continua:** o limiar é de sinal sintético. Pulsos
   mais rápidos que ~6/s ou vales de voz real mais curtos que 50 ms seriam contados a
-  menos. Validar com voz real no `/lab/microfone` antes de a Laury definir a meta de
-  repetições
+  menos. **Voz real (25/09/2026):** a Laury fez o S pulsado várias vezes e a contagem
+  bateu (relato dela). Pulsos rápidos e "VU"/"HUM" seguem não testados
 - **Duração e cronômetro — ruído estendendo o fim (corrigido 24/09/2026).** Um
   trava-língua sintético de 2,6 s media 3,6 s: nas pausas, picos do ruído da sala
   (~5 dB) passavam do limiar de saída (4 dB) e mantinham o trecho aberto. Agora, depois
@@ -599,10 +618,13 @@ pista auditiva (modelo da escala) e feedback de acerto/erro. Firmeza pede loop d
 execução, demonstração corporal, contagem de inspiração e de emissão, e nota de
 referência.
 
-**Meta do S sustentado: 8 → 10 → 12 → 15 segundos.** Isso responde a pergunta do
-teto clínico que estava aberta: o "SSS de 30s" do Vocal Coach (ver `ARQUITETURA.md`)
-não é a referência — a progressão começa em 8s e o teto definido por ela é 15s.
-Não subir além disso sem ela.
+**Meta do S sustentado: 8 → 10 → 12 → 15 segundos — e continua (25/09/2026).** A
+progressão começa em 8s. O teto de 15s caiu: a Laury testou, chegou a 21s, e a escada
+precisa seguir além de 15. **Os degraus acima de 15 não foram definidos** — não
+inventar; até ela dar os números, no topo a meta é superar o recorde (é o que o código
+já faz). Padrão que ela descreveu numa sessão: o tempo **sobe, atinge um pico e cai
+por cansaço**. A queda depois do pico é fisiológica, não fracasso — o feedback não pode
+tratá-la como erro nem rebaixar a meta por causa dela.
 
 ### Arquitetura de tela obrigatória — 8 passos (seção 09 do PDF)
 
@@ -624,9 +646,9 @@ estados. Exercício novo continua sendo configuração, não tela.
 
 | Capacidade | Usada em | Estado |
 |---|---|---|
-| **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3 | **Existe**, com gate de clareza (23/09/2026: sem ele, 41/50 quadros de chiado viravam nota). Testado só com sinal sintético. Vibração de lábios pode instabilizar — testar com voz real |
-| **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Implementado, não testado com voz** (`src/lib/audio/detectors.ts`). Por energia em bandas contra o ruído da sala calibrado, não gate fixo de RMS — funciona com chiado surdo e com Bluetooth cortando agudo |
-| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Implementado, não testado com voz.** Contava buraco de ≥15 ms dentro do pulso como pulso extra — corrigido com vale mínimo de 50 ms (ver seção 9, limitações) |
+| **Altura (pitch)** | Flexibilidade 1–3; Firmeza 1–2 ("grave"); Ressonância 2–3; teste vocal; desafio de afinação da Home | **Existe — é o único detector ainda sem validação com voz real (próximo teste)**, com gate de clareza (23/09/2026: sem ele, 41/50 quadros de chiado viravam nota). Testado só com sinal sintético. Vibração de lábios pode instabilizar — testar com voz real |
+| **Duração de emissão contínua** | Respiração 1 e 3; Firmeza 1; Ressonância 1 | **Validado com voz real** (25/09/2026): a Laury fez S sustentado e "X" várias vezes e tudo funcionou. É relato dela — sem relatório JSON do `/lab`, sem sala ruidosa (`src/lib/audio/detectors.ts`). Por energia em bandas contra o ruído da sala calibrado, não gate fixo de RMS — funciona com chiado surdo e com Bluetooth cortando agudo |
+| **Contagem de pulsos por ataque no envelope** | Respiração 2; Firmeza 2–3; Ressonância 3; futuro jogo palavra + ritmo (com tempo do ataque vs. batida) | **Validado com voz real no S pulsado** (Laury, 25/09/2026). "VU" e "HUM" (Firmeza, Ressonância) ainda não testados. Contava buraco de ≥15 ms dentro do pulso como pulso extra — corrigido com vale mínimo de 50 ms (ver seção 9, limitações) |
 | **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Implementado, não testado com voz.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho. **Bug conhecido:** ruído antes da voz vira o início da emissão e o crescimento explode (ver seção 9, testes adversos) — corrigir antes da messa di voce |
 | **Tempo de leitura** | Articulação (trava-línguas) | Implementado (modo `timer`: do primeiro ao último som). **Só o "Terminei" encerra** — pausa no meio não corta mais (antes: 1,5 s de silêncio encerrava e virava recorde falso). Tempo suspeito (> 9 sílabas/s ou > 25% melhor que o recorde) pergunta "Leu o texto inteiro?" antes de gravar; limiares provisórios, não clínicos |
 
@@ -682,3 +704,78 @@ pontuação ou acerto/erro:
 8. **"Níveis de dificuldade"** está na lista de funcionalidades. Ela corrigiu que
    aquecimento não tem nível; para treino faz sentido, mas não pode vazar para o
    aquecimento
+
+---
+
+## 14. Reunião de 25/09/2026 — ecossistema, navegação, Home e funil
+
+Reposicionamento descrito no topo do arquivo. Aqui, o que muda na interface.
+**Ainda não implementado** — só documentado.
+
+### Navegação inferior (ordem definida pela Laury)
+
+```
+Home · Criar música · Repertório · Treino · Evolução     + Play (jogos, "em breve")
+```
+
+- **Teste vocal sai da navegação** e passa a viver dentro de Treino
+- **Play** entra com a tag "em breve" (jogos de ritmo e ear training, `ROADMAP.md` Fase 7)
+
+### Home — reestruturação completa
+
+Sai: "treino de hoje", "objetivos", "sua voz". Entra, nesta ordem:
+
+1. **Repertório no topo** — o público é músico
+2. **Card "criar sua música"** — a função não existe; o card serve para apresentar
+   ao Murilo como planejado. Marcar como "em breve", não prometer
+3. **Desafio de afinação** — no lugar do treino, como isca
+4. **Saúde vocal** — mantém as ilustrações atuais (SVG próprio, não biblioteca); a
+   dica da Laury passa para dentro do card
+5. **Evolução** — no significado novo, abaixo
+
+### Funil
+
+```
+Home: "descubra se você é afinado" → pessoa brinca →
+"parabéns, você tem talento, treine sua voz hoje grátis" → Treino →
+teste vocal (uma vez) → treina
+```
+
+O teste vocal pode ser refeito **depois de 30 dias**.
+
+### Evolução — dois lugares, dois significados
+
+- **Na Home: uso do app nos últimos 30 dias** — músicas criadas, repertórios montados,
+  treinos feitos. A tríade virando métrica; também diz à equipe o que é mais usado
+- **Dentro de Treino:** a evolução de treino (recorde, meta, histórico) continua
+
+### Contradições desta reunião (levar à Laury / decidir antes de codar)
+
+1. **Teste vocal "não vai mudar o treino"** — "é para dar sensação de segurança e
+   respaldo", disse ela. Contradiz `ARQUITETURA.md` (notas-alvo relativas à extensão
+   medida; nunca passar de `midiMax - 2`, descrito como "requisito clínico") e a
+   premissa da Fase 3/4 do roadmap ("escala sem faixa vocal pode forçar a voz"). Se o
+   teste não muda nada, as escalas saem em notas absolutas e podem forçar grave ou
+   agudo. Confirmar com ela
+2. **Refazer só após 30 dias** contradiz "permitir refazer sempre" (seção 9, Fase 3),
+   regra que existe porque ruído dá resultado errado — ela mesma teve soprano num dia
+   e contralto no outro. Com a trava, um teste ruim vale por 30 dias. Proposta: 30
+   dias para refazer por vontade; livre quando a medição saiu com confiança média ou
+   calibração contaminada
+3. **Desafio de afinação antes do aquecimento.** O funil faz a pessoa cantar na Home,
+   sem aquecer (seção 10, item 2). Provavelmente aceitável por ser curto e leve — mas
+   a regra é dela, e a exceção também precisa ser
+4. **"Parabéns, você tem talento" para todos** é mensagem fixa, independente do
+   resultado: isca ou promessa falsa? E o desafio depende de altura, o detector que
+   ainda não foi validado com voz
+5. **Métrica de uso "para vocês medirem" exige servidor.** Tudo vive em
+   `localStorage` (seção 6): o usuário vê os próprios números, a equipe não vê nada
+   agregado. Precisa de analytics/backend — e de consentimento (LGPD, seção 10)
+6. **Aba Evolução × card de Evolução da Home.** Se a evolução de treino vai para
+   dentro de Treino, a aba mostra o quê? Uso, igual ao card da Home?
+7. **Seis destinos na barra inferior** (5 + Play) em Android pequeno fica apertado.
+   Alternativa: Play como card na Home até existir
+8. **Card de função inexistente em produção.** O `main` publica direto em
+   `cantare-olive.vercel.app`: o card "criar sua música" aparece para todo usuário,
+   não só na demo do Murilo
+9. **Direção visual colorida × proibições acumuladas** — ver `docs/DESIGN.md`

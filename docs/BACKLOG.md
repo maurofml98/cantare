@@ -131,8 +131,10 @@ a regra da seção 10 do `CLAUDE.md` prevalece e nenhum treino abre sem aquecer.
 ### 1.9 · Meta progressiva e recorde pessoal
 
 Passos 7 e 8. Por exercício: meta atual, próxima meta, recorde, histórico de
-tentativas. Bater a meta avança para a próxima. S sustentado: 8 → 10 → 12 → 15s,
-teto em 15s.
+tentativas. Bater a meta avança para a próxima. S sustentado: 8 → 10 → 12 → 15s e
+além (25/09/2026: o teto caiu, a Laury chegou a 21s; degraus acima de 15s pendentes,
+no topo vale superar o recorde). Numa sessão o tempo sobe, faz pico e cai por
+cansaço — a queda não é erro.
 
 ---
 
@@ -145,7 +147,7 @@ Cards sem emoji e sem ícone de biblioteca até a Laury confirmar (contradição
 
 ### 2.2 · Respiração
 
-- S sustentado — `duracao`, meta 8/10/12/15s
+- S sustentado — `duracao`, meta 8/10/12/15s e além (degraus pendentes)
 - S pulsado — `pulsos` · **meta de repetições pendente com a Laury**
 - Controle respiratório com "X" — `duracao` crescente por repetição ·
   **progressão pendente**
