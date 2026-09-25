@@ -18,6 +18,7 @@ import { Route as PalcoProjectIdRouteImport } from './routes/palco.$projectId'
 import { Route as LabMicrofoneRouteImport } from './routes/lab.microfone'
 import { Route as DiarioConcluidoRouteImport } from './routes/diario.concluido'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppCriarRouteImport } from './routes/_app.criar'
 import { Route as AppTreinosIndexRouteImport } from './routes/_app.treinos.index'
 import { Route as AppTesteVocalIndexRouteImport } from './routes/_app.teste-vocal.index'
 import { Route as AppSaudeIndexRouteImport } from './routes/_app.saude.index'
@@ -73,6 +74,11 @@ const DiarioConcluidoRoute = DiarioConcluidoRouteImport.update({
 const AppHomeRoute = AppHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCriarRoute = AppCriarRouteImport.update({
+  id: '/criar',
+  path: '/criar',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTreinosIndexRoute = AppTreinosIndexRouteImport.update({
@@ -141,6 +147,7 @@ const AppDiarioEvolucaoRoute = AppDiarioEvolucaoRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/criar': typeof AppCriarRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/criar': typeof AppCriarRoute
   '/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_app/criar': typeof AppCriarRoute
   '/_app/home': typeof AppHomeRoute
   '/diario/concluido': typeof DiarioConcluidoRoute
   '/lab/microfone': typeof LabMicrofoneRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/criar'
     | '/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/criar'
     | '/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -256,6 +267,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/auth'
+    | '/_app/criar'
     | '/_app/home'
     | '/diario/concluido'
     | '/lab/microfone'
@@ -354,6 +366,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/criar': {
+      id: '/_app/criar'
+      path: '/criar'
+      fullPath: '/criar'
+      preLoaderRoute: typeof AppCriarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/treinos/': {
       id: '/_app/treinos/'
       path: '/treinos'
@@ -442,6 +461,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppCriarRoute: typeof AppCriarRoute
   AppHomeRoute: typeof AppHomeRoute
   AppDiarioEvolucaoRoute: typeof AppDiarioEvolucaoRoute
   AppRepertorioProjectIdRoute: typeof AppRepertorioProjectIdRoute
@@ -456,6 +476,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCriarRoute: AppCriarRoute,
   AppHomeRoute: AppHomeRoute,
   AppDiarioEvolucaoRoute: AppDiarioEvolucaoRoute,
   AppRepertorioProjectIdRoute: AppRepertorioProjectIdRoute,

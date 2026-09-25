@@ -715,11 +715,14 @@ Reposicionamento descrito no topo do arquivo. Aqui, o que muda na interface.
 ### Navegação inferior (ordem definida pela Laury)
 
 ```
-Home · Criar música · Repertório · Treino · Evolução     + Play (jogos, "em breve")
+Home · Criar música · Repertório · Treino · Evolução
 ```
 
 - **Teste vocal sai da navegação** e passa a viver dentro de Treino
-- **Play** entra com a tag "em breve" (jogos de ritmo e ear training, `ROADMAP.md` Fase 7)
+- **Saúde vocal sai da navegação** e vive no card da Home
+- **Play fica fora da barra** (decisão do Mauro, 25/09/2026): card na Home com tag
+  "em breve" (jogos de ritmo e ear training, `ROADMAP.md` Fase 7)
+- "Criar música" é a rota `/criar`, com estado "em breve" até a função existir
 
 ### Home — reestruturação completa
 
@@ -762,19 +765,20 @@ O teste vocal pode ser refeito **depois de 30 dias**.
    e contralto no outro. Com a trava, um teste ruim vale por 30 dias. Proposta: 30
    dias para refazer por vontade; livre quando a medição saiu com confiança média ou
    calibração contaminada
-3. **Desafio de afinação antes do aquecimento.** O funil faz a pessoa cantar na Home,
-   sem aquecer (seção 10, item 2). Provavelmente aceitável por ser curto e leve — mas
-   a regra é dela, e a exceção também precisa ser
-4. **"Parabéns, você tem talento" para todos** é mensagem fixa, independente do
-   resultado: isca ou promessa falsa? E o desafio depende de altura, o detector que
-   ainda não foi validado com voz
+3. ~~Desafio de afinação antes do aquecimento~~ — **decidido (Mauro, 25/09/2026):**
+   aceitável, é isca de poucos segundos, não treino. A tela final do desafio encaminha
+   para o aquecimento antes do treino de verdade
+4. ~~"Parabéns, você tem talento" para todos~~ — **decidido (Mauro, 25/09/2026):** três
+   variações por faixa de resultado, todas positivas, nenhuma mentindo. Texto marcado
+   `TODO(Laury)` para ela revisar. Segue valendo: o desafio depende de altura, ainda
+   não validada com voz
 5. **Métrica de uso "para vocês medirem" exige servidor.** Tudo vive em
    `localStorage` (seção 6): o usuário vê os próprios números, a equipe não vê nada
    agregado. Precisa de analytics/backend — e de consentimento (LGPD, seção 10)
 6. **Aba Evolução × card de Evolução da Home.** Se a evolução de treino vai para
    dentro de Treino, a aba mostra o quê? Uso, igual ao card da Home?
-7. **Seis destinos na barra inferior** (5 + Play) em Android pequeno fica apertado.
-   Alternativa: Play como card na Home até existir
+7. ~~Seis destinos na barra inferior~~ — **decidido (Mauro, 25/09/2026):** Play vira
+   card na Home; a barra fica com cinco
 8. **Card de função inexistente em produção.** O `main` publica direto em
    `cantare-olive.vercel.app`: o card "criar sua música" aparece para todo usuário,
    não só na demo do Murilo

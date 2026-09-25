@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
-import { Dumbbell, ChartNoAxesColumn, Heart, House, LogOut, Music2, AudioLines } from 'lucide-react';
+import { Dumbbell, ChartNoAxesColumn, House, LogOut, Music2, PenLine } from 'lucide-react';
 import { store } from '../lib/store';
 
 export function Sidebar() {
@@ -11,21 +11,20 @@ export function Sidebar() {
   const isActive = (path: string) => {
     if (path === '/diario/evolucao') return pathname === '/diario/evolucao';
     if (path === '/home') return pathname === '/home';
-    if (path === '/teste-vocal') return pathname.startsWith('/teste-vocal');
-    if (path === '/treinos') return pathname.startsWith('/treinos');
+    if (path === '/criar') return pathname.startsWith('/criar');
+    if (path === '/treinos') return pathname.startsWith('/treinos') || pathname.startsWith('/teste-vocal');
     if (path === '/repertorio') return pathname.startsWith('/repertorio');
-    if (path === '/saude') return pathname.startsWith('/saude');
     return false;
   };
 
   // Ícones só na navegação (ação), nunca em cards de conteúdo — ver docs/DESIGN.md.
+  // Ordem da Laury (CLAUDE.md, seção 14). Teste vocal vive dentro de Treino; Saúde vocal e Play, na Home.
   const items = [
     { label: 'Home', path: '/home', Icon: House },
-    { label: 'Teste Vocal', path: '/teste-vocal', Icon: AudioLines },
-    { label: 'Treinos', path: '/treinos', Icon: Dumbbell },
-    { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
+    { label: 'Criar música', path: '/criar', Icon: PenLine },
     { label: 'Repertório', path: '/repertorio', Icon: Music2 },
-    { label: 'Saúde Vocal', path: '/saude', Icon: Heart },
+    { label: 'Treino', path: '/treinos', Icon: Dumbbell },
+    { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
   ];
 
   const handleLogout = () => {

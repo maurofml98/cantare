@@ -1,14 +1,14 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { AudioLines, Dumbbell, ChartNoAxesColumn, Heart, House, Music2 } from 'lucide-react';
+import { Dumbbell, ChartNoAxesColumn, House, Music2, PenLine } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Ordem da Laury (CLAUDE.md, seção 14). Teste vocal vive dentro de Treino; Saúde vocal e Play, na Home.
 const ITEMS = [
   { to: '/home', label: 'Home', Icon: House, match: (p: string) => p === '/home' },
-  { to: '/teste-vocal', label: 'Teste Vocal', Icon: AudioLines, match: (p: string) => p.startsWith('/teste-vocal') },
-  { to: '/treinos', label: 'Treinos', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') },
-  { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
+  { to: '/criar', label: 'Criar música', Icon: PenLine, match: (p: string) => p.startsWith('/criar') },
   { to: '/repertorio', label: 'Repertório', Icon: Music2, match: (p: string) => p.startsWith('/repertorio') },
-  { to: '/saude', label: 'Saúde Vocal', Icon: Heart, match: (p: string) => p.startsWith('/saude') },
+  { to: '/treinos', label: 'Treino', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') || p.startsWith('/teste-vocal') },
+  { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
 ];
 
 export function BottomNav() {
