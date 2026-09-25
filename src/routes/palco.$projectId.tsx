@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ListMusic, Maximize, Minimize, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ListMusic, Maximize, Minimize, X } from 'lucide-react';
 import { getProject, reserveSongs, showSequence, formatSongTime, type SongPlace } from '@/lib/repertoire/store';
 import type { RepertoireProject, RepertoireSong } from '@/lib/types';
 
@@ -20,6 +20,14 @@ const GOLD = '#C9A15E';
 
 type WakeState = 'on' | 'unsupported' | 'denied' | 'off';
 
+/*
+ * Letra no palco (25/09/2026): lida a um braço de distância, no escuro, com o microfone na mão.
+ * Única tela do app onde legibilidade ganha de refinamento: sans, branco puro sobre preto,
+ * três tamanhos grandes e rolagem por botões de toque grande (ou pedal: setas/Page Up/Down).
+ */
+const LYRICS_SIZES = ['clamp(28px, 5vw, 44px)', 'clamp(34px, 6.4vw, 56px)', 'clamp(42px, 8vw, 72px)'];
+const LYRICS_SIZE_KEY = 'cantare:palco:letra-tamanho';
+
 function StageMode() {
   const { projectId } = Route.useParams();
   const navigate = useNavigate();
@@ -32,6 +40,27 @@ function StageMode() {
   const [pulse, setPulse] = useState(0);
   const lockRef = useRef<WakeLockSentinel | null>(null);
   const touch = useRef<{ x: number; y: number; t: number } | null>(null);
+  const [lyricsOn, setLyricsOn] = useState(false);
+  const [lyricsSize, setLyricsSize] = useState(1);
+  const lyricsRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      const s = Number(localStorage.getItem(LYRICS_SIZE_KEY));
+      if (s >= 0 && s < LYRICS_SIZES.length) setLyricsSize(s);
+    } catch { /* ignore */ }
+  }, []);
+  const cycleLyricsSize = () =>
+    setLyricsSize((s) => {
+      const n = (s + 1) % LYRICS_SIZES.length;
+      try { localStorage.setItem(LYRICS_SIZE_KEY, String(n)); } catch { /* ignore */ }
+      return n;
+    });
+  /** rola ~70% da área visível: o fim do trecho anterior continua à vista */
+  const scrollLyrics = useCallback((dir: 1 | -1) => {
+    const el = lyricsRef.current;
+    if (el) el.scrollBy({ top: dir * el.clientHeight * 0.7, behavior: 'smooth' });
+  }, []);
 
   useEffect(() => {
     const p = getProject(projectId);
@@ -93,13 +122,19 @@ function StageMode() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (showReserve && e.key === 'Escape') return setShowReserve(false);
+      // Com a letra na tela, vertical rola a letra (pedal de virar página manda Page Up/Down) e
+      // horizontal troca de música.
+      if (lyricsRef.current) {
+        if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); return scrollLyrics(1); }
+        if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); return scrollLyrics(-1); }
+      }
       if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); go(1); }
       if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
       if (e.key === 'Escape' && !document.fullscreenElement) navigate({ to: '/repertorio/$projectId', params: { projectId } });
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, navigate, projectId, showReserve]);
+  }, [go, navigate, projectId, showReserve, scrollLyrics]);
 
   const toggleFullscreen = async () => {
     try {
@@ -125,6 +160,8 @@ function StageMode() {
   const song = extra ?? cur!.song;
   const next = extra ? seq[index] : seq[index + 1];
   const isLast = !extra && index === seq.length - 1;
+  // A letra fica ligada entre músicas: a próxima que tiver letra já abre nela.
+  const showLyrics = lyricsOn && !!song.lyrics;
 
   return (
     <div
@@ -166,8 +203,29 @@ function StageMode() {
         </button>
       </header>
 
+      {/* letra da música atual */}
+      {showLyrics && (
+        <main key={`${song.id}-${pulse}-letra`} className="stage-in flex min-h-0 flex-1 flex-col px-5 sm:px-10">
+          <div className="flex items-baseline justify-between gap-4 pb-2" style={{ borderBottom: '1px solid rgba(242,238,230,0.15)' }}>
+            <p className="min-w-0 truncate" style={{ fontFamily: SANS, fontSize: 'clamp(20px, 3vw, 28px)', fontWeight: 600, color: '#FFFFFF' }}>{song.title}</p>
+            <p className="shrink-0" style={{ fontFamily: SANS, fontSize: 'clamp(22px, 3.4vw, 32px)', fontWeight: 700, color: song.currentKey ? GOLD : '#8A6A3A' }}>
+              Tom {song.currentKey || '?'}
+            </p>
+          </div>
+          <div
+            ref={lyricsRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-5"
+            style={{ fontFamily: SANS, fontWeight: 500, fontSize: LYRICS_SIZES[lyricsSize], lineHeight: 1.35, color: '#FFFFFF', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+          >
+            {song.lyrics}
+            {/* folga no fim: a última linha pode subir até o meio da tela */}
+            <div aria-hidden style={{ height: '40vh' }} />
+          </div>
+        </main>
+      )}
+
       {/* música atual */}
-      <main key={`${song.id}-${pulse}`} className="stage-in flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center sm:gap-6">
+      {!showLyrics && <main key={`${song.id}-${pulse}`} className="stage-in flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center sm:gap-6">
         <p style={{ fontFamily: SANS, fontSize: 'clamp(16px, 2.4vw, 22px)', color: GOLD }}>
           {extra ? 'Música de reserva' : cur!.block?.name ? `Bloco ${(cur!.blockIndex ?? 0) + 1} · ${cur!.block.name}` : ''}
         </p>
@@ -188,15 +246,44 @@ function StageMode() {
           ) : null}
         </div>
         {song.vocalNote && <p className="max-w-xl" style={{ fontFamily: SANS, fontSize: 18, color: 'rgba(242,238,230,0.6)' }}>{song.vocalNote}</p>}
-      </main>
+        {song.lyrics && (
+          <button
+            type="button"
+            onClick={() => setLyricsOn(true)}
+            className="mt-1 flex h-16 items-center justify-center rounded-[14px] px-8 outline-none active:scale-[0.97] focus-visible:ring-4 focus-visible:ring-white/50"
+            style={{ border: `2px solid ${GOLD}`, color: '#FFFFFF', fontFamily: SANS, fontSize: 22, fontWeight: 600 }}
+          >
+            Ver letra
+          </button>
+        )}
+      </main>}
 
-      {/* depois */}
-      <p className="px-5 pb-3 text-center" style={{ fontFamily: SANS, fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(242,238,230,0.5)' }}>
+      {/* rolagem da letra: botões grandes, para o polegar com o microfone na outra mão */}
+      {showLyrics && (
+        <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] gap-2 px-4 pb-3 sm:gap-3 sm:px-8">
+          <StageButton onClick={() => scrollLyrics(-1)} label="Subir a letra">
+            <ChevronUp size={40} />
+          </StageButton>
+          <StageButton onClick={cycleLyricsSize} label={`Tamanho da letra (${lyricsSize + 1} de ${LYRICS_SIZES.length})`}>
+            <span style={{ fontFamily: SANS, fontSize: 30, fontWeight: 700 }}>Aa</span>
+          </StageButton>
+          <StageButton onClick={() => setLyricsOn(false)} label="Fechar letra">
+            <X size={30} />
+            <span style={{ fontFamily: SANS, fontSize: 13 }}>Letra</span>
+          </StageButton>
+          <StageButton onClick={() => scrollLyrics(1)} label="Descer a letra">
+            <ChevronDown size={40} />
+          </StageButton>
+        </div>
+      )}
+
+      {/* depois — some com a letra aberta: o espaço vertical vai para a letra */}
+      {!showLyrics && <p className="px-5 pb-3 text-center" style={{ fontFamily: SANS, fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(242,238,230,0.5)' }}>
         {next ? <>Depois: <span style={{ color: 'rgba(242,238,230,0.85)' }}>{next.song.title}</span>{next.song.currentKey ? ` · ${next.song.currentKey}` : ''}</> : 'Última música do show'}
-      </p>
+      </p>}
 
       {/* controles */}
-      <nav className="grid grid-cols-[88px_1fr_88px] gap-3 px-4 pb-4 sm:grid-cols-[120px_1fr_120px] sm:px-8 sm:pb-8" aria-label="Controles do palco">
+      <nav className="grid grid-cols-[72px_minmax(0,1fr)_72px] gap-2 px-4 sm:gap-3 pb-4 sm:grid-cols-[120px_1fr_120px] sm:px-8 sm:pb-8" aria-label="Controles do palco">
         <StageButton onClick={() => go(-1)} disabled={!extra && index === 0} label="Música anterior">
           <ChevronLeft size={36} />
         </StageButton>
@@ -204,10 +291,10 @@ function StageMode() {
           type="button"
           onClick={() => go(1)}
           disabled={isLast}
-          className="flex h-[88px] items-center justify-center gap-3 rounded-[18px] outline-none transition-[transform,filter] duration-100 active:scale-[0.97] active:brightness-90 disabled:opacity-40 focus-visible:ring-4 focus-visible:ring-white/60 sm:h-[104px]"
+          className="flex h-[88px] min-w-0 items-center justify-center gap-3 rounded-[18px] outline-none transition-[transform,filter] duration-100 active:scale-[0.97] active:brightness-90 disabled:opacity-40 focus-visible:ring-4 focus-visible:ring-white/60 sm:h-[104px]"
           style={{ background: GOLD, color: '#000', fontFamily: SANS, fontSize: 'clamp(19px, 3vw, 30px)', fontWeight: 600, whiteSpace: 'nowrap' }}
         >
-          {isLast ? 'Fim do show' : extra ? 'Voltar ao show' : 'Próxima música'} {!isLast && <ChevronRight size={32} />}
+          {isLast ? 'Fim do show' : extra ? 'Voltar ao show' : 'Próxima música'} {/* seta só com espaço: em 360 px ela empurrava a Reserva para fora da tela */}{!isLast && <ChevronRight size={32} className="hidden shrink-0 sm:block" />}
         </button>
         <StageButton onClick={() => setShowReserve(true)} disabled={reserve.length === 0} label={`Músicas de reserva (${reserve.length})`}>
           <ListMusic size={30} />

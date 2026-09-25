@@ -24,6 +24,11 @@ export interface RepertoireSong {
   recommendedReason?: string;
   difficulty: SongDifficulty;
   vocalNote?: string;
+  /**
+   * Letra digitada ou colada pelo próprio cantor, para conferir no Modo Palco. Conteúdo do
+   * usuário: nunca buscar de API (direito autoral — decidido em 25/09/2026).
+   */
+  lyrics?: string;
   status: SongStatus;
   /** Duração real em segundos (Spotify ou informada). Sem ela, a duração é estimada. */
   durationSec?: number;

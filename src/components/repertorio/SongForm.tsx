@@ -15,9 +15,10 @@ export interface SongFormValues {
   durationSec?: number;
   bpm?: number;
   vocalNote?: string;
+  lyrics?: string;
 }
 
-/** Editar música: nome, artista, tom (grade), duração, BPM e observação. */
+/** Editar música: nome, artista, tom (grade), duração, BPM, observação e letra (do próprio cantor). */
 export function SongForm({
   open,
   onOpenChange,
@@ -37,6 +38,7 @@ export function SongForm({
   const [duration, setDuration] = useState('');
   const [bpm, setBpm] = useState('');
   const [note, setNote] = useState('');
+  const [lyrics, setLyrics] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export function SongForm({
     setDuration(initial?.durationSec ? `${Math.floor(initial.durationSec / 60)}:${String(initial.durationSec % 60).padStart(2, '0')}` : '');
     setBpm(initial?.bpm ? String(initial.bpm) : '');
     setNote(initial?.vocalNote ?? '');
+    setLyrics(initial?.lyrics ?? '');
     setConfirmDelete(false);
   }, [open, initial]);
 
@@ -77,6 +80,7 @@ export function SongForm({
               durationSec: parseDuration(duration),
               bpm: bpm ? Number(bpm) || undefined : undefined,
               vocalNote: note.trim() || undefined,
+              lyrics: lyrics.trim() ? lyrics.trimEnd() : undefined,
             });
           }}
         >
@@ -102,6 +106,18 @@ export function SongForm({
               <Textarea id="sf-note" rows={1} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex.: entrada só voz e violão" className="min-h-10 border-white/10 bg-background" />
             </Field>
           </div>
+          {/* Letra: só o que o cantor digita ou cola. Nada de busca em API — direito autoral. */}
+          <Field label="Letra (opcional)" htmlFor="sf-lyrics">
+            <Textarea
+              id="sf-lyrics"
+              rows={5}
+              maxLength={20000}
+              value={lyrics}
+              onChange={(e) => setLyrics(e.target.value)}
+              placeholder="Digite ou cole a letra para conferir no Modo Palco."
+              className="border-white/10 bg-background"
+            />
+          </Field>
           <DialogFooter className="gap-2 pt-2 sm:justify-between">
             {initial && onDelete ? (
               confirmDelete ? (
