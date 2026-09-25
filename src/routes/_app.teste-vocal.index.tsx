@@ -5,7 +5,7 @@ import { freqToMidi } from '@/lib/audio/pitch';
 import { profileRanges } from '@/lib/home/today';
 import { LadderSteps, type JourneyNotes } from '@/components/vocal/VoiceJourney';
 import { CinematicImage, preloadAsset } from '@/components/media/CinematicImage';
-import { C, LINING, Panel, PrimaryButton, SANS, SERIF, focusRing } from '@/components/home/primitives';
+import { C, LINING, Panel, PrimaryButton, SANS, SERIF, TextLink, focusRing } from '@/components/home/primitives';
 
 const HERO_SIZES = '(max-width: 1024px) 100vw, 30vw';
 
@@ -90,6 +90,8 @@ function TesteVocalIndex() {
       {/* ===== Introdução + card principal ===== */}
       <div className="flex min-h-0 flex-col gap-5 lg:col-span-12 xl:col-span-5">
         <header className="px-1">
+          {/* O teste vocal vive dentro de Treino (CLAUDE.md, seção 14). */}
+          <div className="mb-3"><TextLink to="/treinos">Voltar para Treino</TextLink></div>
           <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(44px, 4.2vw, 76px)', color: C.paper, lineHeight: 1 }}>
             Descubra sua <em style={{ color: C.gold }}>voz</em>
           </h1>

@@ -7,6 +7,7 @@ import {
   buildVocalProfile,
   combineConfidence,
   saveVocalProfile,
+  loadVocalProfile,
   type Confidence,
   type VocalProfile,
 } from '@/lib/vocal/profile';
@@ -20,6 +21,8 @@ export const Route = createFileRoute('/teste-vocal/executar')({
       { name: 'description', content: 'Fluxo guiado para medir alcance vocal e região confortável.' },
     ],
   }),
+  // `next`: veio da trava do treino (teste feito uma vez, antes do primeiro treino) — ao salvar, volta ao exercício.
+  validateSearch: (s: Record<string, unknown>): { next?: string } => (typeof s.next === 'string' && s.next ? { next: s.next } : {}),
   component: TesteVocalExecutar,
 });
 
@@ -27,6 +30,9 @@ type Stage = 'intro' | 'ambiente' | 'confortavel' | 'grave' | 'aguda' | 'resulta
 
 function TesteVocalExecutar() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
+  // só volta ao exercício se o perfil foi salvo; sem perfil a trava abriria de novo
+  const exit = () => (next && loadVocalProfile() ? navigate({ to: '/treino/$exerciseId', params: { exerciseId: next } }) : navigate({ to: next ? '/treinos' : '/teste-vocal' }));
   const [stage, setStage] = useState<Stage>('intro');
   const [comfortHz, setComfortHz] = useState(0);
   const [lowHz, setLowHz] = useState(0);
@@ -65,7 +71,7 @@ function TesteVocalExecutar() {
         toast.success('Perfil salvo.');
       }
     }
-    navigate({ to: '/teste-vocal' });
+    exit();
   };
 
   const goToAguda = () => {
@@ -101,7 +107,7 @@ function TesteVocalExecutar() {
       {/* header */}
       <div className="flex items-center justify-between px-6 pt-6">
         <Link
-          to="/teste-vocal"
+          to={next ? '/treinos' : '/teste-vocal'}
           className="flex items-center gap-2 text-[#8A8A95] hover:text-white transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

@@ -3,6 +3,8 @@ import { C, SANS, SERIF, focusRing } from '@/components/home/primitives';
 import { PageTitle, WarmupNotice, useClientValue } from '@/components/treinos/TabParts';
 import { exercisesOf, isRunnable, OBJECTIVES } from '@/lib/treinos/exercises';
 import { loadAttempts } from '@/lib/treinos/progress';
+import { loadVocalProfile } from '@/lib/vocal/profile';
+import { VoicePanel } from '@/components/treinos/VoicePanel';
 
 export const Route = createFileRoute('/_app/treinos/')({
   head: () => ({ meta: [{ title: 'Treinos — Cantare' }] }),
@@ -19,6 +21,8 @@ function TreinosPage() {
     () => Object.fromEntries(OBJECTIVES.map((o) => [o.id, exercisesOf(o.id).reduce((s, e) => s + loadAttempts(e.id).length, 0)])),
     {} as Record<string, number>,
   );
+  // O teste vocal vive aqui desde 25/09/2026 (CLAUDE.md, seção 14): feito uma vez, antes do primeiro treino.
+  const profile = useClientValue(() => loadVocalProfile(), null);
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,6 +53,7 @@ function TreinosPage() {
           );
         })}
       </ul>
+      <VoicePanel profile={profile} />
     </div>
   );
 }

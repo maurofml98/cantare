@@ -712,7 +712,10 @@ pontuação ou acerto/erro:
 Reposicionamento descrito no topo do arquivo. Aqui, o que muda na interface.
 **Implementado em 25/09/2026:** navegação, rota `/criar` ("em breve"), Home nova e desafio
 de afinação (`/desafio`, `lib/desafio/afinacao.ts`: 3 notas, vale qualquer oitava, faixas
-±25/±60 cents provisórias, texto com `TODO(Laury)`). Nada disso testado com voz real.
+±25/±60 cents provisórias, texto com `TODO(Laury)`) e teste vocal dentro de Treino: o
+painel "Sua voz" fica em `/treinos` e o treino trava em aquecimento → teste vocal (só se
+não houver perfil) → exercício. Refazer continua livre: a trava de 30 dias espera a
+Laury (contradição 2). Nada disso testado com voz real.
 
 ### Navegação inferior (ordem definida pela Laury)
 
