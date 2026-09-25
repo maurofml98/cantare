@@ -22,11 +22,39 @@ Sem isso, é desperdício de tempo.
 A Laury viu as duas propostas e **prefere a colorida**. É a primeira escolha concreta
 de direção desde o início do projeto.
 
-**Falta registrar:** as duas propostas não estão no repositório. Salvar as imagens em
-`docs/referencias/` (a colorida e a descartada), com data, antes da próxima rodada —
-senão a escolha volta a ser descrição em palavras.
+**Referência salva e aplicada (25/09/2026):** `referencias/home-ref.png` (desktop). A Home
+foi refeita nela e é a base visual das próximas telas — ver "Linguagem clara" abaixo.
 
-**Conflitos a resolver antes de codar:**
+### Linguagem clara — a nova direção
+
+Implementada na Home (`components/home/claro/`, tokens `--c-*` em `.tema-claro` no
+`src/index.css`). **Vale só na Home por enquanto:** as outras telas são escuras e têm cor
+fixa no código; migram uma a uma, e até lá o layout (`_app.tsx`) escolhe o tema pela rota —
+sidebar e barra inferior mudam junto.
+
+- **Fundo** `#F5F9FF`, cartões brancos, borda `#E4EBF5`, raio 20 px (24 no bloco principal),
+  sombra curta `0 4px 16px rgba(20,60,110,.06)`. Sem glassmorphism, blur ou partículas
+- **Tipografia:** só DM Sans (400–800). Serifada fora — `h1`–`h4` são sobrescritos no tema
+- **Cor com função, uma por módulo:** azul = repertório e ação principal; laranja/amarelo =
+  criar música; verde = afinação; roxo = Play; ciano = saúde vocal. Texto sobre cor usa as
+  variantes `-ink` (contraste AA)
+- **Escala desigual de propósito:** o repertório domina; o resto é secundário
+- **Ícones** só em navegação, ação e metadado (data, local); desenhos próprios nos cartões.
+  Nada de círculo colorido atrás de ícone
+- **Movimento:** `translateY(-2px)` no hover (só onde há hover), `scale(.97)` no toque,
+  anel de foco azul. Nada contínuo
+- **Estados:** todo bloco com dado tem carregando, vazio e erro. Nada inventado — "músicas
+  criadas" é 0 real
+- Foto de palco (`cantare-home-palco`) clareada por filtro: as fotos existentes são noturnas.
+  Fotos claras novas ficam para quando houver asset aprovado. Retrato da Laury: não há foto
+  real — não usar o gerado
+
+**Proibições que caíram com a nova direção:** fundo preto/dourado, serifada editorial, "pill
+no item ativo" (agora é fundo azul-claro + traço lateral), "gradiente colorido" (o bloco do
+repertório usa gradiente azul de uma cor só). **Continuam:** emoji, círculo colorido atrás de
+ícone repetido, mascote, gamificação infantil, capa de álbum decorativa.
+
+**Conflitos que motivaram a mudança:**
 - Os tokens abaixo (dark + dourado envelhecido) e a identidade da seção 9 do
   `CLAUDE.md` deixam de ser a direção. Não trocar tokens sem a referência salva
 - "Gradientes coloridos óbvios" e "roxo, lilás, neon" estão nas proibições. Se a

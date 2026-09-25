@@ -1,8 +1,8 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router';
-import { Dumbbell, ChartNoAxesColumn, House, LogOut, Music2, PenLine } from 'lucide-react';
+import { ChartNoAxesColumn, House, ListMusic, LogOut, Mic, Music } from 'lucide-react';
 import { store } from '../lib/store';
 
-export function Sidebar() {
+export function Sidebar({ claro = false }: { claro?: boolean }) {
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const navigate = useNavigate();
@@ -21,10 +21,10 @@ export function Sidebar() {
   // Ordem da Laury (CLAUDE.md, seção 14). Teste vocal vive dentro de Treino; Saúde vocal e Play, na Home.
   const items = [
     { label: 'Home', path: '/home', Icon: House },
-    { label: 'Criar música', path: '/criar', Icon: PenLine },
-    { label: 'Repertório', path: '/repertorio', Icon: Music2 },
+    { label: 'Criar música', path: '/criar', Icon: Music },
+    { label: 'Repertório', path: '/repertorio', Icon: ListMusic },
     // TODO(Laury): confirmar o nome "Voz" (era "Treino"; cobre treino e saúde vocal). Rota segue /treinos.
-    { label: 'Voz', path: '/treinos', Icon: Dumbbell },
+    { label: 'Voz', path: '/treinos', Icon: Mic },
     { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
   ];
 
@@ -34,6 +34,9 @@ export function Sidebar() {
   };
 
   const initial = (user?.name?.[0] || 'C').toUpperCase();
+
+  // Tema claro (redesenho de 25/09/2026): por enquanto só com a Home aberta — ver `index.css`.
+  if (claro) return <SidebarClaro items={items} isActive={isActive} name={user?.name} initial={initial} onLogout={handleLogout} />;
 
   return (
     <aside
@@ -127,6 +130,87 @@ export function Sidebar() {
         >
           <LogOut size={15} strokeWidth={1.4} />
           Sair
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+type NavItem = { label: string; path: string; Icon: typeof House };
+
+/** Marca: barras de onda sonora nas cores das funções + nome. Desenho próprio. */
+function LogoClaro() {
+  const bars = [
+    { h: 10, c: 'var(--c-primary)' },
+    { h: 20, c: 'var(--c-purple)' },
+    { h: 28, c: 'var(--c-coral)' },
+    { h: 18, c: 'var(--c-orange)' },
+    { h: 12, c: 'var(--c-yellow)' },
+  ];
+  return (
+    <span className="flex items-center gap-2.5">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+        {bars.map((b, i) => (
+          <rect key={i} x={2 + i * 5.5} y={15 - b.h / 2} width="3.5" height={b.h} rx="1.75" fill={b.c} />
+        ))}
+      </svg>
+      <span className="text-[26px] font-extrabold tracking-[-0.03em]" style={{ color: 'var(--c-text)' }}>Cantare</span>
+    </span>
+  );
+}
+
+function SidebarClaro({
+  items,
+  isActive,
+  name,
+  initial,
+  onLogout,
+}: {
+  items: NavItem[];
+  isActive: (p: string) => boolean;
+  name?: string;
+  initial: string;
+  onLogout: () => void;
+}) {
+  return (
+    <aside className="sticky top-0 flex h-screen w-[248px] flex-col border-r px-4 py-7" style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)' }}>
+      <div className="px-3 pb-8">
+        <LogoClaro />
+      </div>
+      <nav aria-label="Principal" className="flex flex-1 flex-col gap-1">
+        {items.map(({ label, path, Icon }) => {
+          const active = isActive(path);
+          return (
+            <Link
+              key={path}
+              to={path}
+              aria-current={active ? 'page' : undefined}
+              className="c-focus relative flex min-h-[48px] items-center gap-3.5 rounded-[12px] px-3.5 text-[16px] transition-colors duration-150"
+              style={{
+                background: active ? 'var(--c-surface-blue)' : undefined,
+                color: active ? 'var(--c-primary)' : 'var(--c-text)',
+                fontWeight: active ? 700 : 500,
+              }}
+            >
+              {active && <span aria-hidden className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-full" style={{ background: 'var(--c-primary)' }} />}
+              <Icon size={22} strokeWidth={active ? 2.3 : 1.9} style={{ color: active ? 'var(--c-primary)' : 'var(--c-text-2)' }} />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="flex items-center gap-3 border-t px-2 pt-4" style={{ borderColor: 'var(--c-border)' }}>
+        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold" style={{ background: 'var(--c-surface-blue)', color: 'var(--c-primary)' }}>
+          {initial}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-[14px] font-semibold" style={{ color: 'var(--c-text)' }}>{name || 'Cantor(a)'}</span>
+        <button
+          type="button"
+          onClick={onLogout}
+          className="c-focus inline-flex min-h-[44px] items-center gap-1.5 rounded-[10px] px-2 text-[13px] font-medium"
+          style={{ color: 'var(--c-text-2)' }}
+        >
+          <LogOut size={16} /> Sair
         </button>
       </div>
     </aside>

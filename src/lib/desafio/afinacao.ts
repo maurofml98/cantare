@@ -62,3 +62,40 @@ export const RESULT_TEXT: Record<Band, { title: string; text: string }> = {
     text: 'Afinação se treina, e todo cantor começou de algum lugar. Comece hoje, grátis.',
   },
 };
+
+/** Nota acertada = a voz caiu na mesma nota (até meio semitom), em qualquer oitava. */
+export const HIT_CENTS = 50;
+
+export function countHits(errors: (number | null)[]): number {
+  return errors.filter((e) => e !== null && Math.abs(e) <= HIT_CENTS).length;
+}
+
+/* ---------------- último resultado (card da Home) ---------------- */
+
+const LAST_KEY = 'cantare:desafio:ultimo';
+
+export interface LastChallenge {
+  /** ISO */
+  at: string;
+  hits: number;
+  total: number;
+}
+
+export function saveLastChallenge(errors: (number | null)[], now = new Date()) {
+  try {
+    const r: LastChallenge = { at: now.toISOString(), hits: countHits(errors), total: errors.length };
+    localStorage.setItem(LAST_KEY, JSON.stringify(r));
+  } catch {
+    /* localStorage indisponível: o resultado vale na tela, só não aparece na Home */
+  }
+}
+
+/** `null` = nunca jogou (ou dado ilegível). */
+export function loadLastChallenge(): LastChallenge | null {
+  try {
+    const r = JSON.parse(localStorage.getItem(LAST_KEY) || 'null');
+    return r && typeof r.hits === 'number' && typeof r.total === 'number' && r.total > 0 ? r : null;
+  } catch {
+    return null;
+  }
+}

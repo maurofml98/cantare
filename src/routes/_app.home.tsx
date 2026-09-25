@@ -1,48 +1,60 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
 import { store } from '@/lib/store';
-import type { RepertoireProject, User } from '@/lib/types';
 import { loadProjects } from '@/lib/repertoire/store';
-import { greetingFor, mostRecentProject } from '@/lib/home/today';
-import { repertoiresSince, usageWindowStart, USAGE_DAYS, type Usage } from '@/lib/home/usage';
+import { pickShows } from '@/lib/home/shows';
+import { repertoiresSince, usageWindowStart, USAGE_DAYS } from '@/lib/home/usage';
 import { attemptsSince } from '@/lib/treinos/progress';
-import {
-  CreateMusicCard,
-  HealthShortcuts,
-  PlayCard,
-  TuningChallengeCard,
-  UsagePanel,
-  WeekRepertoire,
-} from '@/components/home/HomeSections';
-import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
+import { loadLastChallenge } from '@/lib/desafio/afinacao';
+import { preloadAsset } from '@/components/media/CinematicImage';
+import { HomeHeader } from '@/components/home/claro/HomeHeader';
+import { NextShowCard, type ShowsState } from '@/components/home/claro/NextShowCard';
+import { CreateMusicCard } from '@/components/home/claro/CreateMusicCard';
+import { PitchChallengeCard, type ChallengeState } from '@/components/home/claro/PitchChallengeCard';
+import { PlayComingSoon } from '@/components/home/claro/PlayComingSoon';
+import { VocalHealthCard } from '@/components/home/claro/VocalHealthCard';
+import { UsageSummary, type UsageState } from '@/components/home/claro/UsageSummary';
 
 export const Route = createFileRoute('/_app/home')({
+  head: () => ({ links: [preloadAsset('cantare-home-palco', '(max-width: 640px) 100vw, 30vw')] }),
   component: HomePage,
 });
 
 interface HomeData {
-  user: User | null;
-  project: RepertoireProject | null;
-  usage: Usage;
+  name?: string;
+  shows: ShowsState;
+  challenge: ChallengeState;
+  usage: UsageState;
 }
 
+const LOADING: HomeData = { shows: { status: 'loading' }, challenge: { status: 'loading' }, usage: { status: 'loading' } };
+
+/** Tudo vem do aparelho (localStorage). Cada bloco falha sozinho, sem derrubar a Home. */
 function readHomeData(): HomeData {
-  const projects = loadProjects();
-  const since = usageWindowStart();
-  return {
-    user: store.getUser(),
-    project: mostRecentProject(projects),
-    usage: { songsCreated: null, repertoires: repertoiresSince(projects, since), trainings: attemptsSince(since) },
-  };
+  const name = store.getUser()?.name?.trim().split(/\s+/)[0];
+  let shows: ShowsState;
+  let usage: UsageState;
+  try {
+    const projects = loadProjects();
+    const pick = pickShows(projects);
+    shows = pick ? { status: 'loaded', pick } : { status: 'empty' };
+    const since = usageWindowStart();
+    // "músicas criadas": 0 real — a função ainda não existe
+    usage = { status: 'loaded', usage: { songsCreated: 0, repertoires: repertoiresSince(projects, since), trainings: attemptsSince(since) } };
+  } catch {
+    shows = { status: 'error' };
+    usage = { status: 'error' };
+  }
+  return { name, shows, usage, challenge: { status: 'loaded', last: loadLastChallenge() } };
 }
 
 /**
- * Home do ecossistema (CLAUDE.md, topo e seção 14): repertório no topo, criar música, desafio
- * de afinação como porta para o treino, saúde vocal e evolução por uso do app. Treino não é a
- * cara da Home.
+ * Home — nova linguagem visual (redesenho de 25/09/2026, referência `referencias/home-ref.png`).
+ * Ordem da Laury: repertório (dominante), criar música, desafio de afinação, Play, saúde vocal,
+ * evolução por uso. Treino não aparece aqui: vive na aba Voz.
  */
 function HomePage() {
-  const [data, setData] = useState<HomeData | null>(null);
+  const [data, setData] = useState<HomeData>(LOADING);
   const refresh = useCallback(() => setData(readHomeData()), []);
 
   useEffect(() => {
@@ -56,48 +68,28 @@ function HomePage() {
     };
   }, [refresh]);
 
-  if (!data?.user) return null;
-
-  const name = data.user.name?.trim().split(/\s+/)[0];
-
   return (
-    <div style={LINING} className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-      <header className="px-1 lg:col-span-12">
-        <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(42px, 4.4vw, 76px)', color: C.paper, lineHeight: 1 }}>
-          {greetingFor()}
-          {name && (
-            <>
-              , <em style={{ color: C.gold, fontWeight: 300 }}>{name}</em>
-            </>
-          )}
-        </h1>
-        <p className="mt-2" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 18, color: C.paper2 }}>
-          Seu repertório, sua música, sua voz.
-        </p>
-      </header>
-
-      {/* Faixa 1 — o público é músico: repertório primeiro */}
-      <div className="min-h-[300px] lg:col-span-8">
-        <WeekRepertoire project={data.project} />
-      </div>
-      <div className="lg:col-span-4">
-        <CreateMusicCard />
-      </div>
-
-      {/* Faixa 2 — a isca do funil e os jogos */}
-      <div className="lg:col-span-8">
-        <TuningChallengeCard />
-      </div>
-      <div className="lg:col-span-4">
-        <PlayCard />
-      </div>
-
-      {/* Faixa 3 */}
-      <div className="lg:col-span-7">
-        <HealthShortcuts />
-      </div>
-      <div className="lg:col-span-5">
-        <UsagePanel usage={data.usage} days={USAGE_DAYS} />
+    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 sm:gap-5">
+      <HomeHeader name={data.name} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-12">
+        <div className="sm:col-span-2 lg:col-span-12">
+          <NextShowCard state={data.shows} />
+        </div>
+        <div className="lg:col-span-7">
+          <CreateMusicCard />
+        </div>
+        <div className="lg:col-span-5">
+          <PitchChallengeCard state={data.challenge} />
+        </div>
+        <div className="sm:col-span-2 lg:col-span-3">
+          <PlayComingSoon />
+        </div>
+        <div className="lg:col-span-5">
+          <VocalHealthCard />
+        </div>
+        <div className="lg:col-span-4">
+          <UsageSummary state={data.usage} days={USAGE_DAYS} />
+        </div>
       </div>
     </div>
   );

@@ -27,6 +27,31 @@ function AppLayout() {
 
   if (!ready || !hasUser) return null;
 
+  /*
+   * Nova linguagem visual (tema claro, 25/09/2026) começa pela Home. As outras telas ainda são
+   * escuras e têm cores fixas no código: migram uma a uma, e até lá o tema segue a rota.
+   */
+  const claro = pathname === '/home';
+  if (claro) {
+    return (
+      <div className="tema-claro relative flex min-h-screen">
+        <div className="relative z-10 hidden lg:block">
+          <Sidebar claro />
+        </div>
+        <div className="relative z-10 flex h-screen min-w-0 flex-1 flex-col overflow-y-auto">
+          <main className="w-full flex-1 px-4 pb-[calc(88px+env(safe-area-inset-bottom))] pt-5 sm:px-6 sm:pt-6 lg:px-10 lg:pb-10 lg:pt-8">
+            <div key={pathname} className="page-enter">
+              <Outlet />
+            </div>
+          </main>
+          <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+            <BottomNav claro />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen overflow-hidden" style={{ backgroundColor: '#07080A', color: '#E8E4DC' }}>
       <PortalProvider>

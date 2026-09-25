@@ -4,7 +4,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { C, LINING, SANS, SERIF } from '@/components/home/primitives';
 import { useVocalMic } from '@/components/vocal/useVocalMic';
 import { createTonePlayer, type TonePlayer } from '@/lib/audio/tone';
-import { foldedCents, pickTargets, RESULT_TEXT, ROUNDS, scoreRounds } from '@/lib/desafio/afinacao';
+import { foldedCents, pickTargets, RESULT_TEXT, ROUNDS, saveLastChallenge, scoreRounds } from '@/lib/desafio/afinacao';
 import { warmedUpToday } from '@/lib/treinos/warmup';
 
 export const Route = createFileRoute('/_app/desafio')({
@@ -72,7 +72,11 @@ function DesafioPage() {
       errorsRef.current = [...errorsRef.current, err];
       setErrors(errorsRef.current);
       if (i + 1 < notes.length) setTimeout(() => playRound(i + 1, notes), 700);
-      else setStage('result');
+      else {
+        // Home mostra o último resultado; partida sem voz captada não conta
+        if (scoreRounds(errorsRef.current)) saveLastChallenge(errorsRef.current);
+        setStage('result');
+      }
     };
     const timer = setTimeout(() => finish(null), SING_MAX_MS);
     cancel.current = capture.current(

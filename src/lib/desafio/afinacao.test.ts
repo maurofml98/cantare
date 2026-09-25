@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { foldedCents, pickTargets, ROUNDS, scoreRounds } from './afinacao';
+import { countHits, foldedCents, pickTargets, ROUNDS, scoreRounds } from './afinacao';
 
 describe('foldedCents', () => {
   test('mesma nota = 0', () => expect(foldedCents(60, 60)).toBe(0));
@@ -36,4 +36,8 @@ test('pickTargets sorteia notas distintas', () => {
   const t = pickTargets(() => 0);
   expect(t).toHaveLength(ROUNDS);
   expect(new Set(t).size).toBe(ROUNDS);
+});
+
+test('countHits: acerto = até meio semitom, rodada sem voz não conta', () => {
+  expect(countHits([10, -50, 51, null])).toBe(2);
 });

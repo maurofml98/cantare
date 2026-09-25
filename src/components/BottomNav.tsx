@@ -1,19 +1,20 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Dumbbell, ChartNoAxesColumn, House, Music2, PenLine } from 'lucide-react';
+import { ChartNoAxesColumn, House, ListMusic, Mic, Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Ordem da Laury (CLAUDE.md, seção 14). Teste vocal vive dentro de Treino; Saúde vocal e Play, na Home.
 const ITEMS = [
   { to: '/home', label: 'Home', Icon: House, match: (p: string) => p === '/home' },
-  { to: '/criar', label: 'Criar música', Icon: PenLine, match: (p: string) => p.startsWith('/criar') },
-  { to: '/repertorio', label: 'Repertório', Icon: Music2, match: (p: string) => p.startsWith('/repertorio') },
+  { to: '/criar', label: 'Criar música', Icon: Music, match: (p: string) => p.startsWith('/criar') },
+  { to: '/repertorio', label: 'Repertório', Icon: ListMusic, match: (p: string) => p.startsWith('/repertorio') },
   // TODO(Laury): confirmar o nome "Voz" (era "Treino"; cobre treino e saúde vocal). Rota segue /treinos.
-  { to: '/treinos', label: 'Voz', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') || p.startsWith('/teste-vocal') || p.startsWith('/saude') },
+  { to: '/treinos', label: 'Voz', Icon: Mic, match: (p: string) => p.startsWith('/treinos') || p.startsWith('/teste-vocal') || p.startsWith('/saude') },
   { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
 ];
 
-export function BottomNav() {
+export function BottomNav({ claro = false }: { claro?: boolean }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (claro) return <BottomNavClaro pathname={pathname} />;
 
   return (
     <nav
@@ -38,6 +39,39 @@ export function BottomNav() {
             )}
           >
             <Icon size={21} strokeWidth={1.5} />
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/**
+ * Barra inferior do tema claro (redesenho de 25/09/2026): fixa no fundo, largura toda, rótulo
+ * embaixo do ícone (o público usa Android simples — ícone sozinho não basta). Área de toque de
+ * 56 px de altura.
+ */
+function BottomNavClaro({ pathname }: { pathname: string }) {
+  return (
+    <nav
+      aria-label="Principal"
+      className="grid grid-cols-5 border-t px-1 pt-1"
+      style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)', paddingBottom: 'max(6px, env(safe-area-inset-bottom))', boxShadow: '0 -4px 16px rgba(20, 60, 110, 0.06)' }}
+    >
+      {ITEMS.map(({ to, label, Icon, match }) => {
+        const active = match(pathname);
+        return (
+          <Link
+            key={to}
+            to={to}
+            aria-current={active ? 'page' : undefined}
+            className="c-focus c-press flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-[12px] px-0.5"
+            style={{ color: active ? 'var(--c-primary)' : 'var(--c-text-2)' }}
+          >
+            <span className="flex h-7 w-12 items-center justify-center rounded-full" style={{ background: active ? 'var(--c-surface-blue)' : undefined }}>
+              <Icon size={21} strokeWidth={active ? 2.3 : 1.9} />
+            </span>
+            <span className="max-w-full truncate text-[11px] leading-none" style={{ fontWeight: active ? 700 : 500 }}>{label}</span>
           </Link>
         );
       })}

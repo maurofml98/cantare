@@ -37,7 +37,7 @@ const todayIso = () => new Date().toISOString().slice(0, 10);
 /** Cor por posição do bloco — só um fio lateral, para distinguir momentos do show. */
 const BLOCK_ACCENTS = ['#B8955A', '#6E93BF', '#C98B5A', '#8C7BB8', '#6FA394', '#B86F6F', '#A3A06F'];
 
-export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
+export function RepertoireWorkspace({ selectedId, openNew = false }: { selectedId?: string; openNew?: boolean }) {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<RepertoireProject[] | null>(null);
   const [filter, setFilter] = useState<Filter>('todos');
@@ -46,6 +46,12 @@ export function RepertoireWorkspace({ selectedId }: { selectedId?: string }) {
   const [currentId, setCurrentId] = useState<string | undefined>(selectedId);
   const [tab, setTab] = useState<Tab>('blocos');
   const [projectDialog, setProjectDialog] = useState<{ open: boolean; editing: RepertoireProject | null }>({ open: false, editing: null });
+  // chegou por "Novo show" da Home: abre o formulário uma vez e limpa o ?novo da URL
+  useEffect(() => {
+    if (!openNew) return;
+    setProjectDialog({ open: true, editing: null });
+    navigate({ to: '/repertorio', search: {}, replace: true });
+  }, [openNew, navigate]);
   const [confirmDelete, setConfirmDelete] = useState<RepertoireProject | null>(null);
   const [songDialog, setSongDialog] = useState<{ open: boolean; song: RepertoireSong | null; target?: SongTarget }>({ open: false, song: null });
   const [spotify, setSpotify] = useState<{ open: boolean; target?: SongTarget; label?: string; query?: string }>({ open: false });

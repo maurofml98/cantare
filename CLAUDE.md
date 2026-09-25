@@ -491,7 +491,13 @@ Mesmo caminho de altura dos treinos (`mic.ts` → `PitchTracker`), `lib/vocal/ca
   Limiares de sinal sintético — **calibrar com sala real**, pelo mesmo risco do "instável":
   aviso falso frequente ensina a ignorar. O `/lab/microfone` mostra "som no silêncio" em ms
 
-### Identidade visual (última definida, não validada)
+### Identidade visual
+
+> **25/09/2026 — substituída.** A direção agora é clara e colorida (Home refeita sobre
+> `referencias/home-ref.png`); detalhes em `docs/DESIGN.md`, "Linguagem clara". A paleta
+> escura abaixo ainda vale nas telas que não migraram.
+
+**Anterior (escura):**
 
 ```
 Fundo base       #07080A

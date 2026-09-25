@@ -274,3 +274,56 @@
 }
 
 
+
+/*
+ * Tema claro — nova linguagem visual (redesenho da Home, 25/09/2026; referência:
+ * referencias/home-ref.png). Por enquanto vale só onde `.tema-claro` estiver (a Home e a
+ * navegação quando a Home está aberta); as outras telas migram depois. Cada cor tem função:
+ * azul = repertório e ação principal, laranja/amarelo = criar música, verde = afinação,
+ * roxo = Play, ciano = saúde vocal. Texto sobre cor usa as variantes "-ink" (contraste AA).
+ */
+.tema-claro {
+  --c-bg: #F5F9FF;
+  --c-surface: #FFFFFF;
+  --c-surface-blue: #EEF6FF;
+  --c-text: #11182E;
+  --c-text-2: #5E6882;
+  --c-primary: #176BFF;
+  --c-primary-hover: #0F5DE8;
+  --c-primary-deep: #0B4FD1;
+  --c-green: #17B978;
+  --c-green-ink: #0A7A4C;
+  --c-green-bg: #EAF8F1;
+  --c-orange: #FF8A34;
+  --c-orange-ink: #B4530C;
+  --c-orange-bg: #FFF4E8;
+  --c-yellow: #FFBF32;
+  --c-purple: #8557E8;
+  --c-purple-ink: #5B34B8;
+  --c-purple-bg: #F3EEFF;
+  --c-coral: #F56464;
+  --c-cyan: #27B8D8;
+  --c-cyan-ink: #0B6E86;
+  --c-cyan-bg: #E9F7FB;
+  --c-border: #E4EBF5;
+  --c-shadow: 0 4px 16px rgba(20, 60, 110, 0.06);
+  --c-focus: 0 0 0 3px rgba(23, 107, 255, 0.35);
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* cartão que responde ao hover — só transform/sombra, barato em Android simples */
+.tema-claro .c-lift { transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease; }
+@media (hover: hover) {
+  .tema-claro .c-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20, 60, 110, 0.10); }
+}
+.tema-claro .c-focus:focus-visible { outline: none; box-shadow: var(--c-focus); }
+.tema-claro .c-press { transition: transform 110ms ease, background-color 160ms ease; }
+.tema-claro .c-press:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .tema-claro .c-lift, .tema-claro .c-press { transition: none; }
+  .tema-claro .c-lift:hover { transform: none; }
+}
+/* o base aplica a serifada em h1–h4; a nova linguagem é toda sans */
+.tema-claro h1, .tema-claro h2, .tema-claro h3, .tema-claro h4 { font-family: 'DM Sans', system-ui, sans-serif; }
