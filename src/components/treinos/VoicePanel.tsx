@@ -66,7 +66,8 @@ export function VoicePanel({ profile }: { profile: VocalProfile | null }) {
               Descubra até onde sua voz vai.
             </p>
             <p style={{ fontFamily: SANS, fontSize: 13, color: C.paper2, lineHeight: 1.5 }}>
-              Três notas, cerca de 3 minutos. Com isso, o treino fica dentro da sua faixa.
+              {/* TODO(Laury): se o teste muda o treino é a contradição 1 (CLAUDE.md, seção 14). Até lá, só o que ele entrega. */}
+              Três notas, cerca de 3 minutos. Mede sua extensão e estima sua classificação.
             </p>
             <div>
               <SecondaryButton to="/teste-vocal">Fazer teste vocal</SecondaryButton>

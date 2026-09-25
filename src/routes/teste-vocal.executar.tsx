@@ -13,6 +13,9 @@ import {
 } from '@/lib/vocal/profile';
 import { recalculateAllSongRecommendations } from '@/lib/repertoire/store';
 import { freqToMidi } from '@/lib/audio/pitch';
+import { warmedUpToday } from '@/lib/treinos/warmup';
+import { buttonVariants } from '@/components/ui/button';
+import { C, SANS, SERIF } from '@/components/home/primitives';
 
 export const Route = createFileRoute('/teste-vocal/executar')({
   head: () => ({
@@ -41,6 +44,9 @@ function TesteVocalExecutar() {
   const [lowConf, setLowConf] = useState<CaptureConfidence>('high');
   const [highConf, setHighConf] = useState<CaptureConfidence>('high');
   const mic = useVocalMic();
+  // localStorage só existe no navegador: decide depois de montar.
+  const [warm, setWarm] = useState<boolean | null>(null);
+  useEffect(() => setWarm(warmedUpToday()), []);
 
   // sala medida e aceita → primeira nota
   useEffect(() => {
@@ -101,6 +107,26 @@ function TesteVocalExecutar() {
     setComfortConf('high'); setLowConf('high'); setHighConf('high');
     setStage('confortavel');
   };
+
+  if (warm === null) return null;
+  // Seção 10, item 2 + ARQUITETURA.md: o teste pede o grave e o agudo, então exige aquecimento no
+  // dia — qualquer que seja o caminho (URL direta, página do teste ou trava do treino).
+  if (!warm) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-5 bg-[#07080A] px-6 text-center" style={{ fontFamily: SANS }}>
+        <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 32, color: C.paper }}>Aqueça a voz primeiro</h1>
+        <p style={{ fontSize: 15, color: C.paper2 }}>O teste pede sua nota mais grave e a mais aguda. Aqueça antes.</p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link to="/saude/$warmupId" params={{ warmupId: 'geral' }} search={{ next: 'teste-vocal' }} className={buttonVariants({ size: 'lg' })}>
+            Fazer aquecimento
+          </Link>
+          <Link to={next ? '/treinos' : '/teste-vocal'} className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
+            Voltar
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden" style={{ background: '#07080A' }}>

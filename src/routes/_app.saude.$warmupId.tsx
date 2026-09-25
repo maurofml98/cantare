@@ -9,8 +9,9 @@ import { C, LINING, Panel, SANS, SERIF, focusRing } from '@/components/home/prim
 import { markWarmupDone } from '@/lib/treinos/warmup';
 
 export const Route = createFileRoute('/_app/saude/$warmupId')({
-  // `next=treinos`: veio do funil (desafio de afinação) — ao terminar, segue para o treino.
-  validateSearch: (s: Record<string, unknown>): { next?: 'treinos' } => (s.next === 'treinos' ? { next: 'treinos' } : {}),
+  // `next`: ao terminar, segue para o treino (funil do desafio) ou para o teste vocal (trava do teste).
+  validateSearch: (s: Record<string, unknown>): { next?: 'treinos' | 'teste-vocal' } =>
+    s.next === 'treinos' || s.next === 'teste-vocal' ? { next: s.next } : {},
   component: WarmupPage,
 });
 
@@ -51,7 +52,8 @@ function WarmupPage() {
     // Libera a aba Treinos no dia. Desaquecimento não conta como aquecimento.
     if (warmupId !== 'desaquecimento') markWarmupDone();
     toast.success('Aquecimento concluído', { description: 'Sua voz está pronta. Bom ensaio!' });
-    setTimeout(() => navigate({ to: after === 'treinos' && warmupId !== 'desaquecimento' ? '/treinos' : '/saude' }), 450);
+    const to = warmupId === 'desaquecimento' || !after ? '/saude' : after === 'treinos' ? '/treinos' : '/teste-vocal/executar';
+    setTimeout(() => navigate({ to }), 450);
   };
 
   return (

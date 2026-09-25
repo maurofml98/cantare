@@ -97,7 +97,7 @@ function TesteVocalIndex() {
           </h1>
           <p className="mt-3 max-w-[640px]" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 17, color: C.paper2, lineHeight: 1.5 }}>
             Em poucos minutos, medimos seu alcance vocal, sua região confortável e uma classificação aproximada
-            para personalizar seus treinos e sugerir tons mais adequados para seu repertório.
+            e sugerimos tons mais adequados para seu repertório.
           </p>
         </header>
 
@@ -130,7 +130,8 @@ function TesteVocalIndex() {
               <div>
                 <p style={{ fontFamily: SANS, fontSize: 13, color: C.paper3 }}>Para que serve</p>
                 <ul className="mt-2 space-y-2.5" style={{ fontFamily: SANS, fontSize: 14, color: C.paper2, lineHeight: 1.45 }}>
-                  <li className="flex gap-2.5"><Tick />Treinos montados dentro da sua faixa</li>
+                  {/* TODO(Laury): se o teste muda o treino é a contradição 1 (CLAUDE.md, seção 14). Até lá, só o que ele entrega. */}
+                  <li className="flex gap-2.5"><Tick />Saber sua extensão medida e sua classificação aproximada</li>
                   <li className="flex gap-2.5"><Tick />Sugestão de tom para cada música do repertório</li>
                   <li className="flex gap-2.5"><Tick />Acompanhar como sua voz muda com o tempo</li>
                 </ul>
