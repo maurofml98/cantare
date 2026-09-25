@@ -652,7 +652,9 @@ estados. Exercício novo continua sendo configuração, não tela.
 | **Curva de intensidade (relativa)** | Ressonância 2 (crescendo) | **Implementado, não testado com voz.** Só relativa ao início da própria emissão — microfone de celular não dá dB absoluto, e o ganho varia por aparelho. **Bug conhecido:** ruído antes da voz vira o início da emissão e o crescimento explode (ver seção 9, testes adversos) — corrigir antes da messa di voce |
 | **Tempo de leitura** | Articulação (trava-línguas) | Implementado (modo `timer`: do primeiro ao último som). **Só o "Terminei" encerra** — pausa no meio não corta mais (antes: 1,5 s de silêncio encerrava e virava recorde falso). Tempo suspeito (> 9 sílabas/s ou > 25% melhor que o recorde) pergunta "Leu o texto inteiro?" antes de gravar; limiares provisórios, não clínicos |
 
-Cada exercício declara seus modos em `src/lib/treinos/exercises.ts`. Bancada de teste com
+Cada exercício declara seus modos no catálogo do seu objetivo, `src/lib/treinos/catalogo/`
+(um arquivo por objetivo, com categorias — 25/09/2026: a Laury vai abastecer muito mais que
+os 3 por objetivo; nomes de categoria são dela). Bancada de teste com
 voz real: rota `/lab/microfone` (gera relatório JSON). Limiares dos detectores são
 provisórios até esse teste.
 
