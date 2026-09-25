@@ -12,7 +12,7 @@ export function Sidebar() {
     if (path === '/diario/evolucao') return pathname === '/diario/evolucao';
     if (path === '/home') return pathname === '/home';
     if (path === '/criar') return pathname.startsWith('/criar');
-    if (path === '/treinos') return pathname.startsWith('/treinos') || pathname.startsWith('/teste-vocal');
+    if (path === '/treinos') return pathname.startsWith('/treinos') || pathname.startsWith('/teste-vocal') || pathname.startsWith('/saude');
     if (path === '/repertorio') return pathname.startsWith('/repertorio');
     return false;
   };
@@ -23,7 +23,8 @@ export function Sidebar() {
     { label: 'Home', path: '/home', Icon: House },
     { label: 'Criar música', path: '/criar', Icon: PenLine },
     { label: 'Repertório', path: '/repertorio', Icon: Music2 },
-    { label: 'Treino', path: '/treinos', Icon: Dumbbell },
+    // TODO(Laury): confirmar o nome "Voz" (era "Treino"; cobre treino e saúde vocal). Rota segue /treinos.
+    { label: 'Voz', path: '/treinos', Icon: Dumbbell },
     { label: 'Evolução', path: '/diario/evolucao', Icon: ChartNoAxesColumn },
   ];
 

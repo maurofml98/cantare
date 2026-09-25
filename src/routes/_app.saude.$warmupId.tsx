@@ -52,7 +52,8 @@ function WarmupPage() {
     // Libera a aba Treinos no dia. Desaquecimento não conta como aquecimento.
     if (warmupId !== 'desaquecimento') markWarmupDone();
     toast.success('Aquecimento concluído', { description: 'Sua voz está pronta. Bom ensaio!' });
-    const to = warmupId === 'desaquecimento' || !after ? '/saude' : after === 'treinos' ? '/treinos' : '/teste-vocal/executar';
+    // Saúde vocal vive na aba Voz (/treinos) desde 25/09/2026: sem destino pedido, volta para lá.
+    const to = after === 'teste-vocal' && warmupId !== 'desaquecimento' ? '/teste-vocal/executar' : '/treinos';
     setTimeout(() => navigate({ to }), 450);
   };
 

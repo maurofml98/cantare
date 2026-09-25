@@ -7,7 +7,8 @@ const ITEMS = [
   { to: '/home', label: 'Home', Icon: House, match: (p: string) => p === '/home' },
   { to: '/criar', label: 'Criar música', Icon: PenLine, match: (p: string) => p.startsWith('/criar') },
   { to: '/repertorio', label: 'Repertório', Icon: Music2, match: (p: string) => p.startsWith('/repertorio') },
-  { to: '/treinos', label: 'Treino', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') || p.startsWith('/teste-vocal') },
+  // TODO(Laury): confirmar o nome "Voz" (era "Treino"; cobre treino e saúde vocal). Rota segue /treinos.
+  { to: '/treinos', label: 'Voz', Icon: Dumbbell, match: (p: string) => p.startsWith('/treinos') || p.startsWith('/teste-vocal') || p.startsWith('/saude') },
   { to: '/diario/evolucao', label: 'Evolução', Icon: ChartNoAxesColumn, match: (p: string) => p === '/diario/evolucao' },
 ];
 

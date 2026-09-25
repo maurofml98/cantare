@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { C, SANS, SERIF, focusRing } from '@/components/home/primitives';
-import { PageTitle, WarmupNotice, useClientValue } from '@/components/treinos/TabParts';
+import { PageTitle, useClientValue } from '@/components/treinos/TabParts';
+import { CareSection } from '@/components/treinos/CareSection';
+import { warmedUpToday } from '@/lib/treinos/warmup';
 import { exercisesOf, isRunnable, OBJECTIVES } from '@/lib/treinos/exercises';
 import { loadAttempts } from '@/lib/treinos/progress';
 import { loadVocalProfile } from '@/lib/vocal/profile';
@@ -23,11 +25,13 @@ function TreinosPage() {
   );
   // O teste vocal vive aqui desde 25/09/2026 (CLAUDE.md, seção 14): feito uma vez, antes do primeiro treino.
   const profile = useClientValue(() => loadVocalProfile(), null);
+  const warmedUp = useClientValue(warmedUpToday, false);
 
   return (
     <div className="flex flex-col gap-6">
-      <PageTitle title={<>Treine sua <em style={{ color: C.gold }}>voz</em></>} text="Escolha o que você quer desenvolver hoje." />
-      <WarmupNotice />
+      <PageTitle title={<>Cuide da sua <em style={{ color: C.gold }}>voz</em></>} text="Aqueça, treine e desaqueça." />
+      <CareSection warmedUp={warmedUp} />
+      <h2 className="px-1" style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 28, color: C.paper, lineHeight: 1.1 }}>Treinar</h2>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {OBJECTIVES.map((o) => {
           const list = exercisesOf(o.id);

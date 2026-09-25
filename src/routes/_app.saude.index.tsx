@@ -174,8 +174,10 @@ function SaudePage() {
     <div style={LINING} className="grid grid-cols-1 gap-5 lg:grid-cols-12">
       {/* ================= Cabeçalho ================= */}
       <header className="px-1 lg:col-span-8">
+        {/* Saúde vocal vive dentro da aba Voz (25/09/2026). */}
+        <div className="mb-3"><TextLink to="/treinos">Voltar para Voz</TextLink></div>
         <h1 style={{ fontFamily: SERIF, fontWeight: 300, fontSize: 'clamp(40px, 4vw, 68px)', color: C.paper, lineHeight: 1 }}>
-          Cuide da sua <em style={{ color: C.gold }}>voz</em>
+          Saúde <em style={{ color: C.gold }}>vocal</em>
         </h1>
         <p className="mt-2" style={{ fontFamily: SANS, fontWeight: 300, fontSize: 17, color: C.paper2 }}>
           Conhecimento, hábitos e ferramentas para uma voz mais saudável e duradoura.

@@ -722,7 +722,7 @@ Laury (contradição 2). Nada disso testado com voz real.
 ### Navegação inferior (ordem definida pela Laury)
 
 ```
-Home · Criar música · Repertório · Treino · Evolução
+Home · Criar música · Repertório · Voz · Evolução
 ```
 
 - **Teste vocal sai da navegação** e passa a viver dentro de Treino
@@ -730,6 +730,12 @@ Home · Criar música · Repertório · Treino · Evolução
 - **Play fica fora da barra** (decisão do Mauro, 25/09/2026): card na Home com tag
   "em breve" (jogos de ritmo e ear training, `ROADMAP.md` Fase 7)
 - "Criar música" é a rota `/criar`, com estado "em breve" até a função existir
+- **Aba "Voz"** (era "Treino"; rota continua `/treinos`), 25/09/2026. **TODO(Laury):** confirmar
+  o nome — ela chamou treino de "a parte mais chata", e "Voz" cobre treino e saúde vocal sem o
+  peso. Estrutura: no topo, aquecimento e desaquecimento em destaque (quem só quer aquecer antes
+  do show não precisa treinar) e os estilos de aquecimento; abaixo, os cinco objetivos; no fim,
+  "Sua voz" (teste vocal). A Saúde Vocal (`/saude`: checklist, água, registro) vive dentro da
+  aba, sem página solta — nada foi apagado. O card de Saúde Vocal continua na Home como atalho
 
 ### Home — reestruturação completa
 
@@ -790,3 +796,33 @@ O teste vocal pode ser refeito **depois de 30 dias**.
    `cantare-olive.vercel.app`: o card "criar sua música" aparece para todo usuário,
    não só na demo do Murilo
 9. **Direção visual colorida × proibições acumuladas** — ver `docs/DESIGN.md`
+
+---
+
+## 15. Vitrola — IA de repertório (decisões de 25/09/2026, ainda não implementada)
+
+**Duas funções, oferecidas como opções separadas:**
+
+1. **"Peça ajuda à Vitrola para montar seu repertório"** — o cantor não tem nada. Responde
+   evento, duração, estilo e público; a Vitrola devolve o repertório organizado em blocos
+2. **"Peça ajuda à Vitrola para analisar seu repertório"** — o show já está montado. A
+   Vitrola aponta ordem dos blocos, o que falta para bater a duração desejada,
+   concentração de estilo e sugestões de complemento. Provavelmente a mais usada: pedir
+   análise é menos ameaçador que pedir substituição
+
+**Regras das duas:**
+- **Não é conversa.** A interface coleta tudo com botões e campos; a IA é chamada **uma
+  vez**, com tudo pronto. Conversa paga o mesmo texto várias vezes
+- **Limite:** 3 repertórios por mês no gratuito, e teto global de gasto na conta da OpenAI
+- **Contexto:** nome e artista das últimas 30 músicas dos repertórios anteriores do cantor —
+  sugere dentro do estilo dele e evita repetir o que tocou recentemente
+- **Toda música sugerida passa pela busca do Spotify.** O que não aparece não entra
+- **A Vitrola não sugere tom.** Tom é do cantor
+- **Nada sobre voz.** TODO(Laury): a Vitrola vai falar de desgaste vocal na análise — é
+  orientação clínica com nome de personagem, e ela precisa revisar o tom e os limites do que
+  a Vitrola pode afirmar. Até lá, a análise fica em ordem, duração e variedade de estilo
+- A chave `OPENAI_API_KEY` fica só no servidor (`createServerFn`), como a do Spotify
+
+**Modelo:** escolhido pelo comparativo de invenção de músicas (nano × luna × mini, 4 pedidos
+que expõem o risco: sertanejo universitário 2026, modão raiz, forró pé de serra, gospel de
+culto). Resultado registrado abaixo quando concluído.

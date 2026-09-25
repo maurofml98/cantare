@@ -190,7 +190,7 @@ function Stat({ value, unit }: { value: number | null; unit: string }) {
 export const LAURY_TIP = 'Inspire pelo nariz, expire com controle. Sinta o ar sustentando o som.';
 
 // Mesmos ids de src/routes/_app.saude.index.tsx (lá não são exportados).
-const HEALTH = [
+export const HEALTH = [
   { id: 'agudos', title: 'Agudos', desc: 'Leveza no alto', glyph: 'up' },
   { id: 'graves', title: 'Graves', desc: 'Corpo e apoio', glyph: 'down' },
   { id: 'desaquecimento', title: 'Pós-show', desc: 'Desaquecer', glyph: 'rest' },
@@ -243,7 +243,7 @@ export function HealthShortcuts() {
 }
 
 /** Marcas desenhadas à mão, do universo musical — não ícones de biblioteca. */
-function Glyph({ kind }: { kind: (typeof HEALTH)[number]['glyph'] }) {
+export function Glyph({ kind }: { kind: (typeof HEALTH)[number]['glyph'] }) {
   const s = { stroke: C.gold, strokeWidth: 1.3, strokeLinecap: 'round' as const, fill: 'none' };
   return (
     <svg width="30" height="24" viewBox="0 0 30 24" aria-hidden>
